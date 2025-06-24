@@ -1,0 +1,37 @@
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace JCertPreApplication.Domain.Entities
+{
+    public class Question
+    {
+        [Key]
+        public Guid questionId { get; set; }
+
+        [Required]
+        public string questionText { get; set; }
+
+        [Required]
+        [MaxLength(50)]
+        public string questionType { get; set; }
+
+        [Required]
+        public string explanation { get; set; }
+
+        [Required]
+        [ForeignKey("Tag")]
+        public Guid tagId { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<Tag> Tag { get; set; }
+        public virtual ICollection<Test> Test { get; set; }
+        public virtual ICollection<Choice> Choices { get; set; }
+        public virtual ICollection<QuestionAttachment> QuestionAttachments { get; set; }
+        public virtual ICollection<AttemptAnswer> AttemptAnswers { get; set; }
+    }
+}
