@@ -14,17 +14,27 @@ namespace JCertPreApplication.Persistence
     {
         public static IServiceCollection AddPersistenceService(this IServiceCollection services, IConfiguration configuration)
         {
-            var connectionString = configuration.GetConnectionString("JCertPreDB");
+            // Read connection string from environment variable only (from .env file)
+            var connectionString = Environment.GetEnvironmentVariable("JCERTPRE_DB_CONNECTION_STRING");
+
             if (string.IsNullOrEmpty(connectionString))
             {
-                throw new ArgumentException("Connection string 'JCertPreDB' not found.");
+                throw new ArgumentException(
+                    "JCERTPRE_DB_CONNECTION_STRING environment variable not found. " +
+                    "Please set it in your .env file. Example: " +
+                    "JCERTPRE_DB_CONNECTION_STRING=Server=localhost;Database=JCertPreDB;User ID=sa;Password=yourpassword;TrustServerCertificate=True"
+                );
             }
+
             services.AddDbContext<JCertPreDatabaseContext>(options =>
                 options.UseSqlServer(connectionString));
 
             // Đăng ký các repository và service
+            // TODO: Add repository registrations here
+            // services.AddScoped<IUserRepository, UserRepository>();
+            // services.AddScoped<ICourseRepository, CourseRepository>();
 
-
+            Console.WriteLine("✅ Database connection configured successfully");
             return services;
         }
     }
