@@ -27,11 +27,11 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationships
             builder.HasOne(f => f.Course)
                    .WithMany(c => c.Feedbacks)
-                   .HasForeignKey(f => f.courseId);
+                   .HasForeignKey(f => f.courseId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(f => f.User)
                    .WithMany(c => c.Feedbacks)
-                   .HasForeignKey(f => f.userId);
+                   .HasForeignKey(f => f.userId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

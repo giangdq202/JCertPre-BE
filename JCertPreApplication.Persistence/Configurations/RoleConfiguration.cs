@@ -23,7 +23,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure navigation property
             builder.HasMany(r => r.UserRoles)
                    .WithOne(ur => ur.Role)
-                   .HasForeignKey(ur => ur.roleId);
+                   .HasForeignKey(ur => ur.roleId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

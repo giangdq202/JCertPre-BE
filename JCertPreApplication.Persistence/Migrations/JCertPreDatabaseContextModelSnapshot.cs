@@ -821,19 +821,19 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.TestAttempt", "TestAttempt")
                         .WithMany("AttemptAnswers")
                         .HasForeignKey("attemptId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.Choice", "Choice")
                         .WithMany("AttemptAnswers")
                         .HasForeignKey("choiceId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("AttemptAnswers")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Choice");
@@ -848,7 +848,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("Choices")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -859,7 +859,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("Courses")
                         .HasForeignKey("staffCreateUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -870,7 +870,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
                         .WithMany("Documents")
                         .HasForeignKey("lessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Lesson");
@@ -881,13 +881,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
                         .WithMany("Enrollments")
                         .HasForeignKey("courseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("Enrollments")
                         .HasForeignKey("userId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -900,13 +900,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
                         .WithMany("Feedbacks")
                         .HasForeignKey("courseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("Feedbacks")
                         .HasForeignKey("userId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -919,7 +919,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithOne("InstructorProfile")
                         .HasForeignKey("JCertPreApplication.Domain.Entities.InstructorProfile", "userId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -930,7 +930,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
                         .WithMany("Lessons")
                         .HasForeignKey("courseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -941,7 +941,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
                         .WithMany("Livestreams")
                         .HasForeignKey("courseId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Course");
@@ -952,13 +952,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Conversation", "Conversation")
                         .WithMany("Messages")
                         .HasForeignKey("conversationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("Messages")
                         .HasForeignKey("senderId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Conversation");
@@ -971,7 +971,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("Payments")
                         .HasForeignKey("userId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -982,7 +982,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("QuestionAttachments")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -993,13 +993,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "InstructorUser")
                         .WithMany("InstructorReports")
                         .HasForeignKey("reportedInstructorId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "StudentUser")
                         .WithMany("StudentReports")
                         .HasForeignKey("reporterStudentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("InstructorUser");
@@ -1012,7 +1012,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithOne("StudentProfile")
                         .HasForeignKey("JCertPreApplication.Domain.Entities.StudentProfile", "userId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -1023,13 +1023,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "Staff")
                         .WithMany("StaffCreatePlans")
                         .HasForeignKey("createdByStaffId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "Student")
                         .WithMany("StudentPlans")
                         .HasForeignKey("studentId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Staff");
@@ -1042,7 +1042,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.StudyPlan", "StudyPlan")
                         .WithMany("StudyPlanItems")
                         .HasForeignKey("planId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("StudyPlan");
@@ -1053,13 +1053,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "CreatedByUser")
                         .WithMany("CreatedTests")
                         .HasForeignKey("createdByUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
                         .WithMany("Tests")
                         .HasForeignKey("lessonId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("CreatedByUser");
@@ -1072,13 +1072,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Test", "Test")
                         .WithMany("TestAttempts")
                         .HasForeignKey("testId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("TestAttempts")
                         .HasForeignKey("userId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Test");

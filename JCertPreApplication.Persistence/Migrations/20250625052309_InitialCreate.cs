@@ -103,8 +103,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Choices_Questions_questionId",
                         column: x => x.questionId,
                         principalTable: "Questions",
-                        principalColumn: "questionId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "questionId");
                 });
 
             migrationBuilder.CreateTable(
@@ -123,8 +122,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_QuestionAttachments_Questions_questionId",
                         column: x => x.questionId,
                         principalTable: "Questions",
-                        principalColumn: "questionId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "questionId");
                 });
 
             migrationBuilder.CreateTable(
@@ -197,8 +195,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Courses_Users_staffCreateUserId",
                         column: x => x.staffCreateUserId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -217,8 +214,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_InstructorProfiles_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -238,14 +234,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Messages_Conversations_conversationId",
                         column: x => x.conversationId,
                         principalTable: "Conversations",
-                        principalColumn: "conversationId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "conversationId");
                     table.ForeignKey(
                         name: "FK_Messages_Users_senderId",
                         column: x => x.senderId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -269,8 +263,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Payments_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -291,14 +284,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Reports_Users_reportedInstructorId",
                         column: x => x.reportedInstructorId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                     table.ForeignKey(
                         name: "FK_Reports_Users_reporterStudentId",
                         column: x => x.reporterStudentId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -316,8 +307,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_StudentProfiles_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -339,14 +329,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_StudyPlans_Users_createdByStaffId",
                         column: x => x.createdByStaffId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                     table.ForeignKey(
                         name: "FK_StudyPlans_Users_studentId",
                         column: x => x.studentId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -391,14 +379,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Enrollments_Courses_courseId",
                         column: x => x.courseId,
                         principalTable: "Courses",
-                        principalColumn: "courseId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "courseId");
                     table.ForeignKey(
                         name: "FK_Enrollments_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -420,14 +406,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Feedbacks_Courses_courseId",
                         column: x => x.courseId,
                         principalTable: "Courses",
-                        principalColumn: "courseId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "courseId");
                     table.ForeignKey(
                         name: "FK_Feedbacks_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -447,8 +431,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Lessons_Courses_courseId",
                         column: x => x.courseId,
                         principalTable: "Courses",
-                        principalColumn: "courseId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "courseId");
                 });
 
             migrationBuilder.CreateTable(
@@ -470,8 +453,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Livestreams_Courses_courseId",
                         column: x => x.courseId,
                         principalTable: "Courses",
-                        principalColumn: "courseId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "courseId");
                 });
 
             migrationBuilder.CreateTable(
@@ -492,8 +474,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_StudyPlanItems_StudyPlans_planId",
                         column: x => x.planId,
                         principalTable: "StudyPlans",
-                        principalColumn: "planId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "planId");
                 });
 
             migrationBuilder.CreateTable(
@@ -513,8 +494,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Documents_Lessons_lessonId",
                         column: x => x.lessonId,
                         principalTable: "Lessons",
-                        principalColumn: "lessonId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "lessonId");
                 });
 
             migrationBuilder.CreateTable(
@@ -536,14 +516,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_Tests_Lessons_lessonId",
                         column: x => x.lessonId,
                         principalTable: "Lessons",
-                        principalColumn: "lessonId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "lessonId");
                     table.ForeignKey(
                         name: "FK_Tests_Users_createdByUserId",
                         column: x => x.createdByUserId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -592,14 +570,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_TestAttempts_Tests_testId",
                         column: x => x.testId,
                         principalTable: "Tests",
-                        principalColumn: "testId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "testId");
                     table.ForeignKey(
                         name: "FK_TestAttempts_Users_userId",
                         column: x => x.userId,
                         principalTable: "Users",
-                        principalColumn: "userId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "userId");
                 });
 
             migrationBuilder.CreateTable(
@@ -618,20 +594,17 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_AttemptAnswers_Choices_choiceId",
                         column: x => x.choiceId,
                         principalTable: "Choices",
-                        principalColumn: "choiceId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "choiceId");
                     table.ForeignKey(
                         name: "FK_AttemptAnswers_Questions_questionId",
                         column: x => x.questionId,
                         principalTable: "Questions",
-                        principalColumn: "questionId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "questionId");
                     table.ForeignKey(
                         name: "FK_AttemptAnswers_TestAttempts_attemptId",
                         column: x => x.attemptId,
                         principalTable: "TestAttempts",
-                        principalColumn: "attemptId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "attemptId");
                 });
 
             migrationBuilder.CreateIndex(

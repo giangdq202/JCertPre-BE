@@ -27,11 +27,11 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure navigation properties
             builder.HasOne(t => t.Lesson)
                    .WithMany(q => q.Tests)
-                   .HasForeignKey(t => t.lessonId);
+                   .HasForeignKey(t => t.lessonId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(t => t.CreatedByUser)
                    .WithMany(q => q.CreatedTests)
-                   .HasForeignKey(t => t.createdByUserId);
+                   .HasForeignKey(t => t.createdByUserId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(t => t.Questions)
                .WithMany(q => q.Tests) // Đồng bộ với QuestionConfiguration
@@ -39,7 +39,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(t => t.TestAttempts)
                    .WithOne(q => q.Test)
-                   .HasForeignKey(ta => ta.testId);
+                   .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

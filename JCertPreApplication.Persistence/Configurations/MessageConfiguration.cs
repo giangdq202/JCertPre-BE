@@ -25,11 +25,11 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationships
             builder.HasOne(m => m.User)
                    .WithMany(c => c.Messages)
-                   .HasForeignKey(m => m.senderId);
+                   .HasForeignKey(m => m.senderId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(m => m.Conversation)
                    .WithMany(c => c.Messages)
-                   .HasForeignKey(m => m.conversationId);
+                   .HasForeignKey(m => m.conversationId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

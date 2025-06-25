@@ -27,7 +27,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(ls => ls.Course)
                    .WithMany(c => c.Livestreams)
-                   .HasForeignKey(ls => ls.courseId);
+                   .HasForeignKey(ls => ls.courseId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -30,15 +30,15 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure navigation properties
             builder.HasOne(ta => ta.User)
                    .WithMany(t => t.TestAttempts)
-                   .HasForeignKey(ta => ta.userId);
+                   .HasForeignKey(ta => ta.userId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(ta => ta.Test)
                    .WithMany(t => t.TestAttempts)
-                   .HasForeignKey(ta => ta.testId);
+                   .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(ta => ta.AttemptAnswers)
                    .WithOne(t => t.TestAttempt)
-                   .HasForeignKey(t => t.attemptId);
+                   .HasForeignKey(t => t.attemptId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

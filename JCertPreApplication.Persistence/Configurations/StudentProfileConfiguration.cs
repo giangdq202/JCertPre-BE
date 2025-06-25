@@ -23,7 +23,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(sp => sp.User)
                    .WithOne()
-                   .HasForeignKey<StudentProfile>(sp => sp.userId);
+                   .HasForeignKey<StudentProfile>(sp => sp.userId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

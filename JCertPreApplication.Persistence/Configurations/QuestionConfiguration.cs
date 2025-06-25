@@ -34,15 +34,15 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(q => q.Choices)
                    .WithOne(c => c.Question)
-                   .HasForeignKey(c => c.questionId);
+                   .HasForeignKey(c => c.questionId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(q => q.QuestionAttachments)
                    .WithOne()
-                   .HasForeignKey(qa => qa.questionId);
+                   .HasForeignKey(qa => qa.questionId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(q => q.AttemptAnswers)
                    .WithOne(aa => aa.Question)
-                   .HasForeignKey(aa => aa.questionId);
+                   .HasForeignKey(aa => aa.questionId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -26,7 +26,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(spi => spi.StudyPlan)
                    .WithMany(sp => sp.StudyPlanItems)
-                   .HasForeignKey(spi => spi.planId);
+                   .HasForeignKey(spi => spi.planId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -24,15 +24,14 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationships
             builder.HasOne(aa => aa.TestAttempt)
                    .WithMany(ta => ta.AttemptAnswers)
-                   .HasForeignKey(aa => aa.attemptId);
-
+                   .HasForeignKey(aa => aa.attemptId)
+                    .OnDelete(DeleteBehavior.NoAction);
             builder.HasOne(aa => aa.Question)
                    .WithMany(q => q.AttemptAnswers)
-                   .HasForeignKey(aa => aa.questionId);
-
+                   .HasForeignKey(aa => aa.questionId).OnDelete(DeleteBehavior.NoAction);
             builder.HasOne(aa => aa.Choice)
                    .WithMany(c => c.AttemptAnswers)
-                   .HasForeignKey(aa => aa.choiceId);
+                   .HasForeignKey(aa => aa.choiceId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

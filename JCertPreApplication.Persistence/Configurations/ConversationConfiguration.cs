@@ -31,7 +31,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(c => c.Messages)
                    .WithOne(m => m.Conversation)
-                   .HasForeignKey(m => m.conversationId);
+                   .HasForeignKey(m => m.conversationId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

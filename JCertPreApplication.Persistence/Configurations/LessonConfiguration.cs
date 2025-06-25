@@ -25,16 +25,16 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(l => l.Course)
                    .WithMany(c => c.Lessons)
-                   .HasForeignKey(l => l.courseId);
+                   .HasForeignKey(l => l.courseId).OnDelete(DeleteBehavior.NoAction);
 
             // Configure navigation properties
             builder.HasMany(l => l.Documents)
                    .WithOne(d => d.Lesson)
-                   .HasForeignKey(d => d.lessonId);
+                   .HasForeignKey(d => d.lessonId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(l => l.Tests)
                    .WithOne(t => t.Lesson)
-                   .HasForeignKey(t => t.lessonId);
+                   .HasForeignKey(t => t.lessonId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

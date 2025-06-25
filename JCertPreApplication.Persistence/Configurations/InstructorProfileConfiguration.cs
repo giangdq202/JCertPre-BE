@@ -24,7 +24,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(ip => ip.User)
                    .WithOne()
-                   .HasForeignKey<InstructorProfile>(ip => ip.userId);
+                   .HasForeignKey<InstructorProfile>(ip => ip.userId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

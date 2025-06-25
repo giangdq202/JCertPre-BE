@@ -26,15 +26,15 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure navigation properties
             builder.HasMany(u => u.UserRoles)
                    .WithOne(ur => ur.User)
-                   .HasForeignKey(ur => ur.userId);
+                   .HasForeignKey(ur => ur.userId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.Payments)
                    .WithOne(p => p.User)
-                   .HasForeignKey(p => p.userId);
+                   .HasForeignKey(p => p.userId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.Feedbacks)
                    .WithOne(f => f.User)
-                   .HasForeignKey(f => f.userId);
+                   .HasForeignKey(f => f.userId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(u => u.InstructorProfile)
                .WithOne(ip => ip.User)
@@ -46,11 +46,11 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(u => u.Enrollments)
                    .WithOne(e => e.User)
-                   .HasForeignKey(e => e.userId);
+                   .HasForeignKey(e => e.userId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.Courses)
                    .WithOne(c => c.User)
-                   .HasForeignKey(c => c.staffCreateUserId);
+                   .HasForeignKey(c => c.staffCreateUserId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.Conversations)
                    .WithMany(cp => cp.Participants)
@@ -58,27 +58,27 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(u => u.StudentReports)
                    .WithOne(sr => sr.StudentUser)
-                   .HasForeignKey(sr => sr.reporterStudentId);
+                   .HasForeignKey(sr => sr.reporterStudentId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(u => u.InstructorReports)
                    .WithOne(sr => sr.InstructorUser)
-                   .HasForeignKey(sr => sr.reportedInstructorId);
+                   .HasForeignKey(sr => sr.reportedInstructorId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(u => u.Messages)
                    .WithOne(m => m.User)
-                   .HasForeignKey(m => m.senderId);
+                   .HasForeignKey(m => m.senderId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.StudentPlans)
                    .WithOne(sp => sp.Student)
-                   .HasForeignKey(sp => sp.studentId);
+                   .HasForeignKey(sp => sp.studentId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(u => u.StaffCreatePlans)
                    .WithOne(sp => sp.Staff)
-                   .HasForeignKey(sp => sp.createdByStaffId);
+                   .HasForeignKey(sp => sp.createdByStaffId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(u => u.TestAttempts)
                    .WithOne(ta => ta.User)
-                   .HasForeignKey(ta => ta.userId);
+                   .HasForeignKey(ta => ta.userId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.CreatedTests)
                    .WithOne(t => t.CreatedByUser)
-                   .HasForeignKey(t => t.createdByUserId);
+                   .HasForeignKey(t => t.createdByUserId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
