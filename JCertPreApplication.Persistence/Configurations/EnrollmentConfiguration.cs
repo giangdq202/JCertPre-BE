@@ -20,7 +20,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(e => e.userId).IsRequired();
             builder.Property(e => e.courseId).IsRequired();
             builder.Property(e => e.enrollDate).IsRequired();
-            builder.Property(e => e.price).IsRequired();
+            builder.Property(e => e.price).HasPrecision(18, 2).IsRequired();
 
             // Configure foreign key relationships
             builder.HasOne(e => e.User)

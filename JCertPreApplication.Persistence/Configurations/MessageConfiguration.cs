@@ -24,7 +24,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure foreign key relationships
             builder.HasOne(m => m.User)
-                   .WithMany()
+                   .WithMany(c => c.Messages)
                    .HasForeignKey(m => m.senderId);
 
             builder.HasOne(m => m.Conversation)

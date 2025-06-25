@@ -14,7 +14,7 @@ namespace JCertPreApplication.Domain.Entities
         public DateTime createdAt { get; set; }
 
         // Navigation properties
-        public virtual ICollection<ConversationParticipant> Participants { get; set; }
+        public virtual ICollection<User> Participants { get; set; }
         public virtual ICollection<Message> Messages { get; set; }
     }
 }

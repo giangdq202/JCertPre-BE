@@ -22,13 +22,13 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Cấu hình mối quan hệ với User
             builder.HasOne(ur => ur.User)
-                   .WithMany() // Có thể WithMany(u => u.UserRoles) nếu User có collection
+                   .WithMany(u => u.UserRoles) // Có thể WithMany(u => u.UserRoles) nếu User có collection
                    .HasForeignKey(ur => ur.userId)
                    .OnDelete(DeleteBehavior.Restrict); // Điều chỉnh OnDelete tùy ý
 
             // Cấu hình mối quan hệ với Role
             builder.HasOne(ur => ur.Role)
-                   .WithMany() // Có thể WithMany(r => r.UserRoles) nếu Role có collection
+                   .WithMany(r => r.UserRoles) // Có thể WithMany(r => r.UserRoles) nếu Role có collection
                    .HasForeignKey(ur => ur.roleId)
                    .OnDelete(DeleteBehavior.Restrict); // Điều chỉnh OnDelete tùy ý
         }

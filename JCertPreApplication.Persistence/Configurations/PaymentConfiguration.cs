@@ -28,7 +28,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure foreign key relationship
             builder.HasOne(p => p.User)
-                   .WithMany()
+                   .WithMany(pa => pa.Payments)
                    .HasForeignKey(p => p.userId);
         }
     }

@@ -30,7 +30,7 @@ namespace JCertPreApplication.Persistence.Configurations
                    .HasForeignKey(f => f.courseId);
 
             builder.HasOne(f => f.User)
-                   .WithMany()
+                   .WithMany(c => c.Feedbacks)
                    .HasForeignKey(f => f.userId);
         }
     }

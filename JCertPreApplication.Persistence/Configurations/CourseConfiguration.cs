@@ -22,7 +22,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(c => c.description).IsRequired().HasMaxLength(1000);
             builder.Property(c => c.level).IsRequired();
             builder.Property(c => c.courseType).IsRequired();
-            builder.Property(c => c.price).IsRequired();
+            builder.Property(c => c.price).HasPrecision(18, 2).IsRequired();
             builder.Property(c => c.thumbnailUrl).IsRequired();
             builder.Property(c => c.status).IsRequired();
             builder.Property(c => c.createdAt).IsRequired();

@@ -26,17 +26,17 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure foreign key relationships
             builder.HasOne(sp => sp.Student)
-                   .WithMany()
+                   .WithMany(st => st.StudentPlans)
                    .HasForeignKey(sp => sp.studentId);
 
             builder.HasOne(sp => sp.Staff)
-                   .WithMany()
+                   .WithMany(st => st.StaffCreatePlans)
                    .HasForeignKey(sp => sp.createdByStaffId);
 
             // Configure navigation property
             builder.HasMany(sp => sp.StudyPlanItems)
-                   .WithOne()
-                   .HasForeignKey(spi => spi.planId);
+                   .WithOne(st => st.StudyPlan)
+                   .HasForeignKey(st => st.planId);
         }
     }
 }

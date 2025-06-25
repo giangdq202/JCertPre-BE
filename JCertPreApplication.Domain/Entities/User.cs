@@ -29,10 +29,12 @@ namespace JCertPreApplication.Domain.Entities
         public virtual StudentProfile StudentProfile { get; set; }
         public virtual ICollection<Enrollment> Enrollments { get; set; }
         public virtual ICollection<Course> Courses { get; set; }
-        public virtual ICollection<ConversationParticipant> ConversationParticipants { get; set; }
-        public virtual ICollection<Report> StudentReports { get; set; }
+        public virtual ICollection<Conversation> Conversations { get; set; }
+        public virtual ICollection<Report> StudentReports { get; set; } // For Report.StudentUser
+        public virtual ICollection<Report> InstructorReports { get; set; } // For Report.InstructorUser
         public virtual ICollection<Message> Messages { get; set; }
         public virtual ICollection<StudyPlan> StudentPlans { get; set; }
+        public virtual ICollection<StudyPlan> StaffCreatePlans { get; set; }
         public virtual ICollection<TestAttempt> TestAttempts { get; set; }
         public virtual ICollection<Test> CreatedTests { get; set; }
     }

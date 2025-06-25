@@ -19,7 +19,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         // DbSet cho tất cả các entity
         public DbSet<AttemptAnswer> AttemptAnswers { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
-        public DbSet<ConversationParticipant> ConversationParticipants { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Choice> Choices { get; set; }
         public DbSet<Document> Documents { get; set; }
@@ -49,7 +48,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             // Additional model configurations can be done here
             modelBuilder.ApplyConfiguration(new ReportConfiguration());
             modelBuilder.ApplyConfiguration(new AttemptAnswerConfiguration());
-            modelBuilder.ApplyConfiguration(new ConversationParticipantConfiguration());
             modelBuilder.ApplyConfiguration(new ConversationConfiguration());
             modelBuilder.ApplyConfiguration(new CourseConfiguration());
             modelBuilder.ApplyConfiguration(new ChoiceConfiguration());

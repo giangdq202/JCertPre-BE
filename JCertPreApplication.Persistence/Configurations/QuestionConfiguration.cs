@@ -29,7 +29,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure navigation properties
             builder.HasMany(q => q.Tests)
-                   .WithMany()
+                   .WithMany(t => t.Questions)
                    .UsingEntity(j => j.ToTable("QuestionTests"));
 
             builder.HasMany(q => q.Choices)

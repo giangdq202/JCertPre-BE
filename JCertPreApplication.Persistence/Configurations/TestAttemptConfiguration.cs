@@ -29,7 +29,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure navigation properties
             builder.HasOne(ta => ta.User)
-                   .WithMany()
+                   .WithMany(t => t.TestAttempts)
                    .HasForeignKey(ta => ta.userId);
 
             builder.HasOne(ta => ta.Test)
@@ -37,8 +37,8 @@ namespace JCertPreApplication.Persistence.Configurations
                    .HasForeignKey(ta => ta.testId);
 
             builder.HasMany(ta => ta.AttemptAnswers)
-                   .WithOne()
-                   .HasForeignKey(aa => aa.answerId);
+                   .WithOne(t => t.TestAttempt)
+                   .HasForeignKey(t => t.attemptId);
         }
     }
 }

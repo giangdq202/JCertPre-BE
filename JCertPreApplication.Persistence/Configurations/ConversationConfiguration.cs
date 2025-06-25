@@ -26,11 +26,11 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure navigation properties
             builder.HasMany(c => c.Participants)
-                   .WithOne()
-                   .HasForeignKey(cp => cp.conversationId);
+                   .WithMany(cp => cp.Conversations)
+                   .UsingEntity(j => j.ToTable("ConversationParticipant"));
 
             builder.HasMany(c => c.Messages)
-                   .WithOne()
+                   .WithOne(m => m.Conversation)
                    .HasForeignKey(m => m.conversationId);
         }
     }

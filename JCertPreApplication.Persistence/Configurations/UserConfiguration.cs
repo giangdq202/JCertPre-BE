@@ -26,7 +26,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure navigation properties
             builder.HasMany(u => u.UserRoles)
                    .WithOne(ur => ur.User)
-                   .HasForeignKey(u => u.userId);
+                   .HasForeignKey(ur => ur.userId);
 
             builder.HasMany(u => u.Payments)
                    .WithOne(p => p.User)
@@ -52,25 +52,29 @@ namespace JCertPreApplication.Persistence.Configurations
                    .WithOne(c => c.User)
                    .HasForeignKey(c => c.staffCreateUserId);
 
-            builder.HasMany(u => u.ConversationParticipants)
-                   .WithOne(cp => cp.User)
-                   .HasForeignKey(u => u.userId);
+            builder.HasMany(u => u.Conversations)
+                   .WithMany(cp => cp.Participants)
+                   .UsingEntity(j => j.ToTable("ConversationParticipant"));
 
             builder.HasMany(u => u.StudentReports)
                    .WithOne(sr => sr.StudentUser)
-                   .HasForeignKey(u => u.StudentUser);
-
+                   .HasForeignKey(sr => sr.reporterStudentId);
+            builder.HasMany(u => u.InstructorReports)
+                   .WithOne(sr => sr.InstructorUser)
+                   .HasForeignKey(sr => sr.reportedInstructorId);
             builder.HasMany(u => u.Messages)
                    .WithOne(m => m.User)
-                   .HasForeignKey(u => u.senderId);
+                   .HasForeignKey(m => m.senderId);
 
             builder.HasMany(u => u.StudentPlans)
                    .WithOne(sp => sp.Student)
-                   .HasForeignKey(u => u.studentId);
-
+                   .HasForeignKey(sp => sp.studentId);
+            builder.HasMany(u => u.StaffCreatePlans)
+                   .WithOne(sp => sp.Staff)
+                   .HasForeignKey(sp => sp.createdByStaffId);
             builder.HasMany(u => u.TestAttempts)
                    .WithOne(ta => ta.User)
-                   .HasForeignKey(u => u.userId);
+                   .HasForeignKey(ta => ta.userId);
 
             builder.HasMany(u => u.CreatedTests)
                    .WithOne(t => t.CreatedByUser)
