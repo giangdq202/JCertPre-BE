@@ -5,8 +5,8 @@
 ### 1. Setup Environment Variables
 
 ```bash
-# Copy template
-cp env.example .env
+# Copy template to API directory
+cp env.example JCertPreApplication.API/.env
 
 # Edit .env with your database info and JWT secrets (minimum 32 characters each)
 ```
@@ -51,6 +51,7 @@ Application sẽ hiển thị status của configuration:
 
 ```
 ├── JCertPreApplication.API/          # Web API Layer
+│   └── .env                         # Environment variables (create from env.example)
 ├── JCertPreApplication.Application/  # Application Layer (Services, DTOs)
 ├── JCertPreApplication.Domain/       # Domain Layer (Entities, Enums)
 ├── JCertPreApplication.Persistence/  # Data Access Layer (DbContext, Configurations)
@@ -76,7 +77,7 @@ Application sẽ hiển thị status của configuration:
    ```bash
    git clone <repository>
    cd JCertPre-BE
-   cp env.example .env
+   cp env.example JCertPreApplication.API/.env
    ```
 
 3. **Configure .env:**
@@ -109,7 +110,7 @@ JWT_REFRESH_SECRET_KEY=zN3%gH6@kM9$pL2^fD5!cV8&xB1*qW4#
 
 | Issue | Solution |
 |-------|----------|
-| `.env file not found` | Run `cp env.example .env` |
+| `.env file not found` | Run `cp env.example JCertPreApplication.API/.env` |
 | `JWT_SECRET_KEY not found` | Add JWT secrets to .env (min 32 chars) |
 | `JWT secret too short` | Use at least 32 characters for each JWT secret |
 | `Database connection failed` | Check `JCERTPRE_DB_CONNECTION_STRING` in .env |

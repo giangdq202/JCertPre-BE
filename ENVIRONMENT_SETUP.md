@@ -2,15 +2,15 @@
 
 ## 🔐 Bảo mật thông tin nhạy cảm
 
-Project này sử dụng file `.env` để quản lý tất cả thông tin nhạy cảm như connection strings, JWT secrets. Tất cả team members sử dụng cùng một phương pháp để dễ quản lý.
+Project này sử dụng file `.env` trong thư mục `JCertPreApplication.API/` để quản lý tất cả thông tin nhạy cảm như connection strings, JWT secrets.
 
 ## 📋 Setup cho Development
 
 ### 1. Copy template và configure
 
 ```bash
-# 1. Copy template file
-cp env.example .env
+# 1. Copy template file vào API directory
+cp env.example JCertPreApplication.API/.env
 
 # 2. Chỉnh sửa file .env với thông tin thực của bạn
 ```
@@ -137,8 +137,8 @@ dotnet run --project JCertPreApplication.API
 ### Lỗi: ".env file not found"
 
 ```bash
-# Copy template và configure
-cp env.example .env
+# Copy template vào API directory và configure
+cp env.example JCertPreApplication.API/.env
 # Chỉnh sửa file .env với thông tin thực
 ```
 
@@ -170,7 +170,7 @@ JCERTPRE_DB_CONNECTION_STRING=Server=DESKTOP-JJTIOH3\SQLEXPRESS;User ID=sa;Passw
 1. **Setup lần đầu:**
    ```bash
    git clone <repo>
-   cp env.example .env
+   cp env.example JCertPreApplication.API/.env
    # Chỉnh sửa file .env với thông tin database và JWT secrets
    dotnet run --project JCertPreApplication.API
    ```
