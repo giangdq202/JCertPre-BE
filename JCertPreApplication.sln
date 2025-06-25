@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.API", "JCertPreApplication.API\JCertPreApplication.API.csproj", "{FB4B92FA-E1A8-432D-ACC1-CF2F81BAEB7F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{0A3FA1C2-2411-4A2C-9937-EC5694907D22}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E9DF2D12-3A5E-43BC-970F-ABE2F8EE9AB4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Domain", "JCertPreApplication.Domain\JCertPreApplication.Domain.csproj", "{9B62B8A0-CD16-4932-B925-463B90BA1479}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Application", "JCertPreApplication.Application\JCertPreApplication.Application.csproj", "{288F9C86-C1D7-494D-963F-6A31AF7CB7DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Persistence", "JCertPreApplication.Persistence\JCertPreApplication.Persistence.csproj", "{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FB4B92FA-E1A8-432D-ACC1-CF2F81BAEB7F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB4B92FA-E1A8-432D-ACC1-CF2F81BAEB7F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB4B92FA-E1A8-432D-ACC1-CF2F81BAEB7F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB4B92FA-E1A8-432D-ACC1-CF2F81BAEB7F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9B62B8A0-CD16-4932-B925-463B90BA1479}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9B62B8A0-CD16-4932-B925-463B90BA1479}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9B62B8A0-CD16-4932-B925-463B90BA1479}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9B62B8A0-CD16-4932-B925-463B90BA1479}.Release|Any CPU.Build.0 = Release|Any CPU
+		{288F9C86-C1D7-494D-963F-6A31AF7CB7DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{288F9C86-C1D7-494D-963F-6A31AF7CB7DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{288F9C86-C1D7-494D-963F-6A31AF7CB7DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{288F9C86-C1D7-494D-963F-6A31AF7CB7DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE} = {0A3FA1C2-2411-4A2C-9937-EC5694907D22}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {3068407F-5B85-4727-AAA1-2F4E96212C5D}
+	EndGlobalSection
+EndGlobal
