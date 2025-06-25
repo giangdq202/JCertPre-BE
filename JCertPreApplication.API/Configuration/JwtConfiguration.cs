@@ -1,5 +1,3 @@
-using Microsoft.Extensions.Configuration;
-
 namespace JCertPreApplication.API.Configuration
 {
     public class JwtConfiguration

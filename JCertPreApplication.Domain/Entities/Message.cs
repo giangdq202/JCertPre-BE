@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JCertPreApplication.Domain.Entities
+﻿namespace JCertPreApplication.Domain.Entities
 {
     public class Message
     {
