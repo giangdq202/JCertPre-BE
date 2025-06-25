@@ -10,19 +10,24 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class AttemptAnswer
     {
-        [Key]
+        //[Key]
+        //public Guid answerId { get; set; }
+        //[Required]
+        //[ForeignKey("TestAttempt")]
+        //public Guid attemptId { get; set; }
+        //[Required]
+        //[ForeignKey("Question")]
+        //public Guid questionId { get; set; }
+        //[Required]
+        //[ForeignKey("Choice")]
+        //public Guid choiceId { get; set; }
+        //// Navigation properties
+        //public virtual TestAttempt TestAttempt { get; set; }
+        //public virtual Question Question { get; set; }
+        //public virtual Choice Choice { get; set; }
         public Guid answerId { get; set; }
-
-        [Required]
-        [ForeignKey("TestAttempt")]
         public Guid attemptId { get; set; }
-
-        [Required]
-        [ForeignKey("Question")]
         public Guid questionId { get; set; }
-
-        [Required]
-        [ForeignKey("Choice")]
         public Guid choiceId { get; set; }
 
         // Navigation properties

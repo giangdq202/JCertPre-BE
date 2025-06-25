@@ -10,25 +10,11 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class Report
     {
-        [Key]
         public Guid reportId { get; set; }
-
-        [Required]
-        [ForeignKey("User")]
         public Guid reporterStudentId { get; set; }
-
-        [Required]
-        [ForeignKey("User")]
         public Guid reportedInstructorId { get; set; }
-
-        [Required]
-        [MaxLength(1000)]
         public string reportContent { get; set; }
-
-        [Required]
         public string status { get; set; }
-
-        [Required]
         public DateTime createdAt { get; set; }
 
         // Navigation properties

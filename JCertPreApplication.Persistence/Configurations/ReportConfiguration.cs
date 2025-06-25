@@ -1,0 +1,36 @@
+﻿using JCertPreApplication.Domain.Entities;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace JCertPreApplication.Persistence.Configurations
+{
+    public class ReportConfiguration : IEntityTypeConfiguration<Report>
+    {
+        public void Configure(EntityTypeBuilder<Report> builder)
+        {
+            // Configure primary key
+            builder.HasKey(r => r.reportId);
+
+            // Configure required properties and constraints
+            builder.Property(r => r.reporterStudentId).IsRequired();
+            builder.Property(r => r.reportedInstructorId).IsRequired();
+            builder.Property(r => r.reportContent).IsRequired().HasMaxLength(1000);
+            builder.Property(r => r.status).IsRequired();
+            builder.Property(r => r.createdAt).IsRequired();
+
+            // Configure foreign key relationships
+            builder.HasOne(r => r.StudentUser)
+                   .WithMany()
+                   .HasForeignKey(r => r.reporterStudentId);
+
+            builder.HasOne(r => r.InstructorUser)
+                   .WithMany()
+                   .HasForeignKey(r => r.reportedInstructorId);
+        }
+    }
+}

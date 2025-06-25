@@ -11,24 +11,11 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class StudyPlanItem
     {
-        [Key]
         public Guid itemId { get; set; }
-
-        [Required]
-        [ForeignKey("StudyPlan")]
         public Guid planId { get; set; }
-
-        [Required]
         public int sequence { get; set; }
-
-        [Required]
-        [MaxLength(50)]
         public string itemType { get; set; }
-
-        [Required]
         public int itemIdRef { get; set; }
-
-        [Required]
         public ItemStatus status { get; set; }
 
         // Navigation property

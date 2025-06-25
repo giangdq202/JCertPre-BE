@@ -1,0 +1,48 @@
+﻿using JCertPreApplication.Domain.Entities;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace JCertPreApplication.Persistence.Configurations
+{
+    public class QuestionConfiguration : IEntityTypeConfiguration<Question>
+    {
+        public void Configure(EntityTypeBuilder<Question> builder)
+        {
+            // Configure primary key
+            builder.HasKey(q => q.questionId);
+
+            // Configure required properties and constraints
+            builder.Property(q => q.questionText).IsRequired();
+            builder.Property(q => q.questionType).IsRequired().HasMaxLength(50);
+            builder.Property(q => q.explanation).IsRequired();
+            builder.Property(q => q.tagId).IsRequired();
+
+            // Configure foreign key relationship
+            builder.HasMany(q => q.Tag)
+               .WithMany(t => t.Questions)
+               .UsingEntity(j => j.ToTable("QuestionTags"));
+
+            // Configure navigation properties
+            builder.HasMany(q => q.Tests)
+                   .WithMany()
+                   .UsingEntity(j => j.ToTable("QuestionTests"));
+
+            builder.HasMany(q => q.Choices)
+                   .WithOne(c => c.Question)
+                   .HasForeignKey(c => c.questionId);
+
+            builder.HasMany(q => q.QuestionAttachments)
+                   .WithOne()
+                   .HasForeignKey(qa => qa.questionId);
+
+            builder.HasMany(q => q.AttemptAnswers)
+                   .WithOne(aa => aa.Question)
+                   .HasForeignKey(aa => aa.questionId);
+        }
+    }
+}

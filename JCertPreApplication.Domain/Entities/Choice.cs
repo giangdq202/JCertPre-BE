@@ -10,17 +10,9 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class Choice
     {
-        [Key]
         public Guid choiceId { get; set; }
-
-        [Required]
-        [ForeignKey("Question")]
         public Guid questionId { get; set; }
-
-        [Required]
         public string choiceText { get; set; }
-
-        [Required]
         public bool isCorrect { get; set; }
 
         // Navigation properties

@@ -1,4 +1,5 @@
 ﻿using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -46,8 +47,35 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         {
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can be done here
+            modelBuilder.ApplyConfiguration(new ReportConfiguration());
+            modelBuilder.ApplyConfiguration(new AttemptAnswerConfiguration());
+            modelBuilder.ApplyConfiguration(new ConversationParticipantConfiguration());
+            modelBuilder.ApplyConfiguration(new ConversationConfiguration());
+            modelBuilder.ApplyConfiguration(new CourseConfiguration());
+            modelBuilder.ApplyConfiguration(new ChoiceConfiguration());
+            modelBuilder.ApplyConfiguration(new DocumentConfiguration());
+            modelBuilder.ApplyConfiguration(new EnrollmentConfiguration());
+            modelBuilder.ApplyConfiguration(new FeedbackConfiguration());
+            modelBuilder.ApplyConfiguration(new InstructorProfileConfiguration());
+            modelBuilder.ApplyConfiguration(new LessonConfiguration());
+            modelBuilder.ApplyConfiguration(new LivestreamConfiguration());
+            modelBuilder.ApplyConfiguration(new MessageConfiguration());
+            modelBuilder.ApplyConfiguration(new PaymentConfiguration());
+            modelBuilder.ApplyConfiguration(new QuestionConfiguration());
+            modelBuilder.ApplyConfiguration(new QuestionAttachmentConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            modelBuilder.ApplyConfiguration(new StudentProfileConfiguration());
+            modelBuilder.ApplyConfiguration(new StudyPlanConfiguration());
+            modelBuilder.ApplyConfiguration(new StudyPlanItemConfiguration());
+            modelBuilder.ApplyConfiguration(new TagConfiguration());
+            modelBuilder.ApplyConfiguration(new TestConfiguration());
+            modelBuilder.ApplyConfiguration(new TestAttemptConfiguration());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
+
         }
     }
+    
     
     
 }

@@ -10,26 +10,12 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class Feedback
     {
-        [Key]
         public Guid feedbackId { get; set; }
-
-        [Required]
-        [ForeignKey("Course")]
         public Guid courseId { get; set; }
-
-        [Required]
-        [ForeignKey("User")]
         public Guid userId { get; set; }
-
-        [Required]
         public int rating { get; set; }
-
-        [Required]
         public string comment { get; set; }
-        [Required]
         public string reply { get; set; }
-
-        [Required]
         public DateTime createdAt { get; set; }
 
         // Navigation properties

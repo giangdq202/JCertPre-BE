@@ -8,7 +8,7 @@ namespace JCertPreApplication.Domain.Enums
 {
     public enum MediaType
     {
-        IMAGE,
-        AUDIO
+        Image,
+        Video
     }
 }

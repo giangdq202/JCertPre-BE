@@ -10,15 +10,8 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class StudentProfile
     {
-        [Key]
-        [ForeignKey("User")]
         public Guid userId { get; set; }
-
-        [Required]
-        [MaxLength(50)]
         public string currentLevel { get; set; }
-
-        [Required]
         public string learningGoals { get; set; }
 
         // Navigation property

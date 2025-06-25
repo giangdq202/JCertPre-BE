@@ -9,14 +9,8 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class Conversation
     {
-        [Key]
         public Guid conversationId { get; set; }
-
-        [Required]
-        [MaxLength(100)]
         public string conversationName { get; set; }
-
-        [Required]
         public DateTime createdAt { get; set; }
 
         // Navigation properties

@@ -1,0 +1,45 @@
+﻿using JCertPreApplication.Domain.Entities;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace JCertPreApplication.Persistence.Configurations
+{
+    public class TestConfiguration : IEntityTypeConfiguration<Test>
+    {
+        public void Configure(EntityTypeBuilder<Test> builder)
+        {
+            // Configure primary key
+            builder.HasKey(t => t.testId);
+
+            // Configure required properties and constraints
+            builder.Property(t => t.title).IsRequired().HasMaxLength(100);
+            builder.Property(t => t.description).IsRequired();
+            builder.Property(t => t.testType).IsRequired().HasMaxLength(50);
+            builder.Property(t => t.durationMinutes).IsRequired();
+            builder.Property(t => t.lessonId).IsRequired();
+            builder.Property(t => t.createdByUserId).IsRequired();
+
+            // Configure navigation properties
+            builder.HasOne(t => t.Lesson)
+                   .WithMany()
+                   .HasForeignKey(t => t.lessonId);
+
+            builder.HasOne(t => t.CreatedByUser)
+                   .WithMany()
+                   .HasForeignKey(t => t.createdByUserId);
+
+            builder.HasMany(t => t.Questions)
+               .WithMany(q => q.Tests) // Đồng bộ với QuestionConfiguration
+               .UsingEntity(j => j.ToTable("QuestionTests"));
+
+            builder.HasMany(t => t.TestAttempts)
+                   .WithOne()
+                   .HasForeignKey(ta => ta.attemptId);
+        }
+    }
+}
