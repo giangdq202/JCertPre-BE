@@ -2,11 +2,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Persistence
 {
@@ -22,12 +17,12 @@ namespace JCertPreApplication.Persistence
                 throw new ArgumentException(
                     "JCERTPRE_DB_CONNECTION_STRING environment variable not found. " +
                     "Please set it in your .env file. Example: " +
-                    "JCERTPRE_DB_CONNECTION_STRING=Server=localhost;Database=JCertPreDB;User ID=sa;Password=yourpassword;TrustServerCertificate=True"
+                    "JCERTPRE_DB_CONNECTION_STRING=Host=localhost;Port=5432;Username=admin;Password=yourpassword;Database=JCertPreDB;SSL Mode=Prefer;Trust Server Certificate=true"
                 );
             }
 
             services.AddDbContext<JCertPreDatabaseContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseNpgsql(connectionString));
 
             // Đăng ký các repository và service
             // TODO: Add repository registrations here
