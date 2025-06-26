@@ -7,6 +7,6 @@
         public string description { get; set; }
 
         // Navigation property
-        public virtual ICollection<UserRole> UserRoles { get; set; }
+        public virtual ICollection<User> Users { get; set; }
     }
 }

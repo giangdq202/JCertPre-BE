@@ -1,5 +1,10 @@
+using JCertPreApplication.API;
 using JCertPreApplication.Persistence;
+using JCertPreApplication.Persistence.DatabaseContext;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,13 +25,35 @@ else
 builder.Configuration.AddEnvironmentVariables();
 
 // Add services to the container.
-builder.Services.AddPersistenceService(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddPersistenceService();
+// Add User Secrets
+builder.Configuration.AddUserSecrets<Program>();
 
+// Add services to the container
+builder.Services.AddControllers();
+builder.Services.AddInfrastructure();
+builder.Services.AddDbContext<JCertPreDatabaseContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("JCERTPRE_DB_CONNECTION_STRING")));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
+// Add JWT Authentication
+builder.Services.AddAuthentication("Bearer")
+    .AddJwtBearer("Bearer", options =>
+    {
+        options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JWT_ISSUER"],
+            ValidAudience = builder.Configuration["JWT_AUDIENCE"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["JWT_SECRET_KEY"])),
+            ClockSkew = TimeSpan.Zero // Đảm bảo thời gian hết hạn chính xác
+        };
+    });
 // Configure CORS
 builder.Services.AddCors(options =>
 {

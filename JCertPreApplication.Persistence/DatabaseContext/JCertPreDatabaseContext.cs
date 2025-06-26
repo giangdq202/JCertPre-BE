@@ -35,7 +35,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<Test> Tests { get; set; }
         public DbSet<TestAttempt> TestAttempts { get; set; }
         public DbSet<User> Users { get; set; }
-        public DbSet<UserRole> UserRoles { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -64,8 +63,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new TestConfiguration());
             modelBuilder.ApplyConfiguration(new TestAttemptConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
-            modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
-
         }
     }
     

@@ -15,7 +15,8 @@ namespace JCertPreApplication.Domain.Entities
         public DateTime lastLogin { get; set; }
         public UserStatus status { get; set; }
 
-        public virtual ICollection<UserRole> UserRoles { get; set; }
+        public Guid roleId { get; set; }
+        public Role Role { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<Feedback> Feedbacks { get; set; }
         public virtual InstructorProfile InstructorProfile { get; set; }

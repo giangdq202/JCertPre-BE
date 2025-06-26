@@ -16,7 +16,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(r => r.description).HasMaxLength(500);
 
             // Configure navigation property
-            builder.HasMany(r => r.UserRoles)
+            builder.HasMany(r => r.Users)
                    .WithOne(ur => ur.Role)
                    .HasForeignKey(ur => ur.roleId).OnDelete(DeleteBehavior.NoAction);
         }
