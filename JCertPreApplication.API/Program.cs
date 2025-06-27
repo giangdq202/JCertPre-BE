@@ -81,7 +81,11 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
 
 static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 {
+<<<<<<< HEAD
     var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Firebase" };
+=======
+    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Redis" };
+>>>>>>> Add/redis_config
     
     foreach (var sectionName in sections)
     {
@@ -167,9 +171,8 @@ static void SetupServices(WebApplicationBuilder builder)
     });
     
     // Application layers
-    builder.Services.AddPersistenceService();
     builder.Services.AddApplication();
-    builder.Services.AddInfrastructure();
+    builder.Services.AddInfrastructure(builder.Configuration);
     
     // Database
     SetupDatabase(builder);
@@ -318,9 +321,13 @@ static void DisplayConfigurationStatus(WebApplication app)
         "CORS_ALLOWED_ORIGINS",
         "ASPNETCORE_ENVIRONMENT",
         "SHOW_CONFIGURATION_STATUS",
+<<<<<<< HEAD
         "FIREBASE_PROJECT_ID",
         "FIREBASE_CLIENT_EMAIL",
         "FIREBASE_PRIVATE_KEY"
+=======
+        "REDIS_CONFIGURATION"
+>>>>>>> Add/redis_config
     };
     
     foreach (var envVar in envVars)
