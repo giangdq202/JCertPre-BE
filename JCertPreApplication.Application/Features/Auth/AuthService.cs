@@ -1,7 +1,7 @@
-﻿using JCertPreApplication.Application.Configuration;
-using JCertPreApplication.Application.Contracts;
+﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Dtos.User;
+using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.Extensions.Options;
