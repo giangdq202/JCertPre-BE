@@ -18,10 +18,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\JCertPreApplication.Application\JCertPreApplication.Application.csproj" />
     <ProjectReference Include="..\JCertPreApplication.Persistence\JCertPreApplication.Persistence.csproj" />
   </ItemGroup>

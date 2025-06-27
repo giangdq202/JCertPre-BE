@@ -12,7 +12,7 @@ namespace JCertPreApplication.Domain.Entities
         public string transactionId { get; set; }
         public PaymentStatus status { get; set; }
         public DateTime createdAt { get; set; }
-        public string description { get; set; }
+        public string? description { get; set; }
 
         // Navigation properties
         public virtual User User { get; set; }

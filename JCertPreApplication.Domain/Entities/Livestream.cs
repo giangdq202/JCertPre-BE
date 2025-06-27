@@ -8,7 +8,7 @@
         public DateTime startTime { get; set; }
         public DateTime endTime { get; set; }
         public string meetingUrl { get; set; }
-        public string recordingUrl { get; set; }
+        public string? recordingUrl { get; set; }
 
         // Navigation property
         public virtual Course Course { get; set; }
