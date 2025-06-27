@@ -1,10 +1,11 @@
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Domain.Configuration;
 using Microsoft.Extensions.Options;
 
-namespace JCertPreApplication.Application.Features.Auth
+namespace JCertPreApplication.Persistence.Services.Firebase
 {
     public class FirebaseService : IFirebaseService
     {
