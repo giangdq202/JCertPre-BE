@@ -1,11 +1,5 @@
 ﻿using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Contracts
 {
@@ -14,7 +8,7 @@ namespace JCertPreApplication.Application.Contracts
     {
         Task<T> GetByIdAsync(object id);
         Task<List<T>> GetAllAsync(string? includeProperties = null);
-        Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter, string? includeProperties);
+        Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter, string? includeProperties = null);
         Task<IQueryable<T>> GetAll();
         Task<T> InsertAsync(T entity);
         Task AddRangeAsync(IEnumerable<T> entities);
@@ -24,6 +18,7 @@ namespace JCertPreApplication.Application.Contracts
             Expression<Func<T, bool>> predicate,
             string? includeProperties = null
         );
+        Task<T> GetFirstAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null);
         Task<int> SaveChangesAsync();
         Task<Pagination<T>> GetPaginationAsync(
             Expression<Func<T, bool>>? predicate = null,

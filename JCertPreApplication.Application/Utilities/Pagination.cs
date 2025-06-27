@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JCertPreApplication.Application.Utilities
+﻿namespace JCertPreApplication.Application.Utilities
 {
     public class Pagination<T>
     {

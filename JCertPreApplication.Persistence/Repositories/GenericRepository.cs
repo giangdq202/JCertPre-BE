@@ -1,6 +1,5 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Core;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -84,6 +83,19 @@ namespace JCertPreApplication.Persistence.Repositories
         }
 
         public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
+        {
+            IQueryable<T> query = _dbSet.Where(predicate);
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProp.Trim());
+                }
+            }
+            return await query.AsNoTracking().FirstOrDefaultAsync();
+        }
+
+        public async Task<T> GetFirstAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
         {
             IQueryable<T> query = _dbSet.Where(predicate);
             if (!string.IsNullOrWhiteSpace(includeProperties))

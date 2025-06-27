@@ -5,14 +5,9 @@ using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using System;
-using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using BCrypt.Net;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Auth
 {
