@@ -1,6 +1,6 @@
 using JCertPreApplication.API;
-using JCertPreApplication.API.Configuration;
 using JCertPreApplication.Application;
+using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;

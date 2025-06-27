@@ -1,4 +1,4 @@
-namespace JCertPreApplication.API.Configuration
+namespace JCertPreApplication.Domain.Configuration
 {
     public class JwtConfiguration
     {
