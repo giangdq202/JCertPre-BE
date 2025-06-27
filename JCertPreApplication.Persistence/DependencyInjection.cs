@@ -28,7 +28,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-
+            services.AddScoped<ICacheRepository, RedisCacheRepository>();
 
             Console.WriteLine("✅ Database connection configured successfully");
             return services;

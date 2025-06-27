@@ -247,7 +247,8 @@ static void DisplayConfigurationStatus(WebApplication app)
         "JWT_EXPIRY_MINUTES",
         "CORS_ALLOWED_ORIGINS",
         "ASPNETCORE_ENVIRONMENT",
-        "SHOW_CONFIGURATION_STATUS"
+        "SHOW_CONFIGURATION_STATUS",
+        "REDIS_CONFIGURATION"
     };
     
     foreach (var envVar in envVars)
