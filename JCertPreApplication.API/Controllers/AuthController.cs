@@ -49,6 +49,23 @@ namespace JCertPreApplication.API.Controllers
             return Ok(new { accessToken, refreshToken, user });
         }
 
+        [HttpPost("firebase-login")]
+        public async Task<IActionResult> FirebaseLogin([FromBody] FirebaseLoginModel model)
+        {
+            if (model == null || string.IsNullOrEmpty(model.FirebaseToken))
+            {
+                return BadRequest("Firebase token is required.");
+            }
+
+            var (accessToken, refreshToken, user) = await _authService.FirebaseLoginAsync(model.FirebaseToken);
+            if (accessToken == null || refreshToken == null || user == null)
+            {
+                return Unauthorized("Invalid Firebase token or unable to authenticate user.");
+            }
+
+            return Ok(new { accessToken, refreshToken, user });
+        }
+
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {

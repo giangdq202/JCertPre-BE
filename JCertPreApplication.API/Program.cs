@@ -6,6 +6,8 @@ using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,11 +76,12 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
     builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
+    builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
 }
 
 static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 {
-    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api" };
+    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Firebase" };
     
     foreach (var sectionName in sections)
     {
@@ -106,7 +109,62 @@ static void SetupServices(WebApplicationBuilder builder)
     // Core services
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+    builder.Services.AddSwaggerGen(c =>
+    {
+        c.SwaggerDoc("v1", new OpenApiInfo 
+        { 
+            Title = "JCertPre API", 
+            Description = "API for JCertPre Application - Learning and Certification Platform",
+            Contact = new OpenApiContact
+            {
+                Name = "JCertPre Support",
+                Email = "support@jcertpre.com"
+            }
+        });
+        
+        // Add JWT Authentication to Swagger
+        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+        {
+            Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+            Name = "Authorization",
+            In = ParameterLocation.Header,
+            Type = SecuritySchemeType.ApiKey,
+            Scheme = "Bearer"
+        });
+        
+        c.AddSecurityRequirement(new OpenApiSecurityRequirement()
+        {
+            {
+                new OpenApiSecurityScheme
+                {
+                    Reference = new OpenApiReference
+                    {
+                        Type = ReferenceType.SecurityScheme,
+                        Id = "Bearer"
+                    },
+                    Scheme = "oauth2",
+                    Name = "Bearer",
+                    In = ParameterLocation.Header,
+                },
+                new List<string>()
+            }
+        });
+        
+        // Group controllers by feature/domain
+        c.TagActionsBy(api =>
+        {
+            var controllerName = api.ActionDescriptor.RouteValues["controller"];
+            return new[] { controllerName };
+        });
+        
+        // Enable XML comments if available
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        if (File.Exists(xmlPath))
+        {
+            c.IncludeXmlComments(xmlPath);
+        }
+    });
     
     // Application layers
     builder.Services.AddPersistenceService();
@@ -235,6 +293,18 @@ static void DisplayConfigurationStatus(WebApplication app)
         Console.WriteLine($"   Origins: [{string.Join(", ", allowedOrigins)}]");
     }
     
+    // Firebase Configuration
+    var firebaseConfig = new FirebaseConfiguration();
+    config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
+    Console.WriteLine($"\nFirebase Configuration:");
+    Console.WriteLine($"   Status: {(!string.IsNullOrEmpty(firebaseConfig.ProjectId) ? "OK Configured" : "ERROR Missing")}");
+    Console.WriteLine($"   Project ID: {firebaseConfig.ProjectId}");
+    Console.WriteLine($"   Client Email: {firebaseConfig.ClientEmail}");
+    if (!string.IsNullOrEmpty(firebaseConfig.PrivateKey))
+    {
+        Console.WriteLine($"   Private Key: {MaskSecret(firebaseConfig.PrivateKey)} (Length: {firebaseConfig.PrivateKey.Length})");
+    }
+    
     // Environment Variables Check
     Console.WriteLine($"\nEnvironment Variables:");
     var envVars = new[]
@@ -247,7 +317,10 @@ static void DisplayConfigurationStatus(WebApplication app)
         "JWT_EXPIRY_MINUTES",
         "CORS_ALLOWED_ORIGINS",
         "ASPNETCORE_ENVIRONMENT",
-        "SHOW_CONFIGURATION_STATUS"
+        "SHOW_CONFIGURATION_STATUS",
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_CLIENT_EMAIL",
+        "FIREBASE_PRIVATE_KEY"
     };
     
     foreach (var envVar in envVars)
