@@ -6,6 +6,7 @@ using JCertPreApplication.Persistence.Repositories;
 using JCertPreApplication.Persistence.Services.Firebase;
 using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JCertPreApplication.Persistence
@@ -38,14 +39,11 @@ namespace JCertPreApplication.Persistence
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-<<<<<<< HEAD
+            services.AddScoped<ICacheRepository, RedisCacheRepository>();
             
             // Infrastructure Services
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<IPasswordService, PasswordService>();
-=======
-            services.AddScoped<ICacheRepository, RedisCacheRepository>();
->>>>>>> Add/redis_config
 
             Console.WriteLine("✅ Database connection configured successfully");
             Console.WriteLine("✅ Redis cache configured successfully");
