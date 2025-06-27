@@ -1,22 +1,16 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Persistence.Cache;
-using Microsoft.EntityFrameworkCore.Storage;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Persistence.Repositories
 {
     public class RedisCacheRepository : ICacheRepository
     {
-        private readonly StackExchange.Redis.IDatabase _database; // Updated type to match StackExchange.Redis.IDatabase
+        private readonly StackExchange.Redis.IDatabase _database;
 
-        public RedisCacheRepository()
+        public RedisCacheRepository(RedisClient redisClient)
         {
-            _database = RedisClient.Connection.GetDatabase(); // Correct type usage for StackExchange.Redis.IDatabase
+            _database = redisClient.Connection.GetDatabase();
         }
 
         public async Task<T?> GetAsync<T>(string key)

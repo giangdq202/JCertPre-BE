@@ -1,30 +1,25 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using JCertPreApplication.Domain.Configuration;
+using Microsoft.Extensions.Options;
 using StackExchange.Redis;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Persistence.Cache
 {
     public class RedisClient
     {
-        private static readonly Lazy<ConnectionMultiplexer> LazyConnection;
+        private readonly Lazy<ConnectionMultiplexer> _lazyConnection;
 
-        static RedisClient()
+        public RedisClient(IOptions<RedisConfiguration> redisOptions)
         {
-            LazyConnection = new Lazy<ConnectionMultiplexer>(() =>
+            _lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
             {
-                var configuration = new ConfigurationBuilder()
-                    .AddJsonFile("appsettings.json", optional: true)
-                    .AddEnvironmentVariables()
-                    .Build();
-                var connectionString = configuration.GetSection("Redis:ConnectionString").Value;
+                var connectionString = redisOptions.Value.ConnectionString;
+                if (string.IsNullOrEmpty(connectionString))
+                    throw new InvalidOperationException("Redis connection string is not configured.");
+                
                 return ConnectionMultiplexer.Connect(connectionString);
             });
         }
 
-        public static ConnectionMultiplexer Connection => LazyConnection.Value;
+        public ConnectionMultiplexer Connection => _lazyConnection.Value;
     }
 }

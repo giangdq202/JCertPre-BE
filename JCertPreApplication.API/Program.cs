@@ -78,7 +78,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
 
 static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 {
-    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api" };
+    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Redis" };
     
     foreach (var sectionName in sections)
     {
@@ -109,9 +109,8 @@ static void SetupServices(WebApplicationBuilder builder)
     builder.Services.AddSwaggerGen();
     
     // Application layers
-    builder.Services.AddPersistenceService();
     builder.Services.AddApplication();
-    builder.Services.AddInfrastructure();
+    builder.Services.AddInfrastructure(builder.Configuration);
     
     // Database
     SetupDatabase(builder);

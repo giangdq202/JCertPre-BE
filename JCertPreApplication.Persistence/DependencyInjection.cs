@@ -1,4 +1,6 @@
 ﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Domain.Configuration;
+using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +11,7 @@ namespace JCertPreApplication.Persistence
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddPersistenceService(this IServiceCollection services )
+        public static IServiceCollection AddPersistenceService(this IServiceCollection services, IConfiguration configuration)
         {
             // Read connection string from environment variable only (from .env file)
             var connectionString = Environment.GetEnvironmentVariable("JCERTPRE_DB_CONNECTION_STRING");
@@ -23,14 +25,22 @@ namespace JCertPreApplication.Persistence
                 );
             }
 
+            // Configure Database
             services.AddDbContext<JCertPreDatabaseContext>(options =>
                 options.UseNpgsql(connectionString));
+
+            // Configure Redis
+            services.Configure<RedisConfiguration>(configuration.GetSection("Redis"));
+            services.AddSingleton<RedisClient>();
+
+            // Configure Repositories
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ICacheRepository, RedisCacheRepository>();
 
             Console.WriteLine("✅ Database connection configured successfully");
+            Console.WriteLine("✅ Redis cache configured successfully");
             return services;
         }
     }
