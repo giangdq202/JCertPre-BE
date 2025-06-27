@@ -27,10 +27,9 @@ namespace JCertPreApplication.Application.Features.Auth
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string username, string password)
+        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password)
         {
-            var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == username || 
-                                                                     (!string.IsNullOrEmpty(u.phone) && u.phone == username));
+            var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
             if (user == null || user.status != UserStatus.Active || !VerifyPassword(password, user.passwordHash))
             {
                 return (null, null, null);
@@ -78,17 +77,9 @@ namespace JCertPreApplication.Application.Features.Auth
                 return (false, null, null, null, new[] { "Email already exists." });
             }
 
-            // Check if phone already exists (only if phone is provided)
-            if (!string.IsNullOrWhiteSpace(model.phone))
-            {
-                var existingUserByPhone = await _userRepository.GetFirstOrDefaultAsync(u => u.phone == model.phone);
-                if (existingUserByPhone != null)
-                {
-                    return (false, null, null, null, new[] { "Phone number already exists." });
-                }
-            }
+            // Phone is optional information, no need to check for uniqueness
 
-            var hashedPassword = HashPassword(model.passwordHash);
+            var hashedPassword = HashPassword(model.password);
             var defaultRole = await _roleRepository.GetByRoleNameAsync("STUDENT");
             if (defaultRole == null)
             {
