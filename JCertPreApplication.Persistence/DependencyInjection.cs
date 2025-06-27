@@ -1,6 +1,8 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
+using JCertPreApplication.Persistence.Services.Firebase;
+using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -27,7 +29,10 @@ namespace JCertPreApplication.Persistence
             services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
-
+            
+            // Infrastructure Services
+            services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddScoped<IPasswordService, PasswordService>();
 
             Console.WriteLine("✅ Database connection configured successfully");
             return services;

@@ -8,7 +8,6 @@ namespace JCertPreApplication.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IFirebaseService, FirebaseService>();
 
             return services;
         }

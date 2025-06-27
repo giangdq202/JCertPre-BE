@@ -1,6 +1,6 @@
 using FirebaseAdmin.Auth;
 
-namespace JCertPreApplication.Application.Features.Auth
+namespace JCertPreApplication.Application.Contracts
 {
     public interface IFirebaseService
     {
