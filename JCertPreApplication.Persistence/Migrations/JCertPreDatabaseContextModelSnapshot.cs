@@ -228,7 +228,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("reply")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<Guid>("userId")
@@ -249,7 +248,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("experience")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -259,7 +257,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("character varying(1000)");
 
                     b.Property<string>("teachingStyle")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
@@ -377,7 +374,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("character varying(50)");
 
                     b.Property<string>("description")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -496,7 +492,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -712,7 +707,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("avatarUrl")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
@@ -741,7 +735,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("character varying(255)");
 
                     b.Property<string>("phone")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
 
