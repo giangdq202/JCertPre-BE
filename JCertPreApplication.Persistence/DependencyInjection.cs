@@ -2,7 +2,6 @@
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JCertPreApplication.Persistence

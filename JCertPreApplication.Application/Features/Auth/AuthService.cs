@@ -16,12 +16,14 @@ namespace JCertPreApplication.Application.Features.Auth
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
+        private readonly IFirebaseService _firebaseService;
         private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
+            _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
@@ -248,6 +250,109 @@ namespace JCertPreApplication.Application.Features.Auth
         {
             var hashedInput = Convert.ToBase64String(Encoding.UTF8.GetBytes(inputPassword));
             return hashedInput == passwordHash;
+        }
+
+        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken)
+        {
+            try
+            {
+                // Verify Firebase token and get user info
+                var (email, name, picture) = await _firebaseService.GetUserInfoFromTokenAsync(firebaseToken);
+
+                if (string.IsNullOrEmpty(email))
+                {
+                    return (null, null, null);
+                }
+
+                // Check if user exists in database
+                var existingUser = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
+
+                User user;
+                if (existingUser == null)
+                {
+                    // User doesn't exist, create new user (onboarding)
+                    var defaultRole = await _roleRepository.GetByRoleNameAsync("STUDENT");
+                    if (defaultRole == null)
+                    {
+                        defaultRole = new Role { roleId = Guid.NewGuid(), roleName = "STUDENT", description = "Default role" };
+                        await _roleRepository.InsertAsync(defaultRole);
+                        await _roleRepository.SaveChangesAsync();
+                    }
+
+                    user = new User
+                    {
+                        userId = Guid.NewGuid(),
+                        fullName = name,
+                        email = email,
+                        passwordHash = string.Empty, // Firebase users don't have local password
+                        avatarUrl = picture,
+                        credit = 0,
+                        createdAt = DateTime.UtcNow,
+                        lastLogin = DateTime.UtcNow,
+                        status = UserStatus.Active,
+                        roleId = defaultRole.roleId
+                    };
+
+                    await _userRepository.InsertAsync(user);
+                    await _userRepository.SaveChangesAsync();
+                }
+                else
+                {
+                    // User exists, update last login and avatar if needed
+                    user = existingUser;
+                    user.lastLogin = DateTime.UtcNow;
+                    
+                    // Update avatar if Firebase has a newer one
+                    if (!string.IsNullOrEmpty(picture) && user.avatarUrl != picture)
+                    {
+                        user.avatarUrl = picture;
+                    }
+
+                    await _userRepository.UpdateAsync(user);
+                    await _userRepository.SaveChangesAsync();
+                }
+
+                // Generate JWT tokens
+                var userRole = user.Role?.roleName ?? "STUDENT";
+
+                var claims = new[]
+                {
+                    new Claim(ClaimTypes.Name, user.fullName),
+                    new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
+                    new Claim(ClaimTypes.Role, userRole)
+                };
+
+                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
+                var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
+                var accessToken = new JwtSecurityToken(
+                    issuer: _jwtConfig.Issuer,
+                    audience: _jwtConfig.Audience,
+                    claims: claims,
+                    expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
+                    signingCredentials: accessCreds
+                );
+                var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
+
+                var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
+
+                var userDto = new AppUserDto
+                {
+                    Id = user.userId,
+                    fullName = user.fullName,
+                    phone = user.phone,
+                    email = user.email
+                };
+
+                return (accessTokenString, refreshTokenString, userDto);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return (null, null, null);
+            }
+            catch (Exception)
+            {
+                return (null, null, null);
+            }
         }
     }
 }
