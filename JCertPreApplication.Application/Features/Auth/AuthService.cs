@@ -1,9 +1,10 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Dtos.User;
+using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
-using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -15,13 +16,13 @@ namespace JCertPreApplication.Application.Features.Auth
     {
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
-        private readonly IConfiguration _configuration;
+        private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IConfiguration configuration)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string username, string password)
@@ -42,15 +43,15 @@ namespace JCertPreApplication.Application.Features.Auth
             new Claim(ClaimTypes.Role, defaultRole)
         };
 
-                    var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_SECRET_KEY"]));
-        var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-        var accessToken = new JwtSecurityToken(
-            issuer: _configuration["JWT_ISSUER"],
-            audience: _configuration["JWT_AUDIENCE"],
-            claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(45),
-            signingCredentials: accessCreds
-        );
+            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
+            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
+            var accessToken = new JwtSecurityToken(
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
+                signingCredentials: accessCreds
+            );
             var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
 
             var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
@@ -119,13 +120,13 @@ namespace JCertPreApplication.Application.Features.Auth
             new Claim(ClaimTypes.Role, "STUDENT")
         };
 
-            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_SECRET_KEY"]));
+            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
             var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
             var accessToken = new JwtSecurityToken(
-                issuer: _configuration["JWT_ISSUER"],
-                audience: _configuration["JWT_AUDIENCE"],
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(15),
+                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
                 signingCredentials: accessCreds
             );
             var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
@@ -146,7 +147,7 @@ namespace JCertPreApplication.Application.Features.Auth
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var refreshKey = Encoding.UTF8.GetBytes(_configuration["JWT_REFRESH_SECRET_KEY"]);
+            var refreshKey = Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey);
 
             try
             {
@@ -157,9 +158,9 @@ namespace JCertPreApplication.Application.Features.Auth
                         ValidateIssuerSigningKey = true,
                         IssuerSigningKey = new SymmetricSecurityKey(refreshKey),
                         ValidateIssuer = true,
-                        ValidIssuer = _configuration["JWT_ISSUER"],
+                        ValidIssuer = _jwtConfig.Issuer,
                         ValidateAudience = true,
-                        ValidAudience = _configuration["JWT_AUDIENCE"],
+                        ValidAudience = _jwtConfig.Audience,
                         ValidateLifetime = true,
                         ClockSkew = TimeSpan.Zero
                     },
@@ -186,14 +187,14 @@ namespace JCertPreApplication.Application.Features.Auth
                 new Claim(ClaimTypes.Role, defaultRole)
             };
 
-                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_SECRET_KEY"]));
+                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
                 var creds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
 
                 var newAccessToken = new JwtSecurityToken(
-                    issuer: _configuration["JWT_ISSUER"],
-                    audience: _configuration["JWT_AUDIENCE"],
+                    issuer: _jwtConfig.Issuer,
+                    audience: _jwtConfig.Audience,
                     claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(15),
+                    expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
                     signingCredentials: creds
                 );
 
@@ -224,12 +225,12 @@ namespace JCertPreApplication.Application.Features.Auth
             new Claim("type", "refresh")
         };
 
-            var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_REFRESH_SECRET_KEY"]));
+            var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey));
             var refreshCreds = new SigningCredentials(refreshKey, SecurityAlgorithms.HmacSha256);
 
             var refreshToken = new JwtSecurityToken(
-                issuer: _configuration["JWT_ISSUER"],
-                audience: _configuration["JWT_AUDIENCE"],
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
                 claims: claims,
                 expires: DateTime.UtcNow.AddDays(7),
                 signingCredentials: refreshCreds
