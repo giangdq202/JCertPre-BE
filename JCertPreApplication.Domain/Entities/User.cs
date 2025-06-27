@@ -8,14 +8,15 @@ namespace JCertPreApplication.Domain.Entities
         public string fullName { get; set; }
         public string email { get; set; }
         public string passwordHash { get; set; }
-        public string phone { get; set; }
-        public string avatarUrl { get; set; }
+        public string? phone { get; set; }
+        public string? avatarUrl { get; set; }
         public int credit { get; set; }
         public DateTime createdAt { get; set; }
         public DateTime lastLogin { get; set; }
         public UserStatus status { get; set; }
 
-        public virtual ICollection<UserRole> UserRoles { get; set; }
+        public Guid roleId { get; set; }
+        public Role Role { get; set; }
         public virtual ICollection<Payment> Payments { get; set; }
         public virtual ICollection<Feedback> Feedbacks { get; set; }
         public virtual InstructorProfile InstructorProfile { get; set; }

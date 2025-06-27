@@ -7,7 +7,7 @@
         public Guid userId { get; set; }
         public int rating { get; set; }
         public string comment { get; set; }
-        public string reply { get; set; }
+        public string? reply { get; set; }
         public DateTime createdAt { get; set; }
 
         // Navigation properties

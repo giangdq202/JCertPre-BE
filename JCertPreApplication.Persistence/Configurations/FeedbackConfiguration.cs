@@ -16,7 +16,6 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(f => f.userId).IsRequired();
             builder.Property(f => f.rating).IsRequired();
             builder.Property(f => f.comment).IsRequired();
-            builder.Property(f => f.reply).IsRequired();
             builder.Property(f => f.createdAt).IsRequired();
 
             // Configure foreign key relationships

@@ -17,11 +17,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(u => u.passwordHash).IsRequired().HasMaxLength(255);
             builder.Property(u => u.phone).HasMaxLength(20);
             builder.Property(u => u.avatarUrl).HasMaxLength(500);
-
+            builder.Property(u => u.roleId).IsRequired();
             // Configure navigation properties
-            builder.HasMany(u => u.UserRoles)
-                   .WithOne(ur => ur.User)
-                   .HasForeignKey(ur => ur.userId).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(u => u.Role)
+                   .WithMany(ur => ur.Users)
+                   .HasForeignKey(u => u.roleId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(u => u.Payments)
                    .WithOne(p => p.User)
