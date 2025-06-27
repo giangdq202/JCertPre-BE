@@ -1,10 +1,7 @@
 ﻿using JCertPreApplication.Application;
 using JCertPreApplication.Persistence;
-<<<<<<< HEAD
-=======
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
->>>>>>> Add/redis_config
 
 namespace JCertPreApplication.API
 {
