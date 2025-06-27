@@ -74,11 +74,12 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
     builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
+    builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
 }
 
 static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 {
-    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api" };
+    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Firebase" };
     
     foreach (var sectionName in sections)
     {
@@ -235,6 +236,18 @@ static void DisplayConfigurationStatus(WebApplication app)
         Console.WriteLine($"   Origins: [{string.Join(", ", allowedOrigins)}]");
     }
     
+    // Firebase Configuration
+    var firebaseConfig = new FirebaseConfiguration();
+    config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
+    Console.WriteLine($"\nFirebase Configuration:");
+    Console.WriteLine($"   Status: {(!string.IsNullOrEmpty(firebaseConfig.ProjectId) ? "OK Configured" : "ERROR Missing")}");
+    Console.WriteLine($"   Project ID: {firebaseConfig.ProjectId}");
+    Console.WriteLine($"   Client Email: {firebaseConfig.ClientEmail}");
+    if (!string.IsNullOrEmpty(firebaseConfig.PrivateKey))
+    {
+        Console.WriteLine($"   Private Key: {MaskSecret(firebaseConfig.PrivateKey)} (Length: {firebaseConfig.PrivateKey.Length})");
+    }
+    
     // Environment Variables Check
     Console.WriteLine($"\nEnvironment Variables:");
     var envVars = new[]
@@ -247,7 +260,10 @@ static void DisplayConfigurationStatus(WebApplication app)
         "JWT_EXPIRY_MINUTES",
         "CORS_ALLOWED_ORIGINS",
         "ASPNETCORE_ENVIRONMENT",
-        "SHOW_CONFIGURATION_STATUS"
+        "SHOW_CONFIGURATION_STATUS",
+        "FIREBASE_PROJECT_ID",
+        "FIREBASE_CLIENT_EMAIL",
+        "FIREBASE_PRIVATE_KEY"
     };
     
     foreach (var envVar in envVars)
