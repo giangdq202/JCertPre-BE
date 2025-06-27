@@ -40,7 +40,7 @@ namespace JCertPreApplication.API.Controllers
                 return BadRequest("Login model is required.");
             }
 
-            var (accessToken, refreshToken, user) = await _authService.LoginAsync(model.EmailorPhone, model.Password);
+            var (accessToken, refreshToken, user) = await _authService.LoginAsync(model.Email, model.Password);
             if (accessToken == null || refreshToken == null || user == null)
             {
                 return Unauthorized("Invalid credentials.");

@@ -17,21 +17,22 @@ namespace JCertPreApplication.Application.Features.Auth
         private readonly IUserRepository _userRepository;
         private readonly IRoleRepository _roleRepository;
         private readonly IFirebaseService _firebaseService;
+        private readonly IPasswordService _passwordService;
         private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
+            _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string username, string password)
+        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password)
         {
-            var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == username || 
-                                                                     (!string.IsNullOrEmpty(u.phone) && u.phone == username));
-            if (user == null || user.status != UserStatus.Active || !VerifyPassword(password, user.passwordHash))
+            var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
+            if (user == null || user.status != UserStatus.Active || !_passwordService.VerifyPassword(password, user.passwordHash))
             {
                 return (null, null, null);
             }
@@ -78,17 +79,9 @@ namespace JCertPreApplication.Application.Features.Auth
                 return (false, null, null, null, new[] { "Email already exists." });
             }
 
-            // Check if phone already exists (only if phone is provided)
-            if (!string.IsNullOrWhiteSpace(model.phone))
-            {
-                var existingUserByPhone = await _userRepository.GetFirstOrDefaultAsync(u => u.phone == model.phone);
-                if (existingUserByPhone != null)
-                {
-                    return (false, null, null, null, new[] { "Phone number already exists." });
-                }
-            }
+            // Phone is optional information, no need to check for uniqueness
 
-            var hashedPassword = HashPassword(model.passwordHash);
+            var hashedPassword = _passwordService.HashPassword(model.password);
             var defaultRole = await _roleRepository.GetByRoleNameAsync("STUDENT");
             if (defaultRole == null)
             {
@@ -241,16 +234,7 @@ namespace JCertPreApplication.Application.Features.Auth
             return new JwtSecurityTokenHandler().WriteToken(refreshToken);
         }
 
-        private string HashPassword(string password)
-        {
-            return Convert.ToBase64String(Encoding.UTF8.GetBytes(password));
-        }
 
-        private bool VerifyPassword(string inputPassword, string passwordHash)
-        {
-            var hashedInput = Convert.ToBase64String(Encoding.UTF8.GetBytes(inputPassword));
-            return hashedInput == passwordHash;
-        }
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken)
         {
