@@ -6,7 +6,7 @@ namespace JCertPreApplication.Application.Features.Auth
     public interface IAuthService
     {
         Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password);
-        Task<(bool Succeeded, string AccessToken, string RefreshToken, AppUserDto User, string[] Errors)> RegisterAsync(RegisterModel model);
+        Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model);
         Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken);
         Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken);
     }

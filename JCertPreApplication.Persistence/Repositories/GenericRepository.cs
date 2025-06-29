@@ -135,7 +135,18 @@ namespace JCertPreApplication.Persistence.Repositories
         }
         public async Task<int> SaveChangesAsync()
         {
-            return await _context.SaveChangesAsync();
+            try
+            {
+                return await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                throw new InvalidOperationException("The entity was modified by another user. Please refresh and try again.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new InvalidOperationException("An error occurred while saving changes to the database.", ex);
+            }
         }
         public async Task AddRangeAsync(IEnumerable<T> entities)
         {

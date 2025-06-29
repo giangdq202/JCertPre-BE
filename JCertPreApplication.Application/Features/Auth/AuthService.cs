@@ -1,12 +1,14 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Dtos.User;
+using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
 
@@ -32,51 +34,27 @@ namespace JCertPreApplication.Application.Features.Auth
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password)
         {
             var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
-            if (user == null || user.status != UserStatus.Active || !_passwordService.VerifyPassword(password, user.passwordHash))
+            
+            if (user == null || !_passwordService.VerifyPassword(password, user.passwordHash))
             {
-                return (null, null, null);
+                throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_CREDENTIALS", "Invalid email or password.");
+            }
+            
+            if (user.status != UserStatus.Active)
+            {
+                throw new ApiException(HttpStatusCode.Forbidden, "ACCOUNT_INACTIVE", "Your account is inactive. Please contact support.");
             }
 
-            var defaultRole = user.Role?.roleName ?? "STUDENT";
-
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.Name, user.fullName),
-            new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-            new Claim(ClaimTypes.Role, defaultRole)
-        };
-
-            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-            var accessToken = new JwtSecurityToken(
-                issuer: _jwtConfig.Issuer,
-                audience: _jwtConfig.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                signingCredentials: accessCreds
-            );
-            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-
-            var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-            var userDto = new AppUserDto
-            {
-                Id = user.userId,
-                fullName = user.fullName,
-                phone = user.phone,
-                email = user.email
-            };
-
-            return (accessTokenString, refreshTokenString, userDto);
+            return GenerateTokensAndUserDto(user);
         }
 
-        public async Task<(bool Succeeded, string AccessToken, string RefreshToken, AppUserDto User, string[] Errors)> RegisterAsync(RegisterModel model)
+        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model)
         {
             // Check if email already exists
             var existingUserByEmail = await _userRepository.GetFirstOrDefaultAsync(u => u.email == model.email);
             if (existingUserByEmail != null)
             {
-                return (false, null, null, null, new[] { "Email already exists." });
+                throw new ApiException(HttpStatusCode.BadRequest, "EMAIL_ALREADY_EXISTS", $"User with email '{model.email}' already exists.");
             }
 
             // Phone is optional information, no need to check for uniqueness
@@ -108,35 +86,7 @@ namespace JCertPreApplication.Application.Features.Auth
             await _userRepository.InsertAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.Name, user.fullName),
-            new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-            new Claim(ClaimTypes.Role, "STUDENT")
-        };
-
-            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-            var accessToken = new JwtSecurityToken(
-                issuer: _jwtConfig.Issuer,
-                audience: _jwtConfig.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                signingCredentials: accessCreds
-            );
-            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-
-            var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-            var userDto = new AppUserDto
-            {
-                Id = user.userId,
-                fullName = user.fullName,
-                phone = user.phone,
-                email = user.email
-            };
-
-            return (true, accessTokenString, refreshTokenString, userDto, null);
+            return GenerateTokensAndUserDto(user);
         }
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken)
@@ -163,78 +113,35 @@ namespace JCertPreApplication.Application.Features.Auth
                 );
 
                 if (principal.FindFirst("type")?.Value != "refresh")
-                    return (null, null, null);
+                {
+                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token type.");
+                }
 
-                var userId = Guid.Parse(principal.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
-                if (userId == Guid.Empty)
-                    return (null, null, null);
+                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid user ID in refresh token.");
+                }
 
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user == null)
-                    return (null, null, null);
-
-                var defaultRole = user.Role?.roleName ?? "STUDENT";
-
-                var claims = new[]
                 {
-                new Claim(ClaimTypes.Name, user.fullName),
-                new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-                new Claim(ClaimTypes.Role, defaultRole)
-            };
+                    throw new ApiException(HttpStatusCode.Unauthorized, "USER_NOT_FOUND", "User not found.");
+                }
 
-                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-                var creds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-
-                var newAccessToken = new JwtSecurityToken(
-                    issuer: _jwtConfig.Issuer,
-                    audience: _jwtConfig.Audience,
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                    signingCredentials: creds
-                );
-
-                var newAccessTokenString = new JwtSecurityTokenHandler().WriteToken(newAccessToken);
-                var newRefreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-                var userDto = new AppUserDto
-                {
-                    Id = user.userId,
-                    fullName = user.fullName,
-                    phone = user.phone,
-                    email = user.email
-                };
-
-                return (newAccessTokenString, newRefreshTokenString, userDto);
+                return GenerateTokensAndUserDto(user);
             }
-            catch
+            catch (ApiException)
             {
-                return (null, null, null);
+                // Re-throw our custom exceptions
+                throw;
+            }
+            catch (Exception ex)
+            {
+                // Any other exception during token validation means invalid token
+                throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid or expired refresh token.");
             }
         }
-
-        private string GenerateRefreshTokenAsJwt(Guid userId)
-        {
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim("type", "refresh")
-        };
-
-            var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey));
-            var refreshCreds = new SigningCredentials(refreshKey, SecurityAlgorithms.HmacSha256);
-
-            var refreshToken = new JwtSecurityToken(
-                issuer: _jwtConfig.Issuer,
-                audience: _jwtConfig.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: refreshCreds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(refreshToken);
-        }
-
-
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken)
         {
@@ -245,7 +152,7 @@ namespace JCertPreApplication.Application.Features.Auth
 
                 if (string.IsNullOrEmpty(email))
                 {
-                    return (null, null, null);
+                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_FIREBASE_TOKEN", "Invalid Firebase token or email not found.");
                 }
 
                 // Check if user exists in database
@@ -296,47 +203,84 @@ namespace JCertPreApplication.Application.Features.Auth
                     await _userRepository.SaveChangesAsync();
                 }
 
-                // Generate JWT tokens
-                var userRole = user.Role?.roleName ?? "STUDENT";
-
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.Name, user.fullName),
-                    new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-                    new Claim(ClaimTypes.Role, userRole)
-                };
-
-                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-                var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-                var accessToken = new JwtSecurityToken(
-                    issuer: _jwtConfig.Issuer,
-                    audience: _jwtConfig.Audience,
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                    signingCredentials: accessCreds
-                );
-                var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-
-                var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-                var userDto = new AppUserDto
-                {
-                    Id = user.userId,
-                    fullName = user.fullName,
-                    phone = user.phone,
-                    email = user.email
-                };
-
-                return (accessTokenString, refreshTokenString, userDto);
+                return GenerateTokensAndUserDto(user);
+            }
+            catch (ApiException)
+            {
+                // Re-throw our custom exceptions
+                throw;
             }
             catch (UnauthorizedAccessException)
             {
-                return (null, null, null);
+                throw new ApiException(HttpStatusCode.Unauthorized, "FIREBASE_AUTH_FAILED", "Firebase authentication failed.");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return (null, null, null);
+                throw new ApiException(HttpStatusCode.InternalServerError, "FIREBASE_LOGIN_ERROR", "An error occurred during Firebase login.");
             }
+        }
+
+        /// <summary>
+        /// Generates JWT access token, refresh token, and user DTO for authenticated user.
+        /// This method centralizes token generation logic to avoid code duplication.
+        /// </summary>
+        /// <param name="user">The authenticated user entity</param>
+        /// <returns>Tuple containing access token, refresh token, and user DTO</returns>
+        private (string AccessToken, string RefreshToken, AppUserDto UserDto) GenerateTokensAndUserDto(User user)
+        {
+            var defaultRole = user.Role?.roleName ?? "STUDENT";
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.fullName),
+                new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
+                new Claim(ClaimTypes.Role, defaultRole)
+            };
+
+            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
+            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
+            var accessToken = new JwtSecurityToken(
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
+                signingCredentials: accessCreds
+            );
+            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
+
+            var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
+
+            var userDto = new AppUserDto
+            {
+                Id = user.userId,
+                fullName = user.fullName,
+                phone = user.phone,
+                email = user.email
+            };
+
+            return (accessTokenString, refreshTokenString, userDto);
+        }
+
+        private string GenerateRefreshTokenAsJwt(Guid userId)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim("type", "refresh")
+            };
+
+            var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey));
+            var refreshCreds = new SigningCredentials(refreshKey, SecurityAlgorithms.HmacSha256);
+
+            var refreshToken = new JwtSecurityToken(
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: refreshCreds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(refreshToken);
         }
     }
 }

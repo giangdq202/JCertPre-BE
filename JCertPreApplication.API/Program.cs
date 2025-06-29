@@ -1,13 +1,8 @@
 using JCertPreApplication.API;
+using JCertPreApplication.API.Middleware;
 using JCertPreApplication.Application;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence;
-using JCertPreApplication.Persistence.DatabaseContext;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Microsoft.OpenApi.Models;
-using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -106,135 +101,27 @@ static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 #region Services Setup
 static void SetupServices(WebApplicationBuilder builder)
 {
-    // Core services
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen(c =>
-    {
-        c.SwaggerDoc("v1", new OpenApiInfo 
-        { 
-            Title = "JCertPre API", 
-            Description = "API for JCertPre Application - Learning and Certification Platform",
-            Contact = new OpenApiContact
-            {
-                Name = "JCertPre Support",
-                Email = "support@jcertpre.com"
-            }
-        });
-        
-        // Add JWT Authentication to Swagger
-        c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-        {
-            Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
-            Name = "Authorization",
-            In = ParameterLocation.Header,
-            Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer"
-        });
-        
-        c.AddSecurityRequirement(new OpenApiSecurityRequirement()
-        {
-            {
-                new OpenApiSecurityScheme
-                {
-                    Reference = new OpenApiReference
-                    {
-                        Type = ReferenceType.SecurityScheme,
-                        Id = "Bearer"
-                    },
-                    Scheme = "oauth2",
-                    Name = "Bearer",
-                    In = ParameterLocation.Header,
-                },
-                new List<string>()
-            }
-        });
-        
-        // Group controllers by feature/domain
-        c.TagActionsBy(api =>
-        {
-            var controllerName = api.ActionDescriptor.RouteValues["controller"];
-            return new[] { controllerName };
-        });
-        
-        // Enable XML comments if available
-        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-        if (File.Exists(xmlPath))
-        {
-            c.IncludeXmlComments(xmlPath);
-        }
-    });
+    // API layer services (controllers, swagger, authentication, CORS)
+    builder.Services.AddApiServices(builder.Configuration);
     
-    // Application layers
+    // Application layer services
     builder.Services.AddApplication();
+    
+    // Infrastructure layer services (persistence, external services)
     builder.Services.AddInfrastructure(builder.Configuration);
-    
-    // Database
-    SetupDatabase(builder);
-    
-    // Authentication & Authorization
-    SetupAuthentication(builder);
-    
-    // CORS
-    SetupCors(builder);
 }
 
-static void SetupDatabase(WebApplicationBuilder builder)
-{
-    var connectionString = builder.Configuration.GetConnectionString("JCertPreDB");
-    if (string.IsNullOrWhiteSpace(connectionString))
-    {
-        throw new InvalidOperationException("Database connection string is required. Please configure JCERTPRE_DB_CONNECTION_STRING in your .env file.");
-    }
-    
-    builder.Services.AddDbContext<JCertPreDatabaseContext>(options =>
-        options.UseNpgsql(connectionString));
-}
 
-static void SetupAuthentication(WebApplicationBuilder builder)
-{
-    var jwtConfig = new JwtConfiguration();
-    builder.Configuration.GetSection(JwtConfiguration.SectionName).Bind(jwtConfig);
-    
-    builder.Services.AddAuthentication("Bearer")
-        .AddJwtBearer("Bearer", options =>
-        {
-            options.TokenValidationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = jwtConfig.Issuer,
-                ValidAudience = jwtConfig.Audience,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtConfig.SecretKey)),
-                ClockSkew = TimeSpan.Zero
-            };
-        });
-}
 
-static void SetupCors(WebApplicationBuilder builder)
-{
-    var corsConfig = new CorsConfiguration();
-    builder.Configuration.GetSection(CorsConfiguration.SectionName).Bind(corsConfig);
-    
-    builder.Services.AddCors(options =>
-    {
-        options.AddPolicy("AllowSpecificOrigins", policy =>
-        {
-            policy.WithOrigins(corsConfig.GetAllowedOriginsArray())
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-        });
-    });
-}
+
 #endregion
 
 #region Pipeline Configuration
 static void ConfigurePipeline(WebApplication app)
 {
+    // Global Exception Handling - MUST be first in pipeline
+    app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+    
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
