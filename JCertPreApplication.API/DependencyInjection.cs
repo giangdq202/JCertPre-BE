@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using JCertPreApplication.API.Middleware;
 using JCertPreApplication.Domain.Configuration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -30,6 +31,9 @@ namespace JCertPreApplication.API
             
             // CORS
             AddCorsServices(services, configuration);
+            
+            // Global Exception Handling Middleware
+            services.AddScoped<GlobalExceptionHandlingMiddleware>();
 
             return services;
         }

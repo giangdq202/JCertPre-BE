@@ -1,9 +1,8 @@
 using JCertPreApplication.API;
+using JCertPreApplication.API.Middleware;
 using JCertPreApplication.Application;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence;
-using JCertPreApplication.Persistence.DatabaseContext;
-using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -120,6 +119,9 @@ static void SetupServices(WebApplicationBuilder builder)
 #region Pipeline Configuration
 static void ConfigurePipeline(WebApplication app)
 {
+    // Global Exception Handling - MUST be first in pipeline
+    app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+    
     if (app.Environment.IsDevelopment())
     {
         app.UseSwagger();
