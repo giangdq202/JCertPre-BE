@@ -37,37 +37,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 return (null, null, null);
             }
 
-            var defaultRole = user.Role?.roleName ?? "STUDENT";
-
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.Name, user.fullName),
-            new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-            new Claim(ClaimTypes.Role, defaultRole)
-        };
-
-            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-            var accessToken = new JwtSecurityToken(
-                issuer: _jwtConfig.Issuer,
-                audience: _jwtConfig.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                signingCredentials: accessCreds
-            );
-            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-
-            var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-            var userDto = new AppUserDto
-            {
-                Id = user.userId,
-                fullName = user.fullName,
-                phone = user.phone,
-                email = user.email
-            };
-
-            return (accessTokenString, refreshTokenString, userDto);
+            return GenerateTokensAndUserDto(user);
         }
 
         public async Task<(bool Succeeded, string AccessToken, string RefreshToken, AppUserDto User, string[] Errors)> RegisterAsync(RegisterModel model)
@@ -108,35 +78,8 @@ namespace JCertPreApplication.Application.Features.Auth
             await _userRepository.InsertAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.Name, user.fullName),
-            new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-            new Claim(ClaimTypes.Role, "STUDENT")
-        };
-
-            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-            var accessToken = new JwtSecurityToken(
-                issuer: _jwtConfig.Issuer,
-                audience: _jwtConfig.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                signingCredentials: accessCreds
-            );
-            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-
-            var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-            var userDto = new AppUserDto
-            {
-                Id = user.userId,
-                fullName = user.fullName,
-                phone = user.phone,
-                email = user.email
-            };
-
-            return (true, accessTokenString, refreshTokenString, userDto, null);
+            var (accessToken, refreshToken, userDto) = GenerateTokensAndUserDto(user);
+            return (true, accessToken, refreshToken, userDto, null);
         }
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken)
@@ -173,68 +116,13 @@ namespace JCertPreApplication.Application.Features.Auth
                 if (user == null)
                     return (null, null, null);
 
-                var defaultRole = user.Role?.roleName ?? "STUDENT";
-
-                var claims = new[]
-                {
-                new Claim(ClaimTypes.Name, user.fullName),
-                new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-                new Claim(ClaimTypes.Role, defaultRole)
-            };
-
-                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-                var creds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-
-                var newAccessToken = new JwtSecurityToken(
-                    issuer: _jwtConfig.Issuer,
-                    audience: _jwtConfig.Audience,
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                    signingCredentials: creds
-                );
-
-                var newAccessTokenString = new JwtSecurityTokenHandler().WriteToken(newAccessToken);
-                var newRefreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-                var userDto = new AppUserDto
-                {
-                    Id = user.userId,
-                    fullName = user.fullName,
-                    phone = user.phone,
-                    email = user.email
-                };
-
-                return (newAccessTokenString, newRefreshTokenString, userDto);
+                return GenerateTokensAndUserDto(user);
             }
             catch
             {
                 return (null, null, null);
             }
         }
-
-        private string GenerateRefreshTokenAsJwt(Guid userId)
-        {
-            var claims = new[]
-            {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
-            new Claim("type", "refresh")
-        };
-
-            var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey));
-            var refreshCreds = new SigningCredentials(refreshKey, SecurityAlgorithms.HmacSha256);
-
-            var refreshToken = new JwtSecurityToken(
-                issuer: _jwtConfig.Issuer,
-                audience: _jwtConfig.Audience,
-                claims: claims,
-                expires: DateTime.UtcNow.AddDays(7),
-                signingCredentials: refreshCreds
-            );
-
-            return new JwtSecurityTokenHandler().WriteToken(refreshToken);
-        }
-
-
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken)
         {
@@ -296,38 +184,7 @@ namespace JCertPreApplication.Application.Features.Auth
                     await _userRepository.SaveChangesAsync();
                 }
 
-                // Generate JWT tokens
-                var userRole = user.Role?.roleName ?? "STUDENT";
-
-                var claims = new[]
-                {
-                    new Claim(ClaimTypes.Name, user.fullName),
-                    new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-                    new Claim(ClaimTypes.Role, userRole)
-                };
-
-                var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
-                var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
-                var accessToken = new JwtSecurityToken(
-                    issuer: _jwtConfig.Issuer,
-                    audience: _jwtConfig.Audience,
-                    claims: claims,
-                    expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
-                    signingCredentials: accessCreds
-                );
-                var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
-
-                var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
-
-                var userDto = new AppUserDto
-                {
-                    Id = user.userId,
-                    fullName = user.fullName,
-                    phone = user.phone,
-                    email = user.email
-                };
-
-                return (accessTokenString, refreshTokenString, userDto);
+                return GenerateTokensAndUserDto(user);
             }
             catch (UnauthorizedAccessException)
             {
@@ -337,6 +194,69 @@ namespace JCertPreApplication.Application.Features.Auth
             {
                 return (null, null, null);
             }
+        }
+
+        /// <summary>
+        /// Generates JWT access token, refresh token, and user DTO for authenticated user.
+        /// This method centralizes token generation logic to avoid code duplication.
+        /// </summary>
+        /// <param name="user">The authenticated user entity</param>
+        /// <returns>Tuple containing access token, refresh token, and user DTO</returns>
+        private (string AccessToken, string RefreshToken, AppUserDto UserDto) GenerateTokensAndUserDto(User user)
+        {
+            var defaultRole = user.Role?.roleName ?? "STUDENT";
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.Name, user.fullName),
+                new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
+                new Claim(ClaimTypes.Role, defaultRole)
+            };
+
+            var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
+            var accessCreds = new SigningCredentials(accessKey, SecurityAlgorithms.HmacSha256);
+            var accessToken = new JwtSecurityToken(
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(_jwtConfig.ExpiryInMinutes),
+                signingCredentials: accessCreds
+            );
+            var accessTokenString = new JwtSecurityTokenHandler().WriteToken(accessToken);
+
+            var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
+
+            var userDto = new AppUserDto
+            {
+                Id = user.userId,
+                fullName = user.fullName,
+                phone = user.phone,
+                email = user.email
+            };
+
+            return (accessTokenString, refreshTokenString, userDto);
+        }
+
+        private string GenerateRefreshTokenAsJwt(Guid userId)
+        {
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+                new Claim("type", "refresh")
+            };
+
+            var refreshKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey));
+            var refreshCreds = new SigningCredentials(refreshKey, SecurityAlgorithms.HmacSha256);
+
+            var refreshToken = new JwtSecurityToken(
+                issuer: _jwtConfig.Issuer,
+                audience: _jwtConfig.Audience,
+                claims: claims,
+                expires: DateTime.UtcNow.AddDays(7),
+                signingCredentials: refreshCreds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(refreshToken);
         }
     }
 }
