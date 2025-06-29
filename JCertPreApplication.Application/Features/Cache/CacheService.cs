@@ -1,9 +1,6 @@
 ﻿using JCertPreApplication.Application.Contracts;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using JCertPreApplication.Application.Exceptions;
+using System.Net;
 
 namespace JCertPreApplication.Application.Features.Cache
 {
@@ -13,21 +10,38 @@ namespace JCertPreApplication.Application.Features.Cache
 
         public CacheService(ICacheRepository cacheRepository)
         {
-            _cacheRepository = cacheRepository;
+            _cacheRepository = cacheRepository ?? throw new ArgumentNullException(nameof(cacheRepository));
         }
 
         public async Task<string> GetDataAsync(string id)
         {
-            var cacheKey = $"data:{id}";
-            var cachedData = await _cacheRepository.GetAsync<string>(cacheKey);
-            if (cachedData != null)
-            {
-                return cachedData;
-            }
+            if (string.IsNullOrEmpty(id))
+                throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ID", "ID cannot be null or empty.");
 
-            var data = $"Fetched data for ID {id}";
-            await _cacheRepository.SetAsync(cacheKey, data, TimeSpan.FromHours(1));
-            return data;
+            try
+            {
+                var cacheKey = $"data:{id}";
+                var cachedData = await _cacheRepository.GetAsync<string>(cacheKey);
+                if (cachedData != null)
+                {
+                    return cachedData;
+                }
+
+                // Simulate fetching data from a data source
+                var data = $"Fetched data for ID {id}";
+                await _cacheRepository.SetAsync(cacheKey, data, TimeSpan.FromHours(1));
+                return data;
+            }
+            catch (ApiException)
+            {
+                // Re-throw our custom exceptions
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException(HttpStatusCode.InternalServerError, "CACHE_SERVICE_ERROR", 
+                    "An error occurred while processing cache operations.");
+            }
         }
     }
 }

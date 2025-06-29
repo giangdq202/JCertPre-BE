@@ -13,7 +13,7 @@ namespace JCertPreApplication.Persistence
 {
     public static class DependencyInjection
     {
-        public static IServiceCollection AddPersistenceService(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
             // Read connection string from environment variable only (from .env file)
             var connectionString = Environment.GetEnvironmentVariable("JCERTPRE_DB_CONNECTION_STRING");
@@ -43,7 +43,7 @@ namespace JCertPreApplication.Persistence
             
             // Infrastructure Services
             services.AddScoped<IFirebaseService, FirebaseService>();
-            services.AddScoped<IPasswordService, PasswordService>();
+            services.AddSingleton<IPasswordService, PasswordService>();
 
             Console.WriteLine("✅ Database connection configured successfully");
             Console.WriteLine("✅ Redis cache configured successfully");
