@@ -18,68 +18,31 @@ namespace JCertPreApplication.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
         {
-            if (model == null)
-            {
-                return BadRequest("Registration model is required.");
-            }
-
-            var (succeeded, accessToken, refreshToken, user, errors) = await _authService.RegisterAsync(model);
-            if (!succeeded)
-            {
-                return BadRequest(new { errors });
-            }
-
+            // Model validation is handled by middleware if using [Required] attributes
+            // Or we can throw ApiException here if needed
+            
+            var (accessToken, refreshToken, user) = await _authService.RegisterAsync(model);
             return Ok(new { accessToken, refreshToken, user });
         }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            if (model == null)
-            {
-                return BadRequest("Login model is required.");
-            }
-
             var (accessToken, refreshToken, user) = await _authService.LoginAsync(model.Email, model.Password);
-            if (accessToken == null || refreshToken == null || user == null)
-            {
-                return Unauthorized("Invalid credentials.");
-            }
-
             return Ok(new { accessToken, refreshToken, user });
         }
 
         [HttpPost("firebase-login")]
         public async Task<IActionResult> FirebaseLogin([FromBody] FirebaseLoginModel model)
         {
-            if (model == null || string.IsNullOrEmpty(model.FirebaseToken))
-            {
-                return BadRequest("Firebase token is required.");
-            }
-
             var (accessToken, refreshToken, user) = await _authService.FirebaseLoginAsync(model.FirebaseToken);
-            if (accessToken == null || refreshToken == null || user == null)
-            {
-                return Unauthorized("Invalid Firebase token or unable to authenticate user.");
-            }
-
             return Ok(new { accessToken, refreshToken, user });
         }
 
         [HttpPost("refresh")]
         public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
         {
-            if (string.IsNullOrEmpty(refreshToken))
-            {
-                return BadRequest("Refresh token is required.");
-            }
-
             var (accessToken, newRefreshToken, user) = await _authService.RefreshTokenAsync(refreshToken);
-            if (accessToken == null || newRefreshToken == null || user == null)
-            {
-                return Unauthorized("Invalid refresh token.");
-            }
-
             return Ok(new { accessToken, refreshToken = newRefreshToken, user });
         }
     }
