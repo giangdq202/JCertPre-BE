@@ -32,28 +32,59 @@ JCertPre là một nền tảng học tập và chứng chỉ được xây dự
 
 ## 🏛️ Kiến trúc Clean Architecture
 
-### Dependency Flow (Quy tắc phụ thuộc)
+### Sơ đồ kiến trúc tổng quan
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                        API Layer                            │
-│                    (Presentation)                           │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │                Application Layer                    │   │
-│  │                 (Use Cases)                         │   │
-│  │  ┌─────────────────────────────────────────────┐   │   │
-│  │  │              Domain Layer                   │   │   │
-│  │  │               (Entities)                    │   │   │
-│  │  └─────────────────────────────────────────────┘   │   │
-│  └─────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────┘
-┌─────────────────────────────────────────────────────────────┐
-│                   Infrastructure Layer                      │
-│                   (Persistence)                             │
-└─────────────────────────────────────────────────────────────┘
+![Clean Architecture Diagram](clean_architecture.png)
+
+### 🔍 Giải thích sơ đồ theo project JCertPre:
+
+#### **🎯 Domain Layer (Lõi trung tâm - màu xanh lá)**
+```csharp
+📁 JCertPreApplication.Domain/
+├── Entities/User.cs              // Core business entities
+├── Entities/Course.cs            // Business objects
+├── Enums/UserStatus.cs           // Business enums
+└── Configuration/JwtConfiguration.cs  // Business rules & config
 ```
 
-**⚠️ Nguyên tắc vàng:** Dependencies chỉ được hướng vào trong (inward), không bao giờ hướng ra ngoài!
+#### **🧠 Application Layer (Lớp ứng dụng - màu xanh dương)**
+```csharp
+📁 JCertPreApplication.Application/
+├── Contracts/IUserRepository.cs   // Interfaces (abstractions)
+├── Features/Auth/IAuthService.cs  // Business logic interfaces
+├── Features/Auth/AuthService.cs   // Use cases implementation
+└── Dtos/Auth/LoginModel.cs        // Data transfer objects
+```
+
+#### **🌐 Presentation Layer (Lớp trình bày - màu cam)**
+```csharp
+📁 JCertPreApplication.API/
+├── Controllers/AuthController.cs  // API endpoints
+├── Program.cs                     // Entry point & DI setup
+└── DependencyInjection.cs        // API services registration
+```
+
+#### **💾 Infrastructure Layer (Lớp hạ tầng - màu tím)**
+```csharp
+📁 JCertPreApplication.Persistence/
+├── Repositories/UserRepository.cs     // Data access implementation
+├── DatabaseContext/JCertPreDatabaseContext.cs  // EF Core context
+├── Services/Firebase/FirebaseService.cs        // External services
+└── DependencyInjection.cs            // Infrastructure registration
+```
+
+### 🔄 **Dependency Flow trong JCertPre:**
+
+```
+AuthController → IAuthService → IUserRepository → UserRepository → Database
+     (API)      (Application)   (Application)    (Persistence)   (PostgreSQL)
+```
+
+**⚠️ Nguyên tắc vàng:** 
+- Dependencies chỉ được hướng vào trong (inward) 
+- API → Application → Domain
+- Infrastructure → Application → Domain
+- **KHÔNG BAO GIỜ:** Domain → Application/Infrastructure
 
 ---
 
