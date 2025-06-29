@@ -227,6 +227,214 @@ https://localhost:5001/swagger
 
 ## 👨‍💻 Hướng dẫn phát triển
 
+### ⚠️ Xử lý Exception (Exception Handling)
+
+Dự án sử dụng **Global Exception Handling** với cơ chế xử lý lỗi chuẩn hóa. Tất cả exception sẽ được bắt và chuyển đổi thành API response nhất quán.
+
+#### 🏗️ Kiến trúc Exception Handling
+
+```
+🌐 API Request → 🛡️ GlobalExceptionHandlingMiddleware → 📋 ApiErrorResponse
+                              ↓
+                    🔍 Exception Type Detection
+                              ↓
+                ┌─────────────────┬─────────────────┐
+                │   ApiException  │  System Error   │
+                │   (Expected)    │  (Unexpected)   │
+                └─────────────────┴─────────────────┘
+```
+
+#### 🎯 Cách sử dụng trong code
+
+**1. Ném exception có kiểm soát trong Business Logic:**
+
+```csharp
+// ✅ Trong Service layer - sử dụng ApiException
+public async Task<UserDto> GetUserAsync(Guid userId)
+{
+    var user = await _userRepository.GetByIdAsync(userId);
+    
+    // Ném ApiException khi không tìm thấy user
+    if (user == null)
+        throw ApiException.NotFound("User", userId);
+    
+    return _mapper.Map<UserDto>(user);
+}
+
+// ✅ Validation errors
+public async Task CreateUserAsync(CreateUserDto dto)
+{
+    var validationErrors = new Dictionary<string, string[]>();
+    
+    if (string.IsNullOrEmpty(dto.Email))
+        validationErrors.Add("email", new[] { "Email is required" });
+        
+    if (dto.Age < 18)
+        validationErrors.Add("age", new[] { "Must be at least 18 years old" });
+    
+    if (validationErrors.Any())
+    {
+        throw new ApiException(
+            "VALIDATION_FAILED", 
+            "Invalid user data provided", 
+            validationErrors
+        );
+    }
+    
+    // Proceed with user creation...
+}
+```
+
+**2. Các phương thức tiện ích của ApiException:**
+
+```csharp
+// 404 Not Found
+throw ApiException.NotFound("Course", courseId);
+
+// 400 Bad Request  
+throw ApiException.BadRequest("INVALID_EMAIL", "Email format is invalid");
+
+// 401 Unauthorized
+throw ApiException.Unauthorized("Invalid credentials");
+
+// 403 Forbidden
+throw ApiException.Forbidden("You don't have permission to access this resource");
+
+// Custom status code
+throw new ApiException(HttpStatusCode.Conflict, "EMAIL_ALREADY_EXISTS", "This email is already registered");
+```
+
+#### 📋 Format API Error Response
+
+Tất cả lỗi sẽ được trả về với format chuẩn:
+
+```json
+{
+  "status": 404,
+  "errorCode": "RESOURCE_NOT_FOUND", 
+  "message": "User with key '123e4567-e89b-12d3-a456-426614174000' was not found.",
+  "traceId": null,
+  "errors": null
+}
+```
+
+**Validation errors (400):**
+```json
+{
+  "status": 400,
+  "errorCode": "VALIDATION_FAILED",
+  "message": "Invalid user data provided",
+  "errors": {
+    "email": ["Email is required", "Email format is invalid"],
+    "age": ["Must be at least 18 years old"]
+  }
+}
+```
+
+**System errors (500):**
+```json
+{
+  "status": 500,
+  "errorCode": "INTERNAL_SERVER_ERROR", 
+  "message": "An unexpected error has occurred. Please contact support with the trace ID.",
+  "traceId": "00-1234567890abcdef-fedcba0987654321-01"
+}
+```
+
+#### 🚫 Exception Handling Best Practices
+
+**✅ DO's:**
+
+```csharp
+// ✅ Sử dụng ApiException cho business logic errors
+if (user.IsLocked)
+    throw ApiException.Forbidden("User account is locked");
+
+// ✅ Catch và convert system exceptions khi cần
+try 
+{
+    await _emailService.SendAsync(email);
+}
+catch (EmailServiceException ex)
+{
+    throw ApiException.BadRequest("EMAIL_SEND_FAILED", "Failed to send email");
+}
+
+// ✅ Validate input và ném ApiException
+if (request.Password.Length < 8)
+    throw ApiException.BadRequest("PASSWORD_TOO_SHORT", "Password must be at least 8 characters");
+```
+
+**❌ DON'Ts:**
+
+```csharp
+// ❌ KHÔNG bắt Exception trong Controller (middleware sẽ handle)
+[HttpGet("{id}")]
+public async Task<IActionResult> GetUser(Guid id)
+{
+    try  // ❌ Không cần try-catch ở đây
+    {
+        var user = await _userService.GetUserAsync(id);
+        return Ok(user);
+    }
+    catch (Exception ex)  // ❌ GlobalExceptionHandlingMiddleware sẽ handle
+    {
+        return BadRequest(ex.Message);
+    }
+}
+
+// ❌ KHÔNG ném generic Exception
+throw new Exception("Something went wrong");  // ❌ Sử dụng ApiException thay thế
+
+// ❌ KHÔNG return error objects từ Service
+public async Task<object> GetUserAsync(Guid id)  // ❌ Đừng làm vậy
+{
+    if (user == null)
+        return new { Error = "User not found" };  // ❌ Ném exception thay vì return error
+}
+```
+
+#### 🔧 Configuration
+
+Exception handling đã được tự động đăng ký trong `Program.cs`:
+
+```csharp
+// Middleware đã được đăng ký
+app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
+
+// Service đã được đăng ký  
+builder.Services.AddTransient<GlobalExceptionHandlingMiddleware>();
+```
+
+#### 📊 Logging Strategy
+
+- **ApiException (Business errors)**: Log ở mức `Warning`
+- **System Exception (Unexpected)**: Log ở mức `Error` với full stack trace
+- **Trace ID**: Được tự động generate cho việc tracking lỗi
+
+#### 🎯 Client-side Exception Handling
+
+Frontend có thể dựa vào `errorCode` để xử lý:
+
+```typescript
+// Example client-side handling
+const handleApiError = (error: ApiErrorResponse) => {
+  switch (error.errorCode) {
+    case 'USER_NOT_FOUND':
+      showNotification('User not found', 'error');
+      break;
+    case 'VALIDATION_FAILED': 
+      displayValidationErrors(error.errors);
+      break;
+    case 'UNAUTHORIZED':
+      redirectToLogin();
+      break;
+    default:
+      showGenericError(error.message);
+  }
+};
+```
+
 ### 🆕 Thêm Feature mới
 
 #### Bước 1: Tạo Domain Entity (nếu cần)
