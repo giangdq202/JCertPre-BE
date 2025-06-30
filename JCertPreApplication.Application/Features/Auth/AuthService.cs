@@ -39,12 +39,12 @@ namespace JCertPreApplication.Application.Features.Auth
             
             if (user == null || !_passwordService.VerifyPassword(password, user.passwordHash))
             {
-                throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_CREDENTIALS", "Invalid email or password.");
+                throw ApiException.Unauthorized("INVALID_CREDENTIALS", "Invalid email or password.");
             }
             
             if (user.status != UserStatus.Active)
             {
-                throw new ApiException(HttpStatusCode.Forbidden, "ACCOUNT_INACTIVE", "Your account is inactive. Please contact support.");
+                throw ApiException.Forbidden("ACCOUNT_INACTIVE", "Your account is inactive. Please contact support.");
             }
 
             var (accessToken, refreshToken, userDto) = GenerateTokensAndUserDto(user);
@@ -61,7 +61,7 @@ namespace JCertPreApplication.Application.Features.Auth
             var existingUserByEmail = await _userRepository.GetFirstOrDefaultAsync(u => u.email == model.email);
             if (existingUserByEmail != null)
             {
-                throw new ApiException(HttpStatusCode.BadRequest, "EMAIL_ALREADY_EXISTS", $"User with email '{model.email}' already exists.");
+                throw ApiException.BadRequest("EMAIL_ALREADY_EXISTS", $"User with email '{model.email}' already exists.");
             }
 
             // Phone is optional information, no need to check for uniqueness
@@ -112,13 +112,13 @@ namespace JCertPreApplication.Application.Features.Auth
                 var oldJti = oldAccessTokenJson.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
                 if (string.IsNullOrEmpty(oldJti))
                 {
-                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Access token does not contain JTI claim.");
+                    throw ApiException.BadRequest("INVALID_ACCESS_TOKEN", "Access token does not contain JTI claim.");
                 }
 
                 var accessTokenUserId = oldAccessTokenJson.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(accessTokenUserId) || !Guid.TryParse(accessTokenUserId, out var accessTokenUserGuid))
                 {
-                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Invalid user ID in access token.");
+                    throw ApiException.BadRequest("INVALID_ACCESS_TOKEN", "Invalid user ID in access token.");
                 }
 
                 // Step 2: Validate the refresh token
@@ -141,19 +141,19 @@ namespace JCertPreApplication.Application.Features.Auth
 
                 if (principal.FindFirst("type")?.Value != "refresh")
                 {
-                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token type.");
+                    throw ApiException.Unauthorized("INVALID_REFRESH_TOKEN", "Invalid refresh token type.");
                 }
 
                 var refreshTokenUserId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(refreshTokenUserId) || !Guid.TryParse(refreshTokenUserId, out var refreshTokenUserGuid))
                 {
-                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid user ID in refresh token.");
+                    throw ApiException.Unauthorized("INVALID_REFRESH_TOKEN", "Invalid user ID in refresh token.");
                 }
 
                 // Step 3: Ensure both tokens belong to the same user
                 if (accessTokenUserGuid != refreshTokenUserGuid)
                 {
-                    throw new ApiException(HttpStatusCode.BadRequest, "TOKEN_MISMATCH", "Access token and refresh token belong to different users.");
+                    throw ApiException.BadRequest("TOKEN_MISMATCH", "Access token and refresh token belong to different users.");
                 }
 
                 var userId = refreshTokenUserGuid;
@@ -162,7 +162,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 var isRefreshTokenValid = await _tokenCacheRepository.IsRefreshTokenValidAsync(userId, refreshToken);
                 if (!isRefreshTokenValid)
                 {
-                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Refresh token not found in whitelist or already used.");
+                    throw ApiException.Unauthorized("INVALID_REFRESH_TOKEN", "Refresh token not found in whitelist or already used.");
                 }
 
                 // Step 5: Immediately revoke the old access token (Critical security step)
@@ -180,7 +180,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user == null)
                 {
-                    throw new ApiException(HttpStatusCode.Unauthorized, "USER_NOT_FOUND", "User not found.");
+                    throw ApiException.Unauthorized("USER_NOT_FOUND", "User not found.");
                 }
 
                 // Step 8: Generate new tokens
@@ -198,12 +198,12 @@ namespace JCertPreApplication.Application.Features.Auth
             }
             catch (SecurityTokenException)
             {
-                throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_ACCESS_TOKEN", "Invalid or malformed access token.");
+                throw ApiException.Unauthorized("INVALID_ACCESS_TOKEN", "Invalid or malformed access token.");
             }
             catch (Exception ex)
             {
                 // Any other exception during token validation means invalid token
-                throw new ApiException(HttpStatusCode.Unauthorized, "TOKEN_REFRESH_ERROR", "An error occurred during token refresh.");
+                throw ApiException.Unauthorized("TOKEN_REFRESH_ERROR", "An error occurred during token refresh.");
             }
         }
 
@@ -216,7 +216,7 @@ namespace JCertPreApplication.Application.Features.Auth
 
                 if (string.IsNullOrEmpty(email))
                 {
-                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_FIREBASE_TOKEN", "Invalid Firebase token or email not found.");
+                    throw ApiException.Unauthorized("INVALID_FIREBASE_TOKEN", "Invalid Firebase token or email not found.");
                 }
 
                 // Check if user exists in database
@@ -281,11 +281,11 @@ namespace JCertPreApplication.Application.Features.Auth
             }
             catch (UnauthorizedAccessException)
             {
-                throw new ApiException(HttpStatusCode.Unauthorized, "FIREBASE_AUTH_FAILED", "Firebase authentication failed.");
+                throw ApiException.Unauthorized("FIREBASE_AUTH_FAILED", "Firebase authentication failed.");
             }
             catch (Exception ex)
             {
-                throw new ApiException(HttpStatusCode.InternalServerError, "FIREBASE_LOGIN_ERROR", "An error occurred during Firebase login.");
+                throw ApiException.InternalServerError("FIREBASE_LOGIN_ERROR", "An error occurred during Firebase login.");
             }
         }
 
@@ -335,6 +335,11 @@ namespace JCertPreApplication.Application.Features.Auth
             return (accessTokenString, refreshTokenString, userDto);
         }
 
+        /// <summary>
+        /// Generates a refresh token as JWT with minimal claims for security
+        /// </summary>
+        /// <param name="userId">The user ID to include in the token</param>
+        /// <returns>Refresh token as JWT string</returns>
         private string GenerateRefreshTokenAsJwt(Guid userId)
         {
             var claims = new[]
@@ -368,13 +373,13 @@ namespace JCertPreApplication.Application.Features.Auth
                 var jti = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
                 if (string.IsNullOrEmpty(jti))
                 {
-                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Access token does not contain JTI claim.");
+                    throw ApiException.BadRequest("INVALID_ACCESS_TOKEN", "Access token does not contain JTI claim.");
                 }
 
                 var userIdClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
                 {
-                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Invalid user ID in access token.");
+                    throw ApiException.BadRequest("INVALID_ACCESS_TOKEN", "Invalid user ID in access token.");
                 }
 
                 // Calculate remaining lifetime of access token
@@ -400,7 +405,7 @@ namespace JCertPreApplication.Application.Features.Auth
             }
             catch (Exception ex)
             {
-                throw new ApiException(HttpStatusCode.InternalServerError, "LOGOUT_ERROR", "An error occurred during logout.");
+                throw ApiException.InternalServerError("LOGOUT_ERROR", "An error occurred during logout.");
             }
         }
 
