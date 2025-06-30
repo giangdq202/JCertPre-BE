@@ -367,5 +367,82 @@ namespace JCertPreApplication.Application.Features.Auth
                 throw new ApiException(HttpStatusCode.InternalServerError, "LOGOUT_ERROR", "An error occurred during logout.");
             }
         }
+
+        public async Task<bool> ValidateAccessTokenAsync(string accessToken)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(accessToken))
+                    return false;
+
+                // Parse token to validate structure and get claims
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jsonToken = tokenHandler.ReadJwtToken(accessToken);
+
+                // Check if token is expired
+                if (jsonToken.ValidTo < DateTime.UtcNow)
+                    return false;
+
+                // Get JTI to check if token is revoked
+                var jti = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+                if (string.IsNullOrEmpty(jti))
+                    return false;
+
+                // Check if token is in blacklist (revoked)
+                var isRevoked = await _tokenCacheRepository.IsAccessTokenRevokedAsync(jti);
+                return !isRevoked;
+            }
+            catch (Exception)
+            {
+                // Any exception means invalid token
+                return false;
+            }
+        }
+
+        public async Task<bool> ValidateRefreshTokenAsync(string refreshToken)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(refreshToken))
+                    return false;
+
+                // Validate JWT structure and signature
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var refreshKey = Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey);
+
+                var principal = tokenHandler.ValidateToken(
+                    refreshToken,
+                    new TokenValidationParameters
+                    {
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(refreshKey),
+                        ValidateIssuer = true,
+                        ValidIssuer = _jwtConfig.Issuer,
+                        ValidateAudience = true,
+                        ValidAudience = _jwtConfig.Audience,
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.Zero
+                    },
+                    out SecurityToken validatedToken
+                );
+
+                // Check token type
+                if (principal.FindFirst("type")?.Value != "refresh")
+                    return false;
+
+                // Extract userId and check if token is in whitelist
+                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                    return false;
+
+                // Check if refresh token is in whitelist
+                return await _tokenCacheRepository.IsRefreshTokenValidAsync(userId, refreshToken);
+            }
+            catch (Exception)
+            {
+                // Any exception means invalid token
+                return false;
+            }
+        }
     }
 }

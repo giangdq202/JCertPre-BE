@@ -52,5 +52,25 @@ namespace JCertPreApplication.API.Controllers
             await _authService.LogoutAsync(model.AccessToken, model.RefreshToken);
             return Ok(new { message = "Logged out successfully" });
         }
+
+        [HttpPost("validate-access-token")]
+        public async Task<IActionResult> ValidateAccessToken([FromBody] ValidateAccessTokenModel model)
+        {
+            var isValid = await _authService.ValidateAccessTokenAsync(model.AccessToken);
+            return Ok(new { 
+                isValid = isValid,
+                message = isValid ? "Access token is valid" : "Access token is invalid or revoked"
+            });
+        }
+
+        [HttpPost("validate-refresh-token")]
+        public async Task<IActionResult> ValidateRefreshToken([FromBody] ValidateRefreshTokenModel model)
+        {
+            var isValid = await _authService.ValidateRefreshTokenAsync(model.RefreshToken);
+            return Ok(new { 
+                isValid = isValid,
+                message = isValid ? "Refresh token is valid" : "Refresh token is invalid or not in whitelist"
+            });
+        }
     }
 }
