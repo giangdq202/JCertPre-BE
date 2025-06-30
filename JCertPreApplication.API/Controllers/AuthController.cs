@@ -40,9 +40,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpPost("refresh")]
-        public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
         {
-            var (accessToken, newRefreshToken, user) = await _authService.RefreshTokenAsync(refreshToken);
+            var (accessToken, newRefreshToken, user) = await _authService.RefreshTokenAsync(model.RefreshToken);
             return Ok(new { accessToken, refreshToken = newRefreshToken, user });
         }
 
