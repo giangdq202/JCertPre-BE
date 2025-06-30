@@ -73,7 +73,7 @@ namespace JCertPreApplication.Application.Exceptions
         }
 
         /// <summary>
-        /// Creates a 401 Unauthorized exception
+        /// Creates a 401 Unauthorized exception with default error code
         /// </summary>
         public static ApiException Unauthorized(string message = "Authentication required.")
         {
@@ -81,11 +81,35 @@ namespace JCertPreApplication.Application.Exceptions
         }
 
         /// <summary>
-        /// Creates a 403 Forbidden exception
+        /// Creates a 401 Unauthorized exception with custom error code
+        /// </summary>
+        public static ApiException Unauthorized(string errorCode, string message)
+        {
+            return new ApiException(HttpStatusCode.Unauthorized, errorCode, message);
+        }
+
+        /// <summary>
+        /// Creates a 403 Forbidden exception with default error code
         /// </summary>
         public static ApiException Forbidden(string message = "Access forbidden.")
         {
             return new ApiException(HttpStatusCode.Forbidden, "FORBIDDEN", message);
+        }
+
+        /// <summary>
+        /// Creates a 403 Forbidden exception with custom error code
+        /// </summary>
+        public static ApiException Forbidden(string errorCode, string message)
+        {
+            return new ApiException(HttpStatusCode.Forbidden, errorCode, message);
+        }
+
+        /// <summary>
+        /// Creates a 500 Internal Server Error exception
+        /// </summary>
+        public static ApiException InternalServerError(string errorCode, string message)
+        {
+            return new ApiException(HttpStatusCode.InternalServerError, errorCode, message);
         }
     }
 } 
