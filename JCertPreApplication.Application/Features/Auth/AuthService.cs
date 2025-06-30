@@ -101,13 +101,28 @@ namespace JCertPreApplication.Application.Features.Auth
             return (accessToken, refreshToken, userDto);
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken)
+        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string accessToken, string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var refreshKey = Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey);
-
+            
             try
             {
+                // Step 1: Validate the old access token and extract information
+                var oldAccessTokenJson = tokenHandler.ReadJwtToken(accessToken);
+                var oldJti = oldAccessTokenJson.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+                if (string.IsNullOrEmpty(oldJti))
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Access token does not contain JTI claim.");
+                }
+
+                var accessTokenUserId = oldAccessTokenJson.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(accessTokenUserId) || !Guid.TryParse(accessTokenUserId, out var accessTokenUserGuid))
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Invalid user ID in access token.");
+                }
+
+                // Step 2: Validate the refresh token
+                var refreshKey = Encoding.UTF8.GetBytes(_jwtConfig.RefreshSecretKey);
                 var principal = tokenHandler.ValidateToken(
                     refreshToken,
                     new TokenValidationParameters
@@ -129,32 +144,49 @@ namespace JCertPreApplication.Application.Features.Auth
                     throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid refresh token type.");
                 }
 
-                var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                var refreshTokenUserId = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(refreshTokenUserId) || !Guid.TryParse(refreshTokenUserId, out var refreshTokenUserGuid))
                 {
                     throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid user ID in refresh token.");
                 }
 
-                // Check if refresh token is in whitelist (Refresh Token Rotation)
-                var isTokenValid = await _tokenCacheRepository.IsRefreshTokenValidAsync(userId, refreshToken);
-                if (!isTokenValid)
+                // Step 3: Ensure both tokens belong to the same user
+                if (accessTokenUserGuid != refreshTokenUserGuid)
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "TOKEN_MISMATCH", "Access token and refresh token belong to different users.");
+                }
+
+                var userId = refreshTokenUserGuid;
+
+                // Step 4: Check if refresh token is in whitelist (Refresh Token Rotation)
+                var isRefreshTokenValid = await _tokenCacheRepository.IsRefreshTokenValidAsync(userId, refreshToken);
+                if (!isRefreshTokenValid)
                 {
                     throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Refresh token not found in whitelist or already used.");
                 }
 
+                // Step 5: Immediately revoke the old access token (Critical security step)
+                var oldAccessTokenExpiration = oldAccessTokenJson.ValidTo;
+                var remainingLifetime = oldAccessTokenExpiration - DateTime.UtcNow;
+                if (remainingLifetime > TimeSpan.Zero)
+                {
+                    await _tokenCacheRepository.RevokeAccessTokenAsync(oldJti, remainingLifetime);
+                }
+
+                // Step 6: Remove old refresh token from whitelist (Refresh Token Rotation)
+                await _tokenCacheRepository.RemoveRefreshTokenAsync(userId, refreshToken);
+
+                // Step 7: Get user and generate new tokens
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user == null)
                 {
                     throw new ApiException(HttpStatusCode.Unauthorized, "USER_NOT_FOUND", "User not found.");
                 }
 
-                // Remove old refresh token from whitelist (Refresh Token Rotation)
-                await _tokenCacheRepository.RemoveRefreshTokenAsync(userId, refreshToken);
-
-                // Generate new tokens
+                // Step 8: Generate new tokens
                 var (newAccessToken, newRefreshToken, userDto) = GenerateTokensAndUserDto(user);
 
-                // Add new refresh token to whitelist
+                // Step 9: Add new refresh token to whitelist
                 await _tokenCacheRepository.AddRefreshTokenAsync(userId, newRefreshToken);
 
                 return (newAccessToken, newRefreshToken, userDto);
@@ -164,10 +196,14 @@ namespace JCertPreApplication.Application.Features.Auth
                 // Re-throw our custom exceptions
                 throw;
             }
+            catch (SecurityTokenException)
+            {
+                throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_ACCESS_TOKEN", "Invalid or malformed access token.");
+            }
             catch (Exception ex)
             {
                 // Any other exception during token validation means invalid token
-                throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid or expired refresh token.");
+                throw new ApiException(HttpStatusCode.Unauthorized, "TOKEN_REFRESH_ERROR", "An error occurred during token refresh.");
             }
         }
 
