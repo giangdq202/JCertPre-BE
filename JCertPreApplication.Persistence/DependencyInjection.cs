@@ -41,6 +41,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ICacheRepository, RedisCacheRepository>();
             services.AddScoped<ITokenCacheRepository, TokenCacheRepository>();
+            services.AddScoped<ICourseRepository, CourseRepository>();
             
             // Infrastructure Services
             services.AddScoped<IFirebaseService, FirebaseService>();
