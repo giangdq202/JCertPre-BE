@@ -20,14 +20,16 @@ namespace JCertPreApplication.Application.Features.Auth
         private readonly IRoleRepository _roleRepository;
         private readonly IFirebaseService _firebaseService;
         private readonly IPasswordService _passwordService;
+        private readonly ITokenCacheRepository _tokenCacheRepository;
         private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
+            _tokenCacheRepository = tokenCacheRepository ?? throw new ArgumentNullException(nameof(tokenCacheRepository));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
@@ -45,7 +47,12 @@ namespace JCertPreApplication.Application.Features.Auth
                 throw new ApiException(HttpStatusCode.Forbidden, "ACCOUNT_INACTIVE", "Your account is inactive. Please contact support.");
             }
 
-            return GenerateTokensAndUserDto(user);
+            var (accessToken, refreshToken, userDto) = GenerateTokensAndUserDto(user);
+            
+            // Add refresh token to whitelist
+            await _tokenCacheRepository.AddRefreshTokenAsync(user.userId, refreshToken);
+
+            return (accessToken, refreshToken, userDto);
         }
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model)
@@ -86,7 +93,12 @@ namespace JCertPreApplication.Application.Features.Auth
             await _userRepository.InsertAsync(user);
             await _userRepository.SaveChangesAsync();
 
-            return GenerateTokensAndUserDto(user);
+            var (accessToken, refreshToken, userDto) = GenerateTokensAndUserDto(user);
+            
+            // Add refresh token to whitelist
+            await _tokenCacheRepository.AddRefreshTokenAsync(user.userId, refreshToken);
+
+            return (accessToken, refreshToken, userDto);
         }
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken)
@@ -123,13 +135,29 @@ namespace JCertPreApplication.Application.Features.Auth
                     throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Invalid user ID in refresh token.");
                 }
 
+                // Check if refresh token is in whitelist (Refresh Token Rotation)
+                var isTokenValid = await _tokenCacheRepository.IsRefreshTokenValidAsync(userId, refreshToken);
+                if (!isTokenValid)
+                {
+                    throw new ApiException(HttpStatusCode.Unauthorized, "INVALID_REFRESH_TOKEN", "Refresh token not found in whitelist or already used.");
+                }
+
                 var user = await _userRepository.GetByIdAsync(userId);
                 if (user == null)
                 {
                     throw new ApiException(HttpStatusCode.Unauthorized, "USER_NOT_FOUND", "User not found.");
                 }
 
-                return GenerateTokensAndUserDto(user);
+                // Remove old refresh token from whitelist (Refresh Token Rotation)
+                await _tokenCacheRepository.RemoveRefreshTokenAsync(userId, refreshToken);
+
+                // Generate new tokens
+                var (newAccessToken, newRefreshToken, userDto) = GenerateTokensAndUserDto(user);
+
+                // Add new refresh token to whitelist
+                await _tokenCacheRepository.AddRefreshTokenAsync(userId, newRefreshToken);
+
+                return (newAccessToken, newRefreshToken, userDto);
             }
             catch (ApiException)
             {
@@ -203,7 +231,12 @@ namespace JCertPreApplication.Application.Features.Auth
                     await _userRepository.SaveChangesAsync();
                 }
 
-                return GenerateTokensAndUserDto(user);
+                var (accessToken, refreshToken, userDto) = GenerateTokensAndUserDto(user);
+                
+                // Add refresh token to whitelist
+                await _tokenCacheRepository.AddRefreshTokenAsync(user.userId, refreshToken);
+
+                return (accessToken, refreshToken, userDto);
             }
             catch (ApiException)
             {
@@ -229,12 +262,17 @@ namespace JCertPreApplication.Application.Features.Auth
         private (string AccessToken, string RefreshToken, AppUserDto UserDto) GenerateTokensAndUserDto(User user)
         {
             var defaultRole = user.Role?.roleName ?? "STUDENT";
+            var jti = Guid.NewGuid().ToString(); // JWT ID for token revocation
 
             var claims = new[]
             {
                 new Claim(ClaimTypes.Name, user.fullName),
                 new Claim(ClaimTypes.NameIdentifier, user.userId.ToString()),
-                new Claim(ClaimTypes.Role, defaultRole)
+                new Claim(ClaimTypes.Role, defaultRole),
+                new Claim(JwtRegisteredClaimNames.Jti, jti), // JWT ID claim
+                new Claim(JwtRegisteredClaimNames.Iat, 
+                    new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString(), 
+                    ClaimValueTypes.Integer64) // Issued At claim
             };
 
             var accessKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtConfig.SecretKey));
@@ -281,6 +319,53 @@ namespace JCertPreApplication.Application.Features.Auth
             );
 
             return new JwtSecurityTokenHandler().WriteToken(refreshToken);
+        }
+
+        public async Task LogoutAsync(string accessToken, string refreshToken)
+        {
+            try
+            {
+                // Parse access token to extract JTI and expiration
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jsonToken = tokenHandler.ReadJwtToken(accessToken);
+
+                var jti = jsonToken.Claims.FirstOrDefault(c => c.Type == JwtRegisteredClaimNames.Jti)?.Value;
+                if (string.IsNullOrEmpty(jti))
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Access token does not contain JTI claim.");
+                }
+
+                var userIdClaim = jsonToken.Claims.FirstOrDefault(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+                {
+                    throw new ApiException(HttpStatusCode.BadRequest, "INVALID_ACCESS_TOKEN", "Invalid user ID in access token.");
+                }
+
+                // Calculate remaining lifetime of access token
+                var expiration = jsonToken.ValidTo;
+                var remainingLifetime = expiration - DateTime.UtcNow;
+
+                // Revoke access token (add to blacklist)
+                if (remainingLifetime > TimeSpan.Zero)
+                {
+                    await _tokenCacheRepository.RevokeAccessTokenAsync(jti, remainingLifetime);
+                }
+
+                // Remove refresh token from whitelist
+                if (!string.IsNullOrEmpty(refreshToken))
+                {
+                    await _tokenCacheRepository.RemoveRefreshTokenAsync(userId, refreshToken);
+                }
+            }
+            catch (ApiException)
+            {
+                // Re-throw our custom exceptions
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new ApiException(HttpStatusCode.InternalServerError, "LOGOUT_ERROR", "An error occurred during logout.");
+            }
         }
     }
 }

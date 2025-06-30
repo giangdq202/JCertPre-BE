@@ -45,5 +45,12 @@ namespace JCertPreApplication.API.Controllers
             var (accessToken, newRefreshToken, user) = await _authService.RefreshTokenAsync(refreshToken);
             return Ok(new { accessToken, refreshToken = newRefreshToken, user });
         }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout([FromBody] LogoutModel model)
+        {
+            await _authService.LogoutAsync(model.AccessToken, model.RefreshToken);
+            return Ok(new { message = "Logged out successfully" });
+        }
     }
 }

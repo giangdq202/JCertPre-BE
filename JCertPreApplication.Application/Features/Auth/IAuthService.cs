@@ -9,5 +9,6 @@ namespace JCertPreApplication.Application.Features.Auth
         Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model);
         Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string refreshToken);
         Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken);
+        Task LogoutAsync(string accessToken, string refreshToken);
     }
 }
