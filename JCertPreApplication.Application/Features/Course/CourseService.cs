@@ -40,6 +40,7 @@ namespace JCertPreApplication.Application.Features.Course
             };
 
             await _courseRepository.InsertAsync(course);
+            await _courseRepository.SaveChangesAsync();
 
             // Return course directly without querying DB again
             // The course object in memory already contains all necessary data
@@ -98,6 +99,7 @@ namespace JCertPreApplication.Application.Features.Course
                 course.status = updateCourseDto.Status.Value;
 
             await _courseRepository.UpdateAsync(course);
+            await _courseRepository.SaveChangesAsync();
 
             var updatedCourse = await _courseRepository.GetCourseWithDetailsAsync(courseId);
             return MapToCourseDto(updatedCourse!);
@@ -115,6 +117,7 @@ namespace JCertPreApplication.Application.Features.Course
                 throw ApiException.BadRequest("COURSE_HAS_ENROLLMENTS", "Cannot delete course with existing enrollments");
 
             await _courseRepository.DeleteAsync(course);
+            await _courseRepository.SaveChangesAsync();
         }
 
         public async Task UpdateCourseStatusAsync(Guid courseId, CourseStatus status)
@@ -125,6 +128,7 @@ namespace JCertPreApplication.Application.Features.Course
 
             course.status = status;
             await _courseRepository.UpdateAsync(course);
+            await _courseRepository.SaveChangesAsync();
         }
 
         public async Task AddInstructorToCourseAsync(Guid courseId, Guid instructorId)
@@ -138,6 +142,7 @@ namespace JCertPreApplication.Application.Features.Course
                 throw ApiException.NotFound("User", instructorId);
 
             await _courseRepository.AddInstructorToCourseAsync(courseId, instructorId);
+            await _courseRepository.SaveChangesAsync();
         }
 
         public async Task RemoveInstructorFromCourseAsync(Guid courseId, Guid instructorId)
@@ -147,6 +152,7 @@ namespace JCertPreApplication.Application.Features.Course
                 throw ApiException.NotFound("Course", courseId);
 
             await _courseRepository.RemoveInstructorFromCourseAsync(courseId, instructorId);
+            await _courseRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<AppUserDto>> GetCourseInstructorsAsync(Guid courseId)

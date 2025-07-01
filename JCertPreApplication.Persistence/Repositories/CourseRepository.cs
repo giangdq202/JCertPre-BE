@@ -120,7 +120,7 @@ namespace JCertPreApplication.Persistence.Repositories
             if (!course.Instructors.Any(i => i.userId == instructorId))
             {
                 course.Instructors.Add(instructor);
-                await _context.SaveChangesAsync();
+                // Commit sẽ được thực hiện ở Service layer
             }
         }
 
@@ -137,7 +137,7 @@ namespace JCertPreApplication.Persistence.Repositories
             if (instructor != null)
             {
                 course.Instructors.Remove(instructor);
-                await _context.SaveChangesAsync();
+                // Commit sẽ được thực hiện ở Service layer
             }
         }
 
