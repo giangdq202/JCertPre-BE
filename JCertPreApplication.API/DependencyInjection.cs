@@ -51,22 +51,19 @@ namespace JCertPreApplication.API
                 c.SwaggerDoc("v1", new OpenApiInfo 
                 { 
                     Title = "JCertPre API", 
-                    Description = "API for JCertPre Application - Learning and Certification Platform",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "JCertPre Support",
-                        Email = "support@jcertpre.com"
-                    }
+                    Version = "v1.0.0",
+                    Description = "API for JCertPre Application - A comprehensive learning and certification platform."
                 });
                 
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                    Description = "Enter JWT Bearer token. Format: Bearer {your-jwt-token}",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
                 });
                 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -91,15 +88,23 @@ namespace JCertPreApplication.API
                 c.TagActionsBy(api =>
                 {
                     var controllerName = api.ActionDescriptor.RouteValues["controller"];
-                    return new[] { controllerName };
+                    return new[] { controllerName ?? "Unknown" };
                 });
                 
-                // Enable XML comments if available
+                // Sort actions alphabetically
+                c.OrderActionsBy(apiDesc => apiDesc.RelativePath);
+                
+                // Enable XML comments
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
+                c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+                
+                // Include Application layer XML comments if available
+                var applicationXmlFile = "JCertPreApplication.Application.xml";
+                var applicationXmlPath = Path.Combine(AppContext.BaseDirectory, applicationXmlFile);
+                if (File.Exists(applicationXmlPath))
                 {
-                    c.IncludeXmlComments(xmlPath);
+                    c.IncludeXmlComments(applicationXmlPath);
                 }
             });
         }

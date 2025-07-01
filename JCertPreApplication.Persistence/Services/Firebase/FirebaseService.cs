@@ -2,6 +2,7 @@ using FirebaseAdmin;
 using FirebaseAdmin.Auth;
 using Google.Apis.Auth.OAuth2;
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Domain.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -46,7 +47,7 @@ namespace JCertPreApplication.Persistence.Services.Firebase
             }
         }
 
-        public async Task<FirebaseToken?> VerifyTokenAsync(string firebaseToken)
+        public async Task<FirebaseTokenDto?> VerifyTokenAsync(string firebaseToken)
         {
             try
             {
@@ -58,7 +59,9 @@ namespace JCertPreApplication.Persistence.Services.Firebase
 
                 var decodedToken = await _firebaseAuth.VerifyIdTokenAsync(firebaseToken);
                 _logger.LogDebug("Firebase token verified successfully for user: {UserId}", decodedToken.Uid);
-                return decodedToken;
+                
+                // Map Firebase SDK token to our infrastructure-agnostic DTO
+                return MapToFirebaseTokenDto(decodedToken);
             }
             catch (FirebaseAuthException ex)
             {
@@ -79,19 +82,37 @@ namespace JCertPreApplication.Persistence.Services.Firebase
             if (decodedToken == null)
                 throw new UnauthorizedAccessException("Invalid Firebase token");
 
-            var email = decodedToken.Claims.TryGetValue("email", out var emailClaim) 
+            return (decodedToken.Email, decodedToken.Name, decodedToken.Picture);
+        }
+
+        /// <summary>
+        /// Maps Firebase SDK token to our infrastructure-agnostic DTO
+        /// This isolates the Application layer from Firebase SDK dependencies
+        /// </summary>
+        private static FirebaseTokenDto MapToFirebaseTokenDto(FirebaseToken firebaseToken)
+        {
+            var email = firebaseToken.Claims.TryGetValue("email", out var emailClaim) 
                 ? emailClaim.ToString() ?? string.Empty 
                 : string.Empty;
 
-            var name = decodedToken.Claims.TryGetValue("name", out var nameClaim) 
+            var name = firebaseToken.Claims.TryGetValue("name", out var nameClaim) 
                 ? nameClaim.ToString() ?? string.Empty 
                 : string.Empty;
 
-            var picture = decodedToken.Claims.TryGetValue("picture", out var pictureClaim) 
+            var picture = firebaseToken.Claims.TryGetValue("picture", out var pictureClaim) 
                 ? pictureClaim.ToString() 
                 : null;
 
-            return (email, name, picture);
+            return new FirebaseTokenDto
+            {
+                Uid = firebaseToken.Uid,
+                Email = email,
+                Name = name,
+                Picture = picture,
+                Claims = firebaseToken.Claims.ToDictionary(kv => kv.Key, kv => kv.Value),
+                IssuedAt = DateTimeOffset.FromUnixTimeSeconds(firebaseToken.IssuedAtTimeSeconds).DateTime,
+                ExpirationTime = DateTimeOffset.FromUnixTimeSeconds(firebaseToken.ExpirationTimeSeconds).DateTime
+            };
         }
     }
 } 

@@ -22,7 +22,7 @@ namespace JCertPreApplication.Domain.Entities
         public virtual InstructorProfile InstructorProfile { get; set; }
         public virtual StudentProfile StudentProfile { get; set; }
         public virtual ICollection<Enrollment> Enrollments { get; set; }
-        public virtual ICollection<Course> Courses { get; set; }
+        public virtual ICollection<Course> InstructorCourses { get; set; } = new List<Course>();
         public virtual ICollection<Conversation> Conversations { get; set; }
         public virtual ICollection<Report> StudentReports { get; set; } // For Report.StudentUser
         public virtual ICollection<Report> InstructorReports { get; set; } // For Report.InstructorUser
