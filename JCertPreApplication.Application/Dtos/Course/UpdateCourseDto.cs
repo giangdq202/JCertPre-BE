@@ -21,6 +21,6 @@ namespace JCertPreApplication.Application.Dtos.Course
         [Url(ErrorMessage = "Invalid URL format")]
         public string? ThumbnailUrl { get; set; }
 
-        public string? Status { get; set; }
+        public CourseStatus? Status { get; set; }
     }
 } 

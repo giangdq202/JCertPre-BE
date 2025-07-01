@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Course;
+using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
@@ -18,13 +19,8 @@ namespace JCertPreApplication.Application.Features.Course
             _userRepository = userRepository;
         }
 
-        public async Task<CourseDto> CreateCourseAsync(CreateCourseDto createCourseDto, Guid staffUserId)
+        public async Task<CourseDto> CreateCourseAsync(CreateCourseDto createCourseDto)
         {
-            // Validate user exists and has permission
-            var user = await _userRepository.GetByIdAsync(staffUserId);
-            if (user == null)
-                throw ApiException.NotFound("User", staffUserId);
-
             // Check if title is unique
             if (!await _courseRepository.IsTitleUniqueAsync(createCourseDto.Title))
                 throw ApiException.BadRequest("COURSE_TITLE_EXISTS", "A course with this title already exists");
@@ -33,22 +29,21 @@ namespace JCertPreApplication.Application.Features.Course
             var course = new Domain.Entities.Course
             {
                 courseId = Guid.NewGuid(),
-                staffCreateUserId = staffUserId,
                 title = createCourseDto.Title,
                 description = createCourseDto.Description,
                 level = createCourseDto.Level,
                 courseType = createCourseDto.CourseType,
                 price = createCourseDto.Price,
                 thumbnailUrl = createCourseDto.ThumbnailUrl,
-                status = "Draft", // Default status
+                status = CourseStatus.Draft, // Default status
                 createdAt = DateTime.UtcNow
             };
 
             await _courseRepository.InsertAsync(course);
 
-            // Return course with user information
-            var createdCourse = await _courseRepository.GetCourseWithDetailsAsync(course.courseId);
-            return MapToCourseDto(createdCourse!);
+            // Return course directly without querying DB again
+            // The course object in memory already contains all necessary data
+            return MapToCourseDto(course);
         }
 
         public async Task<CourseDto> GetCourseByIdAsync(Guid courseId)
@@ -107,10 +102,10 @@ namespace JCertPreApplication.Application.Features.Course
                 course.courseType = updateCourseDto.CourseType.Value;
             if (updateCourseDto.Price.HasValue)
                 course.price = updateCourseDto.Price.Value;
-            if (!string.IsNullOrEmpty(updateCourseDto.ThumbnailUrl))
+            if (updateCourseDto.ThumbnailUrl != null) // Allow setting to null
                 course.thumbnailUrl = updateCourseDto.ThumbnailUrl;
-            if (!string.IsNullOrEmpty(updateCourseDto.Status))
-                course.status = updateCourseDto.Status;
+            if (updateCourseDto.Status.HasValue)
+                course.status = updateCourseDto.Status.Value;
 
             await _courseRepository.UpdateAsync(course);
 
@@ -142,7 +137,7 @@ namespace JCertPreApplication.Application.Features.Course
             return courses.Select(MapToCourseListDto);
         }
 
-        public async Task<IEnumerable<CourseListDto>> GetCoursesByStatusAsync(string status)
+        public async Task<IEnumerable<CourseListDto>> GetCoursesByStatusAsync(CourseStatus status)
         {
             var courses = await _courseRepository.GetCoursesByStatusAsync(status);
             return courses.Select(MapToCourseListDto);
@@ -160,19 +155,46 @@ namespace JCertPreApplication.Application.Features.Course
             return courses.Select(MapToCourseListDto);
         }
 
-        public async Task UpdateCourseStatusAsync(Guid courseId, string status)
+        public async Task UpdateCourseStatusAsync(Guid courseId, CourseStatus status)
         {
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
                 throw ApiException.NotFound("Course", courseId);
 
-            // Validate status values (you might want to create an enum for this)
-            var validStatuses = new[] { "Draft", "Published", "Archived", "Suspended" };
-            if (!validStatuses.Contains(status))
-                throw ApiException.BadRequest("INVALID_STATUS", "Invalid course status");
-
             course.status = status;
             await _courseRepository.UpdateAsync(course);
+        }
+
+        public async Task AddInstructorToCourseAsync(Guid courseId, Guid instructorId)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                throw ApiException.NotFound("Course", courseId);
+
+            var user = await _userRepository.GetByIdAsync(instructorId);
+            if (user == null)
+                throw ApiException.NotFound("User", instructorId);
+
+            await _courseRepository.AddInstructorToCourseAsync(courseId, instructorId);
+        }
+
+        public async Task RemoveInstructorFromCourseAsync(Guid courseId, Guid instructorId)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                throw ApiException.NotFound("Course", courseId);
+
+            await _courseRepository.RemoveInstructorFromCourseAsync(courseId, instructorId);
+        }
+
+        public async Task<IEnumerable<AppUserDto>> GetCourseInstructorsAsync(Guid courseId)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                throw ApiException.NotFound("Course", courseId);
+
+            var instructors = await _courseRepository.GetCourseInstructorsAsync(courseId);
+            return instructors.Select(MapToAppUserDto);
         }
 
         private static CourseDto MapToCourseDto(Domain.Entities.Course course)
@@ -188,11 +210,10 @@ namespace JCertPreApplication.Application.Features.Course
                 ThumbnailUrl = course.thumbnailUrl,
                 Status = course.status,
                 CreatedAt = course.createdAt,
-                CreatedByUserName = course.User?.fullName ?? "Unknown",
-                StaffCreateUserId = course.staffCreateUserId,
                 LessonsCount = course.Lessons?.Count ?? 0,
                 LivestreamsCount = course.Livestreams?.Count ?? 0,
-                EnrollmentsCount = course.Enrollments?.Count ?? 0
+                EnrollmentsCount = course.Enrollments?.Count ?? 0,
+                Instructors = course.Instructors?.Select(MapToAppUserDto).ToList() ?? new List<AppUserDto>()
             };
         }
 
@@ -209,8 +230,19 @@ namespace JCertPreApplication.Application.Features.Course
                 ThumbnailUrl = course.thumbnailUrl,
                 Status = course.status,
                 CreatedAt = course.createdAt,
-                CreatedByUserName = course.User?.fullName ?? "Unknown",
-                EnrollmentsCount = course.Enrollments?.Count ?? 0
+                EnrollmentsCount = course.Enrollments?.Count ?? 0,
+                InstructorsCount = course.Instructors?.Count ?? 0
+            };
+        }
+
+        private static AppUserDto MapToAppUserDto(User user)
+        {
+            return new AppUserDto
+            {
+                Id = user.userId,
+                fullName = user.fullName,
+                email = user.email,
+                phone = user.phone
             };
         }
     }

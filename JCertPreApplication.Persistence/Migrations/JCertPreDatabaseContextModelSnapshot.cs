@@ -37,6 +37,21 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("ConversationParticipant", (string)null);
                 });
 
+            modelBuilder.Entity("CourseInstructor", b =>
+                {
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CourseId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CourseInstructor");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.AttemptAnswer", b =>
                 {
                     b.Property<Guid>("answerId")
@@ -129,16 +144,13 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<Guid>("staffCreateUserId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("thumbnailUrl")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<string>("title")
                         .IsRequired()
@@ -146,8 +158,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.HasKey("courseId");
-
-                    b.HasIndex("staffCreateUserId");
 
                     b.ToTable("Courses");
                 });
@@ -796,6 +806,21 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("CourseInstructor", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCertPreApplication.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.AttemptAnswer", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.TestAttempt", "TestAttempt")
@@ -832,17 +857,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Question");
-                });
-
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Course", b =>
-                {
-                    b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
-                        .WithMany("Courses")
-                        .HasForeignKey("staffCreateUserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Document", b =>
@@ -1166,8 +1180,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
                 {
-                    b.Navigation("Courses");
-
                     b.Navigation("CreatedTests");
 
                     b.Navigation("Enrollments");

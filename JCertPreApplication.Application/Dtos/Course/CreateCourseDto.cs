@@ -23,8 +23,7 @@ namespace JCertPreApplication.Application.Dtos.Course
         [Range(0, double.MaxValue, ErrorMessage = "Price must be greater than or equal to 0")]
         public decimal Price { get; set; }
 
-        [Required(ErrorMessage = "Thumbnail URL is required")]
         [Url(ErrorMessage = "Invalid URL format")]
-        public string ThumbnailUrl { get; set; }
+        public string? ThumbnailUrl { get; set; }
     }
 } 

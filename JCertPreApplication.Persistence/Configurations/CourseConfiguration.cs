@@ -12,30 +12,32 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasKey(c => c.courseId);
 
             // Configure required properties and constraints
-            builder.Property(c => c.staffCreateUserId).IsRequired();
             builder.Property(c => c.title).IsRequired().HasMaxLength(100);
             builder.Property(c => c.description).IsRequired().HasMaxLength(1000);
             builder.Property(c => c.level).IsRequired();
             builder.Property(c => c.courseType).IsRequired();
             builder.Property(c => c.price).HasPrecision(18, 2).IsRequired();
-            builder.Property(c => c.thumbnailUrl).IsRequired();
-            builder.Property(c => c.status).IsRequired();
+            builder.Property(c => c.thumbnailUrl).HasMaxLength(500);
+            builder.Property(c => c.status).IsRequired().HasConversion<string>();
             builder.Property(c => c.createdAt).IsRequired();
 
-            // Configure foreign key relationship
-            builder.HasOne(c => c.User)
-                   .WithMany()
-                   .HasForeignKey(c => c.staffCreateUserId).OnDelete(DeleteBehavior.NoAction);
+            // Configure many-to-many relationship with instructors
+            builder.HasMany(c => c.Instructors)
+                   .WithMany(u => u.InstructorCourses)
+                   .UsingEntity(
+                       "CourseInstructor",
+                       l => l.HasOne(typeof(User)).WithMany().HasForeignKey("UserId"),
+                       r => r.HasOne(typeof(Course)).WithMany().HasForeignKey("CourseId"),
+                       j => j.HasKey("CourseId", "UserId"));
+
             // Configure navigation properties
             builder.HasMany(c => c.Lessons)
                    .WithOne()
                    .HasForeignKey(l => l.courseId).OnDelete(DeleteBehavior.NoAction);
+            
             builder.HasMany(c => c.Livestreams)
                    .WithOne()
                    .HasForeignKey(ls => ls.courseId).OnDelete(DeleteBehavior.NoAction);
-
-
-
 
             builder.HasMany(c => c.Feedbacks)
                    .WithOne()

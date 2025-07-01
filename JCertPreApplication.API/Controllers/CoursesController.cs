@@ -66,11 +66,7 @@ namespace JCertPreApplication.API.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // For now, use a hardcoded user ID. In real implementation, get from JWT token
-            // var staffUserId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? throw new UnauthorizedAccessException());
-            var staffUserId = Guid.NewGuid(); // Temporary - replace with actual user ID from authentication
-
-            var course = await _courseService.CreateCourseAsync(createCourseDto, staffUserId);
+            var course = await _courseService.CreateCourseAsync(createCourseDto);
             return CreatedAtAction(nameof(GetCourse), new { id = course.CourseId }, course);
         }
 
@@ -122,7 +118,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="status">Course status (Draft, Published, Archived, Suspended)</param>
         /// <returns>List of courses with the specified status</returns>
         [HttpGet("status/{status}")]
-        public async Task<IActionResult> GetCoursesByStatus(string status)
+        public async Task<IActionResult> GetCoursesByStatus(CourseStatus status)
         {
             var courses = await _courseService.GetCoursesByStatusAsync(status);
             return Ok(courses);
@@ -131,7 +127,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Get courses by level
         /// </summary>
-        /// <param name="level">Course level (Beginner, Intermediate, Advanced)</param>
+        /// <param name="level">Course level (N5, N4, N3, N2, N1)</param>
         /// <returns>List of courses with the specified level</returns>
         [HttpGet("level/{level}")]
         public async Task<IActionResult> GetCoursesByLevel(CourseLevel level)
@@ -160,10 +156,50 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>No content</returns>
         [HttpPatch("{id}/status")]
         // [Authorize] // Uncomment when authentication is implemented
-        public async Task<IActionResult> UpdateCourseStatus(Guid id, [FromBody] string status)
+        public async Task<IActionResult> UpdateCourseStatus(Guid id, [FromBody] CourseStatus status)
         {
             await _courseService.UpdateCourseStatusAsync(id, status);
             return NoContent();
+        }
+
+        /// <summary>
+        /// Add instructor to course
+        /// </summary>
+        /// <param name="courseId">Course ID</param>
+        /// <param name="instructorId">Instructor user ID</param>
+        /// <returns>No content</returns>
+        [HttpPost("{courseId}/instructors/{instructorId}")]
+        // [Authorize] // Uncomment when authentication is implemented
+        public async Task<IActionResult> AddInstructorToCourse(Guid courseId, Guid instructorId)
+        {
+            await _courseService.AddInstructorToCourseAsync(courseId, instructorId);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Remove instructor from course
+        /// </summary>
+        /// <param name="courseId">Course ID</param>
+        /// <param name="instructorId">Instructor user ID</param>
+        /// <returns>No content</returns>
+        [HttpDelete("{courseId}/instructors/{instructorId}")]
+        // [Authorize] // Uncomment when authentication is implemented
+        public async Task<IActionResult> RemoveInstructorFromCourse(Guid courseId, Guid instructorId)
+        {
+            await _courseService.RemoveInstructorFromCourseAsync(courseId, instructorId);
+            return NoContent();
+        }
+
+        /// <summary>
+        /// Get instructors of a course
+        /// </summary>
+        /// <param name="courseId">Course ID</param>
+        /// <returns>List of instructors</returns>
+        [HttpGet("{courseId}/instructors")]
+        public async Task<IActionResult> GetCourseInstructors(Guid courseId)
+        {
+            var instructors = await _courseService.GetCourseInstructorsAsync(courseId);
+            return Ok(instructors);
         }
     }
 } 
