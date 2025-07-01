@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<QuestionAttachment> builder)
         {
             // Configure primary key
+            builder.ToTable("question_attachment");
             builder.HasKey(qa => qa.attachmentId);
 
             // Configure required properties and constraints

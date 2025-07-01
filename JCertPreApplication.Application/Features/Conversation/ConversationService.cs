@@ -1,6 +1,8 @@
 ﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Message;
 using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,26 +25,29 @@ namespace JCertPreApplication.Application.Features.Conversation
             _messageRepository = messageRepository ?? throw new ArgumentNullException(nameof(messageRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+
         }
 
         public async Task<Domain.Entities.Conversation> CreateConversationAsync(Guid studentId)
         {
             var student = await _userRepository.GetByIdAsync(studentId);
-            if (student == null || student.roleId != GetRoleId("Student"))
+            if (student == null || student.Role == null || student.Role.roleName != "Student")
             {
                 throw new ArgumentException("Invalid student.");
             }
 
-            // Lấy danh sách Academic Manager
-            var academicManagers = await _userRepository.GetAllAsync(u => u.Role.roleName == "Academic Manager");
+            var academicManagers = await _userRepository.GetAcademicManagersAsync();
             if (!academicManagers.Any())
             {
                 throw new InvalidOperationException("No Academic Manager available.");
             }
 
-            // Chọn ngẫu nhiên một Academic Manager
             var random = new Random();
             var academicManager = academicManagers.ElementAt(random.Next(academicManagers.Count()));
+            if (academicManager.Role == null || academicManager.Role.roleName != "Academic Manager")
+            {
+                throw new ArgumentException("Invalid academic manager role.");
+            }
 
             var conversation = new Domain.Entities.Conversation
             {
@@ -51,48 +56,76 @@ namespace JCertPreApplication.Application.Features.Conversation
                 createdAt = DateTime.UtcNow,
                 Participants = new List<User> { student, academicManager }
             };
+
             await _conversationRepository.InsertAsync(conversation);
             await _conversationRepository.SaveChangesAsync();
             return conversation;
         }
 
-        public async Task<Message> SendMessageAsync(Guid conversationId, string content)
+        public async Task<Message> SendMessageAsync(Guid conversationId, MessageRequest messageRequest)
         {
-            var userId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
             var conversation = await _conversationRepository.GetByIdWithDetailsAsync(conversationId);
-            if (conversation == null || !conversation.Participants.Any(p => p.userId == userId))
+            if (conversation == null)
             {
-                throw new UnauthorizedAccessException("Not authorized to send message.");
+                throw new ArgumentException("Conversation not found.");
+            }
+
+            var senderId = messageRequest.senderId;
+         
+
+            var sender = await _userRepository.GetByIdAsync(senderId);
+            if (sender == null)
+            {
+                throw new ArgumentException("Sender not found.");
             }
 
             var message = new Message
             {
                 messageId = Guid.NewGuid(),
+                content = messageRequest.Content,
+                senderId = senderId,
                 conversationId = conversationId,
-                senderId = userId,
-                content = content,
                 sentAt = DateTime.UtcNow
             };
+
             await _messageRepository.InsertAsync(message);
             await _messageRepository.SaveChangesAsync();
+
             return message;
         }
 
         public async Task AssignInstructorAsync(Guid conversationId, Guid instructorId)
         {
             var conversation = await _conversationRepository.GetByIdWithDetailsAsync(conversationId);
-            var instructor = await _userRepository.GetByIdAsync(instructorId);
-            var currentUserId = Guid.Parse(_httpContextAccessor.HttpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? string.Empty);
-            if (conversation == null || instructor == null || conversation.Participants.FirstOrDefault(p => p.userId == currentUserId)?.roleId != GetRoleId("Academic Manager") || instructor.roleId != GetRoleId("Instructor"))
+            if (conversation == null)
             {
-                throw new UnauthorizedAccessException("Not authorized to assign instructor.");
+                throw new ArgumentException("Conversation not found.");
             }
 
-            conversation.Participants.Add(instructor); // Thêm Instructor vào danh sách Participants
-            await _conversationRepository.UpdateAsync(conversation);
-            await _conversationRepository.SaveChangesAsync();
-        }
+            var instructor = await _userRepository.GetByIdAsync(instructorId);
+            if (instructor == null)
+            {
+                throw new ArgumentException("Instructor not found.");
+            }
 
+            if (instructor.Role?.roleName != "Instructor")
+            {
+                throw new ArgumentException("User is not an instructor.");
+            }
+
+            // Thêm instructor vào Participants nếu chưa có
+            if (!conversation.Participants.Any(p => p.userId == instructorId))
+            {
+                conversation.Participants.Add(instructor);
+                await _conversationRepository.SaveChangesAsync();
+            }
+        }
+        public async Task<List<Message>> GetMyMessagesAsync(Guid userId)
+        {
+            
+            var messageIds = await _messageRepository.GetAllAsync(m => m.senderId == userId);
+            return messageIds.ToList();
+        }
         public async Task<Domain.Entities.Conversation> GetConversationAsync(Guid conversationId)
         {
             return await _conversationRepository.GetByIdWithDetailsAsync(conversationId);

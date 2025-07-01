@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Message> builder)
         {
             // Configure primary key
+            builder.ToTable("message");
             builder.HasKey(m => m.messageId);
 
             // Configure required properties and constraints

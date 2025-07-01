@@ -60,7 +60,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("questionId");
 
-                    b.ToTable("AttemptAnswers");
+                    b.ToTable("attempt_answer", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Choice", b =>
@@ -83,7 +83,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("questionId");
 
-                    b.ToTable("Choices");
+                    b.ToTable("choice", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Conversation", b =>
@@ -102,7 +102,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("conversationId");
 
-                    b.ToTable("Conversations");
+                    b.ToTable("conversation", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Course", b =>
@@ -149,7 +149,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("staffCreateUserId");
 
-                    b.ToTable("Courses");
+                    b.ToTable("course", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Document", b =>
@@ -177,7 +177,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("lessonId");
 
-                    b.ToTable("Documents");
+                    b.ToTable("document", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Enrollment", b =>
@@ -205,7 +205,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("userId");
 
-                    b.ToTable("Enrollments");
+                    b.ToTable("enrollment", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Feedback", b =>
@@ -239,7 +239,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("userId");
 
-                    b.ToTable("Feedbacks");
+                    b.ToTable("feedback", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.InstructorProfile", b =>
@@ -262,7 +262,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("userId");
 
-                    b.ToTable("InstructorProfiles");
+                    b.ToTable("instructor_profile", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Lesson", b =>
@@ -290,7 +290,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("courseId");
 
-                    b.ToTable("Lessons");
+                    b.ToTable("lesson", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Livestream", b =>
@@ -324,7 +324,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("courseId");
 
-                    b.ToTable("Livestreams");
+                    b.ToTable("livestream", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Message", b =>
@@ -353,7 +353,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("senderId");
 
-                    b.ToTable("Messages");
+                    b.ToTable("message", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Payment", b =>
@@ -397,7 +397,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("userId");
 
-                    b.ToTable("Payments");
+                    b.ToTable("payment", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>
@@ -424,7 +424,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("questionId");
 
-                    b.ToTable("Questions");
+                    b.ToTable("question", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.QuestionAttachment", b =>
@@ -449,7 +449,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("questionId");
 
-                    b.ToTable("QuestionAttachments");
+                    b.ToTable("question_attachment", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Report", b =>
@@ -482,7 +482,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("reporterStudentId");
 
-                    b.ToTable("Reports");
+                    b.ToTable("report", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Role", b =>
@@ -502,7 +502,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("roleId");
 
-                    b.ToTable("Roles");
+                    b.ToTable("role", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.StudentProfile", b =>
@@ -521,7 +521,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("userId");
 
-                    b.ToTable("StudentProfiles");
+                    b.ToTable("student_profile", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.StudyPlan", b =>
@@ -558,7 +558,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("studentId");
 
-                    b.ToTable("StudyPlans");
+                    b.ToTable("study_plan", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.StudyPlanItem", b =>
@@ -588,7 +588,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("planId");
 
-                    b.ToTable("StudyPlanItems");
+                    b.ToTable("study_plan_item", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Tag", b =>
@@ -617,7 +617,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("tagId");
 
-                    b.ToTable("Tags");
+                    b.ToTable("tag", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
@@ -655,7 +655,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("lessonId");
 
-                    b.ToTable("Tests");
+                    b.ToTable("test", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestAttempt", b =>
@@ -697,7 +697,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("userId");
 
-                    b.ToTable("TestAttempts");
+                    b.ToTable("test_attempt", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
@@ -748,7 +748,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("roleId");
 
-                    b.ToTable("Users");
+                    b.ToTable("user", (string)null);
                 });
 
             modelBuilder.Entity("QuestionTag", b =>
@@ -763,7 +763,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("tagId");
 
-                    b.ToTable("QuestionTags", (string)null);
+                    b.ToTable("question_tag", (string)null);
                 });
 
             modelBuilder.Entity("QuestionTest", b =>
@@ -778,7 +778,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("TeststestId");
 
-                    b.ToTable("QuestionTests", (string)null);
+                    b.ToTable("question_test", (string)null);
                 });
 
             modelBuilder.Entity("ConversationUser", b =>

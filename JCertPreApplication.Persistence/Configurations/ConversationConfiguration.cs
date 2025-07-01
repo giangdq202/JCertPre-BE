@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Conversation> builder)
         {
             // Configure primary key
+            builder.ToTable("conversation");
             builder.HasKey(c => c.conversationId);
 
             // Configure properties
@@ -22,7 +23,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure navigation properties
             builder.HasMany(c => c.Participants)
                    .WithMany(cp => cp.Conversations)
-                   .UsingEntity(j => j.ToTable("ConversationParticipant"));
+                   .UsingEntity(j => j.ToTable("conversation_participant"));
 
             builder.HasMany(c => c.Messages)
                    .WithOne(m => m.Conversation)
