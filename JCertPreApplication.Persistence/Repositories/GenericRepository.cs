@@ -60,6 +60,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             var entry = await _dbSet.AddAsync(entity);
+            await _context.SaveChangesAsync();
             return entry.Entity;
         }
 
@@ -67,14 +68,14 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             _context.Entry(entity).State = EntityState.Modified;
-            await Task.CompletedTask; // Async để nhất quán
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(T entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             _dbSet.Remove(entity);
-            await Task.CompletedTask; // Async để nhất quán
+            await _context.SaveChangesAsync();
         }
 
         public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)

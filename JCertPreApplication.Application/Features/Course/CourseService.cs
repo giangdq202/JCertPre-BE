@@ -55,25 +55,15 @@ namespace JCertPreApplication.Application.Features.Course
             return MapToCourseDto(course);
         }
 
-        public async Task<IEnumerable<CourseListDto>> GetAllCoursesAsync()
+        public async Task<Pagination<CourseListDto>> GetCoursesWithPaginationAsync(CourseQueryParameters queryParameters)
         {
-            var courses = await _courseRepository.GetAllAsync();
-            return courses.Select(MapToCourseListDto);
-        }
-
-        public async Task<Pagination<CourseListDto>> GetCoursesWithPaginationAsync(int pageNumber, int pageSize, string? searchTerm = null)
-        {
-            if (pageNumber <= 0) pageNumber = 1;
-            if (pageSize <= 0) pageSize = 10;
-            if (pageSize > 100) pageSize = 100; // Limit max page size
-
-            var paginatedCourses = await _courseRepository.GetCoursesWithPaginationAsync(pageNumber, pageSize, searchTerm);
+            var paginatedCourses = await _courseRepository.GetCoursesWithPaginationAsync(queryParameters);
             
             return new Pagination<CourseListDto>
             {
                 Items = paginatedCourses.Items.Select(MapToCourseListDto).ToList(),
                 TotalItemsCount = paginatedCourses.TotalItemsCount,
-                PageIndex = pageNumber - 1, // Convert to 0-based for consistency
+                PageIndex = paginatedCourses.PageIndex,
                 PageSize = paginatedCourses.PageSize
             };
         }
@@ -125,34 +115,6 @@ namespace JCertPreApplication.Application.Features.Course
                 throw ApiException.BadRequest("COURSE_HAS_ENROLLMENTS", "Cannot delete course with existing enrollments");
 
             await _courseRepository.DeleteAsync(course);
-        }
-
-        public async Task<IEnumerable<CourseListDto>> GetCoursesByInstructorAsync(Guid instructorId)
-        {
-            var user = await _userRepository.GetByIdAsync(instructorId);
-            if (user == null)
-                throw ApiException.NotFound("User", instructorId);
-
-            var courses = await _courseRepository.GetCoursesByInstructorAsync(instructorId);
-            return courses.Select(MapToCourseListDto);
-        }
-
-        public async Task<IEnumerable<CourseListDto>> GetCoursesByStatusAsync(CourseStatus status)
-        {
-            var courses = await _courseRepository.GetCoursesByStatusAsync(status);
-            return courses.Select(MapToCourseListDto);
-        }
-
-        public async Task<IEnumerable<CourseListDto>> GetCoursesByLevelAsync(CourseLevel level)
-        {
-            var courses = await _courseRepository.GetCoursesByLevelAsync(level);
-            return courses.Select(MapToCourseListDto);
-        }
-
-        public async Task<IEnumerable<CourseListDto>> GetCoursesByTypeAsync(CourseType courseType)
-        {
-            var courses = await _courseRepository.GetCoursesByTypeAsync(courseType);
-            return courses.Select(MapToCourseListDto);
         }
 
         public async Task UpdateCourseStatusAsync(Guid courseId, CourseStatus status)

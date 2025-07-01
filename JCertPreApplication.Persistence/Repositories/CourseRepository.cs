@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Utilities;
+using JCertPreApplication.Application.Dtos.Course;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using JCertPreApplication.Persistence.DatabaseContext;
@@ -30,59 +31,48 @@ namespace JCertPreApplication.Persistence.Repositories
                 .FirstOrDefaultAsync(c => c.title.ToLower() == title.ToLower());
         }
 
-        public async Task<IEnumerable<Course>> GetCoursesByInstructorAsync(Guid instructorId)
-        {
-            return await _dbSet
-                .Include(c => c.Instructors)
-                .Include(c => c.Enrollments)
-                .Where(c => c.Instructors.Any(i => i.userId == instructorId))
-                .OrderByDescending(c => c.createdAt)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Course>> GetCoursesByStatusAsync(CourseStatus status)
-        {
-            return await _dbSet
-                .Include(c => c.Instructors)
-                .Include(c => c.Enrollments)
-                .Where(c => c.status == status)
-                .OrderByDescending(c => c.createdAt)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Course>> GetCoursesByLevelAsync(CourseLevel level)
-        {
-            return await _dbSet
-                .Include(c => c.Instructors)
-                .Include(c => c.Enrollments)
-                .Where(c => c.level == level)
-                .OrderByDescending(c => c.createdAt)
-                .ToListAsync();
-        }
-
-        public async Task<IEnumerable<Course>> GetCoursesByTypeAsync(CourseType courseType)
-        {
-            return await _dbSet
-                .Include(c => c.Instructors)
-                .Include(c => c.Enrollments)
-                .Where(c => c.courseType == courseType)
-                .OrderByDescending(c => c.createdAt)
-                .ToListAsync();
-        }
-
-        public async Task<Pagination<Course>> GetCoursesWithPaginationAsync(int pageNumber, int pageSize, string? searchTerm = null)
+        public async Task<Pagination<Course>> GetCoursesWithPaginationAsync(CourseQueryParameters queryParameters)
         {
             var query = _dbSet
                 .Include(c => c.Instructors)
                 .Include(c => c.Enrollments)
                 .AsQueryable();
 
-            if (!string.IsNullOrEmpty(searchTerm))
+            // Apply search filter
+            if (!string.IsNullOrEmpty(queryParameters.SearchTerm))
             {
                 query = query.Where(c => 
-                    c.title.ToLower().Contains(searchTerm.ToLower()) ||
-                    c.description.ToLower().Contains(searchTerm.ToLower()));
+                    c.title.ToLower().Contains(queryParameters.SearchTerm.ToLower()) ||
+                    c.description.ToLower().Contains(queryParameters.SearchTerm.ToLower()));
             }
+
+            // Apply instructor filter
+            if (queryParameters.InstructorId.HasValue)
+            {
+                query = query.Where(c => c.Instructors.Any(i => i.userId == queryParameters.InstructorId.Value));
+            }
+
+            // Apply status filter
+            if (queryParameters.Status.HasValue)
+            {
+                query = query.Where(c => c.status == queryParameters.Status.Value);
+            }
+
+            // Apply level filter
+            if (queryParameters.Level.HasValue)
+            {
+                query = query.Where(c => c.level == queryParameters.Level.Value);
+            }
+
+            // Apply course type filter
+            if (queryParameters.CourseType.HasValue)
+            {
+                query = query.Where(c => c.courseType == queryParameters.CourseType.Value);
+            }
+
+            // Validate and set pagination parameters
+            var pageNumber = queryParameters.PageNumber <= 0 ? 1 : queryParameters.PageNumber;
+            var pageSize = queryParameters.PageSize <= 0 ? 10 : (queryParameters.PageSize > 100 ? 100 : queryParameters.PageSize);
 
             var totalCount = await query.CountAsync();
             var items = await query

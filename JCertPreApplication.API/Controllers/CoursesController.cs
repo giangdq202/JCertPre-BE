@@ -18,28 +18,15 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get all courses with pagination
+        /// Get courses with filtering, searching, and pagination
         /// </summary>
-        /// <param name="pageNumber">Page number (default: 1)</param>
-        /// <param name="pageSize">Page size (default: 10, max: 100)</param>
-        /// <param name="searchTerm">Search term for title and description</param>
+        /// <param name="queryParameters">Query parameters for filtering, searching, and pagination</param>
         /// <returns>Paginated list of courses</returns>
         [HttpGet]
-        public async Task<IActionResult> GetCourses([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10, [FromQuery] string? searchTerm = null)
+        public async Task<IActionResult> GetCourses([FromQuery] CourseQueryParameters queryParameters)
         {
-            var result = await _courseService.GetCoursesWithPaginationAsync(pageNumber, pageSize, searchTerm);
+            var result = await _courseService.GetCoursesWithPaginationAsync(queryParameters);
             return Ok(result);
-        }
-
-        /// <summary>
-        /// Get all courses without pagination
-        /// </summary>
-        /// <returns>List of all courses</returns>
-        [HttpGet("all")]
-        public async Task<IActionResult> GetAllCourses()
-        {
-            var courses = await _courseService.GetAllCoursesAsync();
-            return Ok(courses);
         }
 
         /// <summary>
@@ -98,54 +85,6 @@ namespace JCertPreApplication.API.Controllers
         {
             await _courseService.DeleteCourseAsync(id);
             return NoContent();
-        }
-
-        /// <summary>
-        /// Get courses by instructor/staff user ID
-        /// </summary>
-        /// <param name="instructorId">Instructor user ID</param>
-        /// <returns>List of courses created by the instructor</returns>
-        [HttpGet("instructor/{instructorId}")]
-        public async Task<IActionResult> GetCoursesByInstructor(Guid instructorId)
-        {
-            var courses = await _courseService.GetCoursesByInstructorAsync(instructorId);
-            return Ok(courses);
-        }
-
-        /// <summary>
-        /// Get courses by status
-        /// </summary>
-        /// <param name="status">Course status (Draft, Published, Archived, Suspended)</param>
-        /// <returns>List of courses with the specified status</returns>
-        [HttpGet("status/{status}")]
-        public async Task<IActionResult> GetCoursesByStatus(CourseStatus status)
-        {
-            var courses = await _courseService.GetCoursesByStatusAsync(status);
-            return Ok(courses);
-        }
-
-        /// <summary>
-        /// Get courses by level
-        /// </summary>
-        /// <param name="level">Course level (N5, N4, N3, N2, N1)</param>
-        /// <returns>List of courses with the specified level</returns>
-        [HttpGet("level/{level}")]
-        public async Task<IActionResult> GetCoursesByLevel(CourseLevel level)
-        {
-            var courses = await _courseService.GetCoursesByLevelAsync(level);
-            return Ok(courses);
-        }
-
-        /// <summary>
-        /// Get courses by type
-        /// </summary>
-        /// <param name="type">Course type</param>
-        /// <returns>List of courses with the specified type</returns>
-        [HttpGet("type/{type}")]
-        public async Task<IActionResult> GetCoursesByType(CourseType type)
-        {
-            var courses = await _courseService.GetCoursesByTypeAsync(type);
-            return Ok(courses);
         }
 
         /// <summary>
