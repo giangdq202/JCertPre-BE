@@ -131,6 +131,10 @@ static void ConfigurePipeline(WebApplication app)
     app.UseCors("AllowSpecificOrigins");
     app.UseHttpsRedirection();
     app.UseAuthentication();
+    
+    // Token revocation check - must be after authentication but before authorization
+    app.UseMiddleware<TokenRevocationMiddleware>();
+    
     app.UseAuthorization();
     app.MapControllers();
 }

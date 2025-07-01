@@ -1,4 +1,4 @@
-﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
@@ -44,6 +44,8 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddHttpContextAccessor();
+            services.AddScoped<ITokenCacheRepository, TokenCacheRepository>();
+            
             // Infrastructure Services
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddSingleton<IPasswordService, PasswordService>();
