@@ -22,7 +22,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             var guidId = id is Guid ? (Guid)id : Guid.Empty; // Xử lý kiểu dữ liệu
-            return await _dbSet.FindAsync(guidId) ?? throw new KeyNotFoundException($"Entity with ID {id} not found.");
+            return await _dbSet.FindAsync(guidId);
         }
 
         public async Task<List<T>> GetAllAsync(string? includeProperties = null)
