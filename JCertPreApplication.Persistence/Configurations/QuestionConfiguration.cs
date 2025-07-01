@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Question> builder)
         {
             // Configure primary key
+            builder.ToTable("question");
             builder.HasKey(q => q.questionId);
 
             // Configure required properties and constraints
@@ -20,12 +21,12 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasMany(q => q.Tag)
                .WithMany(t => t.Questions)
-               .UsingEntity(j => j.ToTable("QuestionTags"));
+               .UsingEntity(j => j.ToTable("question_tag"));
 
             // Configure navigation properties
             builder.HasMany(q => q.Tests)
                    .WithMany(t => t.Questions)
-                   .UsingEntity(j => j.ToTable("QuestionTests"));
+                   .UsingEntity(j => j.ToTable("question_test"));
 
             builder.HasMany(q => q.Choices)
                    .WithOne(c => c.Question)

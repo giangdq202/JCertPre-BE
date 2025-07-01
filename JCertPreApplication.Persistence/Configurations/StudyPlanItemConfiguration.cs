@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<StudyPlanItem> builder)
         {
             // Configure primary key
+            builder.ToTable("study_plan_item");
             builder.HasKey(spi => spi.itemId);
 
             // Configure required properties and constraints

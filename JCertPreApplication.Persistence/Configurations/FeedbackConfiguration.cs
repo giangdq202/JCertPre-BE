@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Feedback> builder)
         {
             // Configure primary key
+            builder.ToTable("feedback");
             builder.HasKey(f => f.feedbackId);
 
             // Configure required properties

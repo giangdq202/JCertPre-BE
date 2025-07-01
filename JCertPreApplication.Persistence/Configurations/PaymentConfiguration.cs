@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Payment> builder)
         {
             // Configure primary key
+            builder.ToTable("payment");
             builder.HasKey(p => p.paymentId);
 
             // Configure required properties and constraints

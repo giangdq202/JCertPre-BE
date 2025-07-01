@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Test> builder)
         {
             // Configure primary key
+            builder.ToTable("test");
             builder.HasKey(t => t.testId);
 
             // Configure required properties and constraints
@@ -30,7 +31,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(t => t.Questions)
                .WithMany(q => q.Tests) // Đồng bộ với QuestionConfiguration
-               .UsingEntity(j => j.ToTable("QuestionTests"));
+               .UsingEntity(j => j.ToTable("question_test"));
 
             builder.HasMany(t => t.TestAttempts)
                    .WithOne(q => q.Test)
