@@ -1,35 +1,48 @@
 namespace JCertPreApplication.API.Common
 {
     /// <summary>
-    /// Standard error response structure for all API errors.
-    /// This ensures consistent error handling across the entire application.
+    /// 🚨 Standardized API error response structure.
     /// </summary>
-    public record ApiErrorResponse(
+    /// <remarks>
+    /// This class provides a consistent error response format across all API endpoints.
+    /// It includes error codes, messages, and optional details for debugging.
+    /// </remarks>
+    public class ApiErrorResponse
+    {
         /// <summary>
-        /// HTTP status code (e.g., 400, 401, 404, 500)
+        /// Machine-readable error code for programmatic handling.
         /// </summary>
-        int Status,
-        
+        /// <example>COURSE_NOT_FOUND</example>
+        public string ErrorCode { get; set; } = string.Empty;
+
         /// <summary>
-        /// Application-specific error code for easy debugging and client handling
-        /// Examples: "USER_NOT_FOUND", "INVALID_CREDENTIALS", "VALIDATION_FAILED"
+        /// Human-readable error message describing what went wrong.
         /// </summary>
-        string ErrorCode,
-        
+        /// <example>The requested course could not be found.</example>
+        public string Message { get; set; } = string.Empty;
+
         /// <summary>
-        /// Human-readable error message
+        /// Additional error details for debugging (typically shown in development only).
         /// </summary>
-        string Message,
-        
+        /// <example>Course with ID '3fa85f64-5717-4562-b3fc-2c963f66afa6' does not exist in the database.</example>
+        public string? Details { get; set; }
+
         /// <summary>
-        /// Trace ID for server-side error tracking (only for 500 errors)
+        /// HTTP status code associated with this error.
         /// </summary>
-        string? TraceId = null,
-        
+        /// <example>404</example>
+        public int StatusCode { get; set; }
+
         /// <summary>
-        /// Detailed validation errors (only for validation failures)
-        /// Key: field name, Value: array of error messages for that field
+        /// Timestamp when the error occurred (UTC).
         /// </summary>
-        Dictionary<string, string[]>? Errors = null
-    );
+        /// <example>2024-01-15T08:30:00Z</example>
+        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+
+        /// <summary>
+        /// Request path where the error occurred.
+        /// </summary>
+        /// <example>/api/Courses/3fa85f64-5717-4562-b3fc-2c963f66afa6</example>
+        public string? Path { get; set; }
+    }
 } 

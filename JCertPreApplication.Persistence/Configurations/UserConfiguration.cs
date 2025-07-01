@@ -44,9 +44,7 @@ namespace JCertPreApplication.Persistence.Configurations
                    .WithOne(e => e.User)
                    .HasForeignKey(e => e.userId).OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasMany(u => u.Courses)
-                   .WithOne(c => c.User)
-                   .HasForeignKey(c => c.staffCreateUserId).OnDelete(DeleteBehavior.NoAction);
+
 
             builder.HasMany(u => u.Conversations)
                    .WithMany(cp => cp.Participants)

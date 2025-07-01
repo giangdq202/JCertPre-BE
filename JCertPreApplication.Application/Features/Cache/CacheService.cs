@@ -37,7 +37,7 @@ namespace JCertPreApplication.Application.Features.Cache
                 // Re-throw our custom exceptions
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw new ApiException(HttpStatusCode.InternalServerError, "CACHE_SERVICE_ERROR", 
                     "An error occurred while processing cache operations.");
