@@ -24,7 +24,7 @@
         /// </summary>
         public bool Next => PageIndex + 1 < TotalPagesCount;
         public bool Previous => PageIndex > 0;
-        public ICollection<T> Items { get; set; }
+        public ICollection<T> Items { get; set; } = new List<T>();
 
     }
 }

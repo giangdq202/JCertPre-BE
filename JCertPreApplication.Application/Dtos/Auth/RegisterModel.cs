@@ -2,21 +2,47 @@
 
 namespace JCertPreApplication.Application.Dtos.Auth
 {
+    /// <summary>
+    /// 📝 User registration data transfer object.
+    /// </summary>
+    /// <remarks>
+    /// This DTO contains all required information for creating a new user account.
+    /// Includes validation attributes to ensure data integrity and security.
+    /// </remarks>
     public class RegisterModel
     {
-        [Required(ErrorMessage = "Full name is required")]
-        public string fullName { get; set; }
-
+        /// <summary>
+        /// User's email address (will be used as login username).
+        /// </summary>
+        /// <example>newuser@jcertpre.com</example>
         [Required(ErrorMessage = "Email is required")]
-        [EmailAddress(ErrorMessage = "Invalid email address")]
-        public string email { get; set; }
+        [EmailAddress(ErrorMessage = "Please provide a valid email address")]
+        [StringLength(254, ErrorMessage = "Email cannot exceed 254 characters")]
+        public string Email { get; set; } = string.Empty;
 
+        /// <summary>
+        /// User's password for account security.
+        /// </summary>
+        /// <example>MyStrongPassword123!</example>
         [Required(ErrorMessage = "Password is required")]
-        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters long")]
-        public string password { get; set; }
+        [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be between 6 and 100 characters")]
+        public string Password { get; set; } = string.Empty;
 
+        /// <summary>
+        /// User's full name for profile and display purposes.
+        /// </summary>
+        /// <example>Yamada Taro</example>
+        [Required(ErrorMessage = "Full name is required")]
+        [StringLength(100, MinimumLength = 2, ErrorMessage = "Full name must be between 2 and 100 characters")]
+        public string FullName { get; set; } = string.Empty;
+
+        /// <summary>
+        /// User's phone number (optional). Include country code if international.
+        /// </summary>
+        /// <example>+81-90-1234-5678</example>
+        [Phone(ErrorMessage = "Please provide a valid phone number")]
         [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
-        public string? phone { get; set; }
+        public string? Phone { get; set; }
 
         [StringLength(500, ErrorMessage = "Avatar URL cannot exceed 500 characters")]
         public string? avatarUrl { get; set; }

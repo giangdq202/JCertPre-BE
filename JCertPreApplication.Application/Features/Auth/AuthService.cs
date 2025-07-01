@@ -58,15 +58,15 @@ namespace JCertPreApplication.Application.Features.Auth
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model)
         {
             // Check if email already exists
-            var existingUserByEmail = await _userRepository.GetFirstOrDefaultAsync(u => u.email == model.email);
+            var existingUserByEmail = await _userRepository.GetFirstOrDefaultAsync(u => u.email == model.Email);
             if (existingUserByEmail != null)
             {
-                throw ApiException.BadRequest("EMAIL_ALREADY_EXISTS", $"User with email '{model.email}' already exists.");
+                throw ApiException.BadRequest("EMAIL_ALREADY_EXISTS", $"User with email '{model.Email}' already exists.");
             }
 
             // Phone is optional information, no need to check for uniqueness
 
-            var hashedPassword = _passwordService.HashPassword(model.password);
+            var hashedPassword = _passwordService.HashPassword(model.Password);
             var defaultRole = await _roleRepository.GetByRoleNameAsync("STUDENT");
             if (defaultRole == null)
             {
@@ -78,10 +78,10 @@ namespace JCertPreApplication.Application.Features.Auth
             var user = new User
             {
                 userId = Guid.NewGuid(),
-                fullName = model.fullName,
-                email = model.email,
+                fullName = model.FullName,
+                email = model.Email,
                 passwordHash = hashedPassword,
-                phone = model.phone,
+                phone = model.Phone,
                 avatarUrl = model.avatarUrl,
                 credit = 0,
                 createdAt = DateTime.UtcNow,
@@ -200,7 +200,7 @@ namespace JCertPreApplication.Application.Features.Auth
             {
                 throw ApiException.Unauthorized("INVALID_ACCESS_TOKEN", "Invalid or malformed access token.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 // Any other exception during token validation means invalid token
                 throw ApiException.Unauthorized("TOKEN_REFRESH_ERROR", "An error occurred during token refresh.");
@@ -283,7 +283,7 @@ namespace JCertPreApplication.Application.Features.Auth
             {
                 throw ApiException.Unauthorized("FIREBASE_AUTH_FAILED", "Firebase authentication failed.");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw ApiException.InternalServerError("FIREBASE_LOGIN_ERROR", "An error occurred during Firebase login.");
             }
@@ -403,7 +403,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 // Re-throw our custom exceptions
                 throw;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw ApiException.InternalServerError("LOGOUT_ERROR", "An error occurred during logout.");
             }

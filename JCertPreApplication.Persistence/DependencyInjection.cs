@@ -45,6 +45,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddHttpContextAccessor();
             services.AddScoped<ITokenCacheRepository, TokenCacheRepository>();
+            services.AddScoped<ICourseRepository, CourseRepository>();
             
             // Infrastructure Services
             services.AddScoped<IFirebaseService, FirebaseService>();

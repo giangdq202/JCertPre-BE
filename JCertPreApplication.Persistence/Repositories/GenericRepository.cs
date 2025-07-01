@@ -22,7 +22,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             var guidId = id is Guid ? (Guid)id : Guid.Empty; // Xử lý kiểu dữ liệu
-            return await _dbSet.FindAsync(guidId) ?? throw new KeyNotFoundException($"Entity with ID {id} not found.");
+            return await _dbSet.FindAsync(guidId);
         }
 
         public async Task<List<T>> GetAllAsync(string? includeProperties = null)
@@ -67,14 +67,14 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             _context.Entry(entity).State = EntityState.Modified;
-            await Task.CompletedTask; // Async để nhất quán
+            await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(T entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             _dbSet.Remove(entity);
-            await Task.CompletedTask; // Async để nhất quán
+            await Task.CompletedTask;
         }
 
         public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
