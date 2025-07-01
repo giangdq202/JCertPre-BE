@@ -11,6 +11,5 @@ namespace JCertPreApplication.Application.Contracts
         Task<T?> GetAsync<T>(string key);
         Task SetAsync<T>(string key, T value, TimeSpan? expiry = null);
         Task DeleteAsync(string key);
-        Task ClearAllAsync();
     }
 }

@@ -43,23 +43,5 @@ namespace JCertPreApplication.Application.Features.Cache
                     "An error occurred while processing cache operations.");
             }
         }
-
-        public async Task ClearAllAsync()
-        {
-            try
-            {
-                await _cacheRepository.ClearAllAsync();
-            }
-            catch (ApiException)
-            {
-                // Re-throw our custom exceptions
-                throw;
-            }
-            catch (Exception)
-            {
-                throw new ApiException(HttpStatusCode.InternalServerError, "CACHE_CLEAR_ERROR", 
-                    "An error occurred while clearing cache.");
-            }
-        }
     }
 }
