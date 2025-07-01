@@ -5,24 +5,24 @@ using Microsoft.AspNetCore.Mvc;
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// 🗄️ Cache Management API Controller
+    /// Cache Management API Controller
     /// </summary>
     /// <remarks>
     /// Provides cache management functionality for performance optimization and debugging.
     /// 
-    /// **Cache System:**
+    /// Cache System:
     /// - Redis-based distributed caching
     /// - Key-value storage with TTL (Time To Live)
     /// - High-performance data retrieval
     /// - Session and application data caching
     /// 
-    /// **Use Cases:**
+    /// Use Cases:
     /// - Performance monitoring and debugging
     /// - Cache invalidation for data updates
     /// - Administrative cache management
     /// - Development and testing utilities
     /// 
-    /// **Security Note:**
+    /// Security Note:
     /// These endpoints should be protected with appropriate authorization
     /// in production environments to prevent unauthorized cache manipulation.
     /// </remarks>
@@ -40,37 +40,37 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 🧹 Clear all cached data
+        /// Clear all cached data
         /// </summary>
         /// <remarks>
         /// Removes all cached data from the Redis cache system.
         /// 
-        /// **⚠️ Warning: This operation is irreversible!**
+        /// Warning: This operation is irreversible!
         /// 
-        /// **What Gets Cleared:**
+        /// What Gets Cleared:
         /// - All application cache entries
         /// - Session data (users will need to re-authenticate)
         /// - Temporary data and performance caches
         /// - Any custom cached objects
         /// 
-        /// **Use Cases:**
+        /// Use Cases:
         /// - Development environment cleanup
         /// - Cache corruption recovery
         /// - System maintenance and updates
         /// - Testing cache-dependent functionality
         /// 
-        /// **Performance Impact:**
+        /// Performance Impact:
         /// - Immediate: Cache warming will be required
         /// - Short-term: Increased database load as cache rebuilds
         /// - Users may experience slower response times temporarily
         /// 
-        /// **Best Practices:**
+        /// Best Practices:
         /// - Use during low-traffic periods
         /// - Notify users of potential temporary slowdowns
         /// - Consider selective cache clearing instead of full flush
         /// - Monitor system performance after cache clear
         /// 
-        /// **Production Considerations:**
+        /// Production Considerations:
         /// - Should require administrative privileges
         /// - Consider implementing confirmation mechanisms
         /// - Log cache clear operations for auditing

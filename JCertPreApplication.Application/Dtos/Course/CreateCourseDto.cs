@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace JCertPreApplication.Application.Dtos.Course
 {
     /// <summary>
-    /// 📚 Data transfer object for creating a new course.
+    /// Data transfer object for creating a new course.
     /// </summary>
     /// <remarks>
     /// This DTO contains all required information to create a new course. 

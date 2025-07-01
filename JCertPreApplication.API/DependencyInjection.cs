@@ -52,49 +52,13 @@ namespace JCertPreApplication.API
                 { 
                     Title = "JCertPre API", 
                     Version = "v1.0.0",
-                    Description = @"🏗️ **JCertPre Backend API** - Clean Architecture Solution
-
-API for JCertPre Application - A comprehensive learning and certification platform built with .NET 8 following Clean Architecture principles.
-
-## Features
-- 🔐 **Authentication & Authorization** with JWT and Firebase
-- 📚 **Course Management** with filtering, pagination, and search
-- 👥 **User Management** with roles and profiles  
-- 💾 **Redis Caching** for performance optimization
-- 🏛️ **Clean Architecture** with clear separation of concerns
-
-## Architecture Layers
-- **API Layer**: Controllers and middleware
-- **Application Layer**: Business logic and use cases
-- **Domain Layer**: Core entities and business rules
-- **Persistence Layer**: Data access and external services
-
-For more information, visit our [GitHub Repository](https://github.com/your-repo/JCertPre-BE)",
-                    Contact = new OpenApiContact
-                    {
-                        Name = "JCertPre Development Team",
-                        Email = "dev@jcertpre.com",
-                        Url = new Uri("https://github.com/your-repo/JCertPre-BE")
-                    },
-                    License = new OpenApiLicense
-                    {
-                        Name = "MIT License",
-                        Url = new Uri("https://opensource.org/licenses/MIT")
-                    }
+                    Description = "API for JCertPre Application - A comprehensive learning and certification platform."
                 });
                 
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = @"🔐 **JWT Authorization Header**
-
-Enter JWT Bearer token in the field below.
-
-**Format:** `Bearer {your-jwt-token}`
-
-**Example:** `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-
-You can obtain a token by calling the `/api/Auth/login` endpoint.",
+                    Description = "Enter JWT Bearer token. Format: Bearer {your-jwt-token}",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,

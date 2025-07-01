@@ -10,7 +10,7 @@ using System.Security.Claims;
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// 📚 Course Management API Controller
+    /// Course Management API Controller
     /// </summary>
     /// <remarks>
     /// Provides comprehensive course management functionality including:
@@ -19,7 +19,7 @@ namespace JCertPreApplication.API.Controllers
     /// - Instructor management for courses
     /// - Status management and publishing workflow
     /// 
-    /// **Key Features:**
+    /// Key Features:
     /// - Unified filtering endpoint supporting multiple criteria
     /// - Pagination for large datasets
     /// - Many-to-many instructor relationships
@@ -39,27 +39,25 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 🔍 Get courses with advanced filtering, searching, and pagination
+        /// Get courses with advanced filtering, searching, and pagination
         /// </summary>
         /// <remarks>
-        /// **Unified endpoint** for retrieving courses with flexible filtering options.
+        /// Unified endpoint for retrieving courses with flexible filtering options.
         /// 
-        /// This endpoint replaces multiple individual filtering endpoints and supports:
-        /// - **Search**: Filter by title/description keywords
-        /// - **Instructor Filter**: Show courses taught by specific instructor
-        /// - **Status Filter**: Filter by course status (Draft, Published, etc.)
-        /// - **Level Filter**: Filter by JLPT level (N5, N4, N3, N2, N1)
-        /// - **Type Filter**: Filter by delivery method (Online, Offline, Hybrid)
-        /// - **Pagination**: Control page size and navigate through results
+        /// This endpoint supports:
+        /// - Search: Filter by title/description keywords
+        /// - Instructor Filter: Show courses taught by specific instructor
+        /// - Status Filter: Filter by course status (Draft, Published, etc.)
+        /// - Level Filter: Filter by JLPT level (N5, N4, N3, N2, N1)
+        /// - Type Filter: Filter by delivery method (Online, Offline, Hybrid)
+        /// - Pagination: Control page size and navigate through results
         /// 
-        /// **Multiple filters can be combined** in a single request for precise results.
+        /// Multiple filters can be combined in a single request for precise results.
         /// 
-        /// **Examples:**
-        /// ```
+        /// Examples:
         /// GET /api/Courses?level=N5&amp;status=Published&amp;pageSize=20
         /// GET /api/Courses?searchTerm=beginner&amp;courseType=Online
         /// GET /api/Courses?instructorId=3fa85f64-5717-4562-b3fc-2c963f66afa6&amp;pageNumber=2
-        /// ```
         /// </remarks>
         /// <param name="queryParameters">Query parameters for filtering, searching, and pagination</param>
         /// <returns>Paginated list of courses matching the specified criteria</returns>
@@ -77,7 +75,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 📖 Get detailed course information by ID
+        /// Get detailed course information by ID
         /// </summary>
         /// <remarks>
         /// Retrieves complete course information including:
@@ -86,7 +84,7 @@ namespace JCertPreApplication.API.Controllers
         /// - Statistics (lesson count, enrollment count, etc.)
         /// - All course properties and relationships
         /// 
-        /// **Use this endpoint** when you need complete course information for:
+        /// Use this endpoint when you need complete course information for:
         /// - Course detail pages
         /// - Course editing forms
         /// - Administrative reviews
@@ -109,23 +107,23 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// ➕ Create a new course
+        /// Create a new course
         /// </summary>
         /// <remarks>
         /// Creates a new course with the provided information.
         /// 
-        /// **Important Notes:**
-        /// - Course title must be **unique** across all courses
-        /// - New courses are created with **Draft** status by default
+        /// Important Notes:
+        /// - Course title must be unique across all courses
+        /// - New courses are created with Draft status by default
         /// - Instructors can be assigned separately using instructor management endpoints
         /// - Thumbnail URL is optional and can be added later
         /// 
-        /// **Workflow:**
+        /// Workflow:
         /// 1. Create course (this endpoint) → Status: Draft
         /// 2. Add content and instructors
         /// 3. Update status to Published when ready
         /// 
-        /// **Required Fields:**
+        /// Required Fields:
         /// - Title (3-200 characters, must be unique)
         /// - Description (10-2000 characters)
         /// - Level (N5, N4, N3, N2, N1)
@@ -154,26 +152,26 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// ✏️ Update an existing course
+        /// Update an existing course
         /// </summary>
         /// <remarks>
         /// Updates an existing course with new information.
         /// 
-        /// **Partial Update Support:**
+        /// Partial Update Support:
         /// - Only provide the fields you want to change
         /// - Unchanged fields will retain their current values
         /// - All fields are optional, but at least one should be provided
         /// 
-        /// **Special Handling:**
-        /// - **Title**: Must remain unique if changed
-        /// - **ThumbnailUrl**: Set to `null` to remove current thumbnail
-        /// - **Status**: Can be updated here or via dedicated status endpoint
+        /// Special Handling:
+        /// - Title: Must remain unique if changed
+        /// - ThumbnailUrl: Set to null to remove current thumbnail
+        /// - Status: Can be updated here or via dedicated status endpoint
         /// 
-        /// **Validation:**
+        /// Validation:
         /// - Same validation rules as creation apply to updated fields
         /// - Title uniqueness is checked excluding the current course
         /// 
-        /// **Use Cases:**
+        /// Use Cases:
         /// - Content updates and corrections
         /// - Price adjustments
         /// - Status changes and publishing workflow
@@ -204,29 +202,29 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 🗑️ Delete a course
+        /// Delete a course
         /// </summary>
         /// <remarks>
-        /// **Permanently deletes** a course from the system.
+        /// Permanently deletes a course from the system.
         /// 
-        /// **⚠️ Important Restrictions:**
-        /// - Courses with **existing enrollments cannot be deleted**
-        /// - This operation is **irreversible**
+        /// Important Restrictions:
+        /// - Courses with existing enrollments cannot be deleted
+        /// - This operation is irreversible
         /// - Consider changing status to 'Archived' instead for courses with enrollments
         /// 
-        /// **Pre-deletion Checks:**
+        /// Pre-deletion Checks:
         /// - Verifies course exists
         /// - Checks for active enrollments
         /// - Ensures data integrity
         /// 
-        /// **What Gets Deleted:**
+        /// What Gets Deleted:
         /// - Course record and metadata
         /// - Course-instructor relationships
         /// - Associated lessons and livestreams
-        /// - ⚠️ **Use with extreme caution**
+        /// - Use with extreme caution
         /// 
-        /// **Recommended Alternative:**
-        /// For courses with enrollments, use `PATCH /api/Courses/{id}/status` to set status to 'Archived' instead.
+        /// Recommended Alternative:
+        /// For courses with enrollments, use PATCH /api/Courses/{id}/status to set status to 'Archived' instead.
         /// </remarks>
         /// <param name="id">Course ID to delete</param>
         /// <returns>No content if deletion was successful</returns>
@@ -247,28 +245,28 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 🔄 Update course status
+        /// Update course status
         /// </summary>
         /// <remarks>
         /// Updates the publication status of a course.
         /// 
-        /// **Available Statuses:**
-        /// - **Draft**: Course is being developed (default for new courses)
-        /// - **Published**: Course is live and available for enrollment
-        /// - **Archived**: Course is no longer active but remains accessible to enrolled students
-        /// - **Suspended**: Course is temporarily unavailable (e.g., for maintenance)
+        /// Available Statuses:
+        /// - Draft: Course is being developed (default for new courses)
+        /// - Published: Course is live and available for enrollment
+        /// - Archived: Course is no longer active but remains accessible to enrolled students
+        /// - Suspended: Course is temporarily unavailable (e.g., for maintenance)
         /// 
-        /// **Common Workflows:**
-        /// - `Draft` → `Published`: When course is ready for students
-        /// - `Published` → `Archived`: When course is being retired
-        /// - `Published` → `Suspended`: For temporary unavailability
-        /// - `Suspended` → `Published`: To reactivate a course
+        /// Common Workflows:
+        /// - Draft → Published: When course is ready for students
+        /// - Published → Archived: When course is being retired
+        /// - Published → Suspended: For temporary unavailability
+        /// - Suspended → Published: To reactivate a course
         /// 
-        /// **Status-specific Behavior:**
-        /// - **Draft**: Only visible to instructors/admins
-        /// - **Published**: Visible to all users, open for enrollment
-        /// - **Archived**: No new enrollments, existing students retain access
-        /// - **Suspended**: Not visible to students, enrollments paused
+        /// Status-specific Behavior:
+        /// - Draft: Only visible to instructors/admins
+        /// - Published: Visible to all users, open for enrollment
+        /// - Archived: No new enrollments, existing students retain access
+        /// - Suspended: Not visible to students, enrollments paused
         /// </remarks>
         /// <param name="id">Course ID to update status for</param>
         /// <param name="status">New status to set (Draft, Published, Archived, Suspended)</param>
@@ -290,28 +288,28 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 👨‍🏫 Add instructor to course
+        /// Add instructor to course
         /// </summary>
         /// <remarks>
         /// Assigns an instructor to a course, establishing a many-to-many relationship.
         /// 
-        /// **Key Features:**
+        /// Key Features:
         /// - Multiple instructors can be assigned to a single course
         /// - Instructors can teach multiple courses
         /// - Duplicate assignments are automatically prevented
         /// - Validates both course and instructor existence
         /// 
-        /// **Prerequisites:**
+        /// Prerequisites:
         /// - Course must exist
         /// - User (instructor) must exist in the system
         /// - User should have appropriate instructor role/permissions
         /// 
-        /// **Use Cases:**
+        /// Use Cases:
         /// - Assigning primary instructors to new courses
         /// - Adding co-instructors to existing courses
         /// - Building instructor teams for complex courses
         /// 
-        /// **Note:** This operation is idempotent - adding an already assigned instructor will not cause an error.
+        /// Note: This operation is idempotent - adding an already assigned instructor will not cause an error.
         /// </remarks>
         /// <param name="courseId">Course ID to assign instructor to</param>
         /// <param name="instructorId">User ID of the instructor to assign</param>
@@ -333,27 +331,27 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 👨‍🏫➖ Remove instructor from course
+        /// Remove instructor from course
         /// </summary>
         /// <remarks>
         /// Removes an instructor assignment from a course.
         /// 
-        /// **Important Considerations:**
+        /// Important Considerations:
         /// - Removing the last instructor from a course may affect course availability
         /// - Consider course continuity before removing instructors
         /// - Operation is safe - removing a non-assigned instructor won't cause errors
         /// 
-        /// **Use Cases:**
+        /// Use Cases:
         /// - Instructor role changes or departures
         /// - Course restructuring
         /// - Temporary instructor removal
         /// 
-        /// **Best Practices:**
+        /// Best Practices:
         /// - Ensure at least one instructor remains assigned to active courses
         /// - Communicate changes to affected students
         /// - Consider updating course status if no instructors remain
         /// 
-        /// **Note:** This operation is idempotent - removing a non-assigned instructor will not cause an error.
+        /// Note: This operation is idempotent - removing a non-assigned instructor will not cause an error.
         /// </remarks>
         /// <param name="courseId">Course ID to remove instructor from</param>
         /// <param name="instructorId">User ID of the instructor to remove</param>
@@ -375,23 +373,23 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// 👥 Get course instructors
+        /// Get course instructors
         /// </summary>
         /// <remarks>
         /// Retrieves a list of all instructors assigned to a specific course.
         /// 
-        /// **Returned Information:**
+        /// Returned Information:
         /// - Instructor basic details (name, email, phone)
         /// - Unique user identifiers
         /// - Contact information for course coordination
         /// 
-        /// **Use Cases:**
+        /// Use Cases:
         /// - Displaying instructor information on course pages
         /// - Administrative course management
         /// - Student inquiries and contact
         /// - Course quality assurance
         /// 
-        /// **Response Format:**
+        /// Response Format:
         /// Returns an array of instructor objects with essential information.
         /// Does not include sensitive data like passwords or detailed profiles.
         /// </remarks>

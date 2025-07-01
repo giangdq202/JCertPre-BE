@@ -4,7 +4,7 @@ using JCertPreApplication.Domain.Enums;
 namespace JCertPreApplication.Application.Dtos.Course
 {
     /// <summary>
-    /// 📚 Complete course information data transfer object.
+    /// Complete course information data transfer object.
     /// </summary>
     /// <remarks>
     /// This DTO represents the full course details including instructors, counts, and all metadata.
