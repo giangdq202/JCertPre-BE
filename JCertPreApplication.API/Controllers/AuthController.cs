@@ -1,14 +1,11 @@
-﻿using JCertPreApplication.Application.Dtos.Auth;
+using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Features.Auth;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace JCertPreApplication.API.Controllers
 {
-    /// <summary>
-    /// Authentication controller handling user registration, login, token management and validation
-    /// </summary>
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     public class AuthController : ControllerBase
     {

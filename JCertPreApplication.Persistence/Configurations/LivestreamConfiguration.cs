@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Livestream> builder)
         {
             // Configure primary key
+            builder.ToTable("livestream");
             builder.HasKey(ls => ls.livestreamId);
 
             // Configure required properties

@@ -1,6 +1,7 @@
 ﻿using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
+using Npgsql.NameTranslation;
 
 namespace JCertPreApplication.Persistence.DatabaseContext
 {
@@ -10,7 +11,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             : base(options)
         {
         }
-
+        
         // DbSet cho tất cả các entity
         public DbSet<AttemptAnswer> AttemptAnswers { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
