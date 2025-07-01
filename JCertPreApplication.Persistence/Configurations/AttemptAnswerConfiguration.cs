@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<AttemptAnswer> builder)
         {
             // Configure primary key
+            builder.ToTable("attempt_answer");
             builder.HasKey(aa => aa.answerId);
 
             // Configure required properties

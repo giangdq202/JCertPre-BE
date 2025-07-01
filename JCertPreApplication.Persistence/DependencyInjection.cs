@@ -1,4 +1,4 @@
-﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
@@ -8,6 +8,7 @@ using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql.NameTranslation;
 
 namespace JCertPreApplication.Persistence
 {
@@ -27,7 +28,7 @@ namespace JCertPreApplication.Persistence
                 );
             }
 
-            // Configure Database
+            //Configure Database
             services.AddDbContext<JCertPreDatabaseContext>(options =>
                 options.UseNpgsql(connectionString));
 
@@ -40,6 +41,9 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<ICacheRepository, RedisCacheRepository>();
+            services.AddScoped<IConversationRepository, ConversationRepository>();
+            services.AddScoped<IMessageRepository, MessageRepository>();
+            services.AddHttpContextAccessor();
             services.AddScoped<ITokenCacheRepository, TokenCacheRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
             

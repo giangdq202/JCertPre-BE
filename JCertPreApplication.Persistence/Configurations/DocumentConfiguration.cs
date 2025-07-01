@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Document> builder)
         {
             // Configure primary key
+            builder.ToTable("document");
             builder.HasKey(d => d.documentId);
 
             // Configure required properties and constraints

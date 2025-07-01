@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<InstructorProfile> builder)
         {
             // Configure primary key
+            builder.ToTable("instructor_profile");
             builder.HasKey(ip => ip.userId);
 
             // Configure required properties and constraints

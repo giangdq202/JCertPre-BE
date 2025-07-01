@@ -18,12 +18,12 @@ var app = builder.Build();
 ConfigurePipeline(app);
 
 // Display configuration status (if enabled)
-var apiConfig = new ApiConfiguration();
-app.Configuration.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
-if (apiConfig.ShowConfigurationStatus)
-{
-    DisplayConfigurationStatus(app);
-}
+//var apiConfig = new ApiConfiguration();
+//app.Configuration.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
+//if (apiConfig.ShowConfigurationStatus)
+//{
+//    DisplayConfigurationStatus(app);
+//}
 
 app.Run();
 

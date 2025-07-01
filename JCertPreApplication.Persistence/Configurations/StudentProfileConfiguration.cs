@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<StudentProfile> builder)
         {
             // Configure primary key
+            builder.ToTable("student_profile");
             builder.HasKey(sp => sp.userId);
 
             // Configure required properties and constraints

@@ -9,6 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
         public void Configure(EntityTypeBuilder<Lesson> builder)
         {
             // Configure primary key
+            builder.ToTable("lesson");
             builder.HasKey(l => l.lessonId);
 
             // Configure required properties and constraints
