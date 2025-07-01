@@ -51,22 +51,55 @@ namespace JCertPreApplication.API
                 c.SwaggerDoc("v1", new OpenApiInfo 
                 { 
                     Title = "JCertPre API", 
-                    Description = "API for JCertPre Application - Learning and Certification Platform",
+                    Version = "v1.0.0",
+                    Description = @"🏗️ **JCertPre Backend API** - Clean Architecture Solution
+
+API for JCertPre Application - A comprehensive learning and certification platform built with .NET 8 following Clean Architecture principles.
+
+## Features
+- 🔐 **Authentication & Authorization** with JWT and Firebase
+- 📚 **Course Management** with filtering, pagination, and search
+- 👥 **User Management** with roles and profiles  
+- 💾 **Redis Caching** for performance optimization
+- 🏛️ **Clean Architecture** with clear separation of concerns
+
+## Architecture Layers
+- **API Layer**: Controllers and middleware
+- **Application Layer**: Business logic and use cases
+- **Domain Layer**: Core entities and business rules
+- **Persistence Layer**: Data access and external services
+
+For more information, visit our [GitHub Repository](https://github.com/your-repo/JCertPre-BE)",
                     Contact = new OpenApiContact
                     {
-                        Name = "JCertPre Support",
-                        Email = "support@jcertpre.com"
+                        Name = "JCertPre Development Team",
+                        Email = "dev@jcertpre.com",
+                        Url = new Uri("https://github.com/your-repo/JCertPre-BE")
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "MIT License",
+                        Url = new Uri("https://opensource.org/licenses/MIT")
                     }
                 });
                 
                 // Add JWT Authentication to Swagger
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
-                    Description = "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'",
+                    Description = @"🔐 **JWT Authorization Header**
+
+Enter JWT Bearer token in the field below.
+
+**Format:** `Bearer {your-jwt-token}`
+
+**Example:** `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
+
+You can obtain a token by calling the `/api/Auth/login` endpoint.",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
                     Type = SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer"
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT"
                 });
                 
                 c.AddSecurityRequirement(new OpenApiSecurityRequirement()
@@ -91,15 +124,23 @@ namespace JCertPreApplication.API
                 c.TagActionsBy(api =>
                 {
                     var controllerName = api.ActionDescriptor.RouteValues["controller"];
-                    return new[] { controllerName };
+                    return new[] { controllerName ?? "Unknown" };
                 });
                 
-                // Enable XML comments if available
+                // Sort actions alphabetically
+                c.OrderActionsBy(apiDesc => apiDesc.RelativePath);
+                
+                // Enable XML comments
                 var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                if (File.Exists(xmlPath))
+                c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
+                
+                // Include Application layer XML comments if available
+                var applicationXmlFile = "JCertPreApplication.Application.xml";
+                var applicationXmlPath = Path.Combine(AppContext.BaseDirectory, applicationXmlFile);
+                if (File.Exists(applicationXmlPath))
                 {
-                    c.IncludeXmlComments(xmlPath);
+                    c.IncludeXmlComments(applicationXmlPath);
                 }
             });
         }

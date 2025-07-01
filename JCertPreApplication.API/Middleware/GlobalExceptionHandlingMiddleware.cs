@@ -41,12 +41,14 @@ namespace JCertPreApplication.API.Middleware
                 // Business logic errors that we intentionally throw
                 case ApiException apiEx:
                     context.Response.StatusCode = (int)apiEx.StatusCode;
-                    response = new ApiErrorResponse(
-                        Status: (int)apiEx.StatusCode,
-                        ErrorCode: apiEx.ErrorCode,
-                        Message: apiEx.Message,
-                        Errors: apiEx.ValidationErrors
-                    );
+                    response = new ApiErrorResponse
+                    {
+                        StatusCode = (int)apiEx.StatusCode,
+                        ErrorCode = apiEx.ErrorCode,
+                        Message = apiEx.Message,
+                        Details = apiEx.ValidationErrors?.Count > 0 ? string.Join("; ", apiEx.ValidationErrors) : null,
+                        Path = context.Request.Path
+                    };
                     
                     // Log business logic errors at Warning level (not critical)
                     _logger.LogWarning("API Exception: {ErrorCode} - {Message}", 
@@ -58,12 +60,14 @@ namespace JCertPreApplication.API.Middleware
                     context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
                     var traceId = Activity.Current?.Id ?? context.TraceIdentifier;
 
-                    response = new ApiErrorResponse(
-                        Status: (int)HttpStatusCode.InternalServerError,
-                        ErrorCode: "INTERNAL_SERVER_ERROR",
-                        Message: "An unexpected error has occurred. Please contact support with the trace ID.",
-                        TraceId: traceId
-                    );
+                    response = new ApiErrorResponse
+                    {
+                        StatusCode = (int)HttpStatusCode.InternalServerError,
+                        ErrorCode = "INTERNAL_SERVER_ERROR",
+                        Message = "An unexpected error has occurred. Please contact support with the trace ID.",
+                        Details = traceId,
+                        Path = context.Request.Path
+                    };
                     
                     // Log system errors at Error level with full details
                     _logger.LogError(exception, 

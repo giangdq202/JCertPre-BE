@@ -100,5 +100,21 @@ namespace JCertPreApplication.Persistence.Repositories
                     "Failed to delete data from cache.");
             }
         }
+
+        public async Task ClearAllAsync()
+        {
+            try
+            {
+                var server = _database.Multiplexer.GetServer(_database.Multiplexer.GetEndPoints().First());
+                await server.FlushDatabaseAsync(_database.Database);
+                _logger.LogInformation("Cache cleared successfully.");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to clear all cache data");
+                throw new ApiException(HttpStatusCode.InternalServerError, "CACHE_CLEAR_ERROR", 
+                    "Failed to clear all cache data.");
+            }
+        }
     }
 }
