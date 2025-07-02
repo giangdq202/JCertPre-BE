@@ -47,6 +47,10 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasMany(c => c.Enrollments)
                    .WithOne()
                    .HasForeignKey(e => e.courseId).OnDelete(DeleteBehavior.NoAction);
+            builder.HasMany(c => c.StudyPlanItems)
+                .WithOne(spi => spi.Course)
+                     .IsRequired(false) // Nullable foreign key
+                     .HasForeignKey(spi => spi.courseId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

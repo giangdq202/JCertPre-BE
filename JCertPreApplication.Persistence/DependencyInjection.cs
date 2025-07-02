@@ -43,10 +43,10 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ICacheRepository, RedisCacheRepository>();
             services.AddScoped<IConversationRepository, ConversationRepository>();
             services.AddScoped<IMessageRepository, MessageRepository>();
-            services.AddHttpContextAccessor();
             services.AddScoped<ITokenCacheRepository, TokenCacheRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
-            
+            services.AddScoped<IInstructorProfileRepository, InstructorProfileRepository>();
+            services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
             // Infrastructure Services
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddSingleton<IPasswordService, PasswordService>();
