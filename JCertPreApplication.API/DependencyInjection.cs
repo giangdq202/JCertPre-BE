@@ -42,6 +42,7 @@ namespace JCertPreApplication.API
         {
             services.AddControllers();
             services.AddEndpointsApiExplorer();
+            services.AddHttpContextAccessor(); // Required for accessing HTTP context in services
         }
 
         private static void AddSwaggerServices(IServiceCollection services)

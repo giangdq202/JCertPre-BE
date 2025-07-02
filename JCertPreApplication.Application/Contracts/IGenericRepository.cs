@@ -6,7 +6,7 @@ namespace JCertPreApplication.Application.Contracts
     public interface IGenericRepository<T>
     where T : class
     {
-        Task<T> GetByIdAsync(object id);
+        Task<T?> GetByIdAsync(object id);
         Task<List<T>> GetAllAsync(string? includeProperties = null);
         Task<List<T>> GetAllAsync(Expression<Func<T, bool>> filter, string? includeProperties = null);
         Task<IQueryable<T>> GetAll();
@@ -14,7 +14,7 @@ namespace JCertPreApplication.Application.Contracts
         Task AddRangeAsync(IEnumerable<T> entities);
         Task UpdateAsync(T entity);
         Task DeleteAsync(T entity);
-        Task<T> GetFirstOrDefaultAsync(
+        Task<T?> GetFirstOrDefaultAsync(
             Expression<Func<T, bool>> predicate,
             string? includeProperties = null
         );

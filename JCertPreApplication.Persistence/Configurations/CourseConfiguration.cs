@@ -26,7 +26,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasMany(c => c.Instructors)
                    .WithMany(u => u.InstructorCourses)
                    .UsingEntity(
-                       "CourseInstructor",
+                       "course_instructor",
                        l => l.HasOne(typeof(User)).WithMany().HasForeignKey("UserId"),
                        r => r.HasOne(typeof(Course)).WithMany().HasForeignKey("CourseId"),
                        j => j.HasKey("CourseId", "UserId"));
