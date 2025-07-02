@@ -34,7 +34,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("ParticipantsuserId");
 
-                    b.ToTable("ConversationParticipant", (string)null);
+                    b.ToTable("conversation_participant", (string)null);
                 });
 
             modelBuilder.Entity("CourseInstructor", b =>
@@ -798,6 +798,21 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("question_test", (string)null);
                 });
 
+            modelBuilder.Entity("course_instructor", b =>
+                {
+                    b.Property<Guid>("CourseId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("CourseId", "UserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("course_instructor");
+                });
+
             modelBuilder.Entity("ConversationUser", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Conversation", null)
@@ -1137,6 +1152,21 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Test", null)
                         .WithMany()
                         .HasForeignKey("TeststestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("course_instructor", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.Course", null)
+                        .WithMany()
+                        .HasForeignKey("CourseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCertPreApplication.Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

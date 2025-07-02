@@ -11,7 +11,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
         }
 
-        public async Task<Role> GetByRoleNameAsync(string roleName)
+        public async Task<Role?> GetByRoleNameAsync(string roleName)
         {
             return await _dbSet.FirstOrDefaultAsync(r => r.roleName == roleName);
         }

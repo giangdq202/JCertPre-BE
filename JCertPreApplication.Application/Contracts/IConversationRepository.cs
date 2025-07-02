@@ -9,19 +9,18 @@ namespace JCertPreApplication.Application.Contracts
 {
     public interface IConversationRepository : IGenericRepository<Conversation>
     {
-        Task<Conversation> GetByIdWithDetailsAsync(Guid conversationId);
+        Task<Conversation?> GetByIdWithDetailsAsync(Guid conversationId);
 
         Task<List<Conversation>> GetAllAsync();
 
+        Task<IEnumerable<Conversation>> GetConversationsForUserAsync(Guid userId);
 
-        Task InsertAsync(Conversation conversation);
+        new Task InsertAsync(Conversation conversation);
 
-
-        Task UpdateAsync(Conversation conversation);
-
+        new Task UpdateAsync(Conversation conversation);
 
         Task DeleteAsync(Guid conversationId);
 
-        Task SaveChangesAsync();
+        new Task SaveChangesAsync();
     }
 }

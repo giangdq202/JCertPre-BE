@@ -12,14 +12,14 @@ namespace JCertPreApplication.Persistence.Repositories
 {
     public class ConversationRepository : GenericRepository<Conversation>, IConversationRepository
     {
-        private readonly JCertPreDatabaseContext _context;
+        private new readonly JCertPreDatabaseContext _context;
 
         public ConversationRepository(JCertPreDatabaseContext context) : base(context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<Conversation> GetByIdWithDetailsAsync(Guid conversationId)
+        public async Task<Conversation?> GetByIdWithDetailsAsync(Guid conversationId)
         {
             return await _context.Conversations
                 .Include(c => c.Participants)
@@ -34,7 +34,16 @@ namespace JCertPreApplication.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task InsertAsync(Conversation conversation)
+        public async Task<IEnumerable<Conversation>> GetConversationsForUserAsync(Guid userId)
+        {
+            return await _context.Conversations
+                .Include(c => c.Participants)
+                .Include(c => c.Messages)
+                .Where(c => c.Participants.Any(p => p.userId == userId))
+                .ToListAsync();
+        }
+
+        public new async Task InsertAsync(Conversation conversation)
         {
             if (conversation == null)
             {
@@ -61,7 +70,7 @@ namespace JCertPreApplication.Persistence.Repositories
             await _context.Conversations.AddAsync(conversation);
         }
 
-        public async Task UpdateAsync(Conversation conversation)
+        public new async Task UpdateAsync(Conversation conversation)
         {
             if (conversation == null)
             {
@@ -82,7 +91,7 @@ namespace JCertPreApplication.Persistence.Repositories
             }
         }
 
-        public async Task SaveChangesAsync()
+        public new async Task SaveChangesAsync()
         {
             try
             {

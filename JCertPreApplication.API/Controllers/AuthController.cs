@@ -7,7 +7,7 @@ using System.Net;
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Authentication & Authorization API Controller
+    /// Authentication and Authorization API Controller
     /// </summary>
     /// <remarks>
     /// Provides comprehensive authentication and authorization functionality including:

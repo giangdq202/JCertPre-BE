@@ -18,7 +18,7 @@ namespace JCertPreApplication.Persistence.Repositories
             _dbSet = _context.Set<T>();
         }
 
-        public async Task<T> GetByIdAsync(object id)
+        public async Task<T?> GetByIdAsync(object id)
         {
             if (id == null) throw new ArgumentNullException(nameof(id));
             var guidId = id is Guid ? (Guid)id : Guid.Empty; // Xử lý kiểu dữ liệu
@@ -51,9 +51,9 @@ namespace JCertPreApplication.Persistence.Repositories
             return await query.AsNoTracking().ToListAsync();
         }
 
-        public async Task<IQueryable<T>> GetAll()
+        public Task<IQueryable<T>> GetAll()
         {
-            return _dbSet.AsNoTracking();
+            return Task.FromResult(_dbSet.AsNoTracking());
         }
 
         public async Task<T> InsertAsync(T entity)
@@ -63,21 +63,21 @@ namespace JCertPreApplication.Persistence.Repositories
             return entry.Entity;
         }
 
-        public async Task UpdateAsync(T entity)
+        public Task UpdateAsync(T entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             _context.Entry(entity).State = EntityState.Modified;
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
-        public async Task DeleteAsync(T entity)
+        public Task DeleteAsync(T entity)
         {
             if (entity == null) throw new ArgumentNullException(nameof(entity));
             _dbSet.Remove(entity);
-            await Task.CompletedTask;
+            return Task.CompletedTask;
         }
 
-        public async Task<T> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
+        public async Task<T?> GetFirstOrDefaultAsync(Expression<Func<T, bool>> predicate, string? includeProperties = null)
         {
             IQueryable<T> query = _dbSet.Where(predicate);
             if (!string.IsNullOrWhiteSpace(includeProperties))

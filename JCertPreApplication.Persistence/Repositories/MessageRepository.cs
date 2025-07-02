@@ -12,13 +12,13 @@ namespace JCertPreApplication.Persistence.Repositories
 {
     public class MessageRepository : GenericRepository<Message>, IMessageRepository
     {
-        private readonly JCertPreDatabaseContext _context;
+        private new readonly JCertPreDatabaseContext _context;
         public MessageRepository(JCertPreDatabaseContext context) : base(context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task InsertAsync(Message message)
+        public new async Task InsertAsync(Message message)
         {
             if (message == null)
             {
