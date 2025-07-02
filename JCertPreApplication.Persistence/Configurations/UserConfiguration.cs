@@ -48,7 +48,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(u => u.Conversations)
                    .WithMany(cp => cp.Participants)
-                   .UsingEntity(j => j.ToTable("ConversationParticipant"));
+                   .UsingEntity(j => j.ToTable("conversation_participant"));
 
             builder.HasMany(u => u.StudentReports)
                    .WithOne(sr => sr.StudentUser)
