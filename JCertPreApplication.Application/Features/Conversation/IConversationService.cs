@@ -1,5 +1,6 @@
 ﻿using JCertPreApplication.Application.Dtos.Conversation;
 using JCertPreApplication.Application.Dtos.Message;
+using JCertPreApplication.Application.Exceptions;
 
 namespace JCertPreApplication.Application.Features.Conversation
 {

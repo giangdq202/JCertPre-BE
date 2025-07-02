@@ -4,6 +4,6 @@ namespace JCertPreApplication.Application.Contracts
 {
     public interface IRoleRepository : IGenericRepository<Role>
     {
-        Task<Role> GetByRoleNameAsync(string roleName);
+        Task<Role?> GetByRoleNameAsync(string roleName);
     }
 }

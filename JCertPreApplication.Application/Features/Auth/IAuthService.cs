@@ -1,5 +1,6 @@
 ﻿using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Dtos.User;
+using JCertPreApplication.Application.Exceptions;
 
 namespace JCertPreApplication.Application.Features.Auth
 {

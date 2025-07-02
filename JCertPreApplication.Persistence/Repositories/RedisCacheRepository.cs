@@ -26,7 +26,7 @@ namespace JCertPreApplication.Persistence.Repositories
                     throw new ApiException(HttpStatusCode.BadRequest, "INVALID_CACHE_KEY", "Cache key cannot be null or empty.");
 
                 var value = await _database.StringGetAsync(key);
-                return value.HasValue ? JsonSerializer.Deserialize<T>(value) : default;
+                return value.HasValue ? JsonSerializer.Deserialize<T>(value!) : default;
             }
             catch (ApiException)
             {
