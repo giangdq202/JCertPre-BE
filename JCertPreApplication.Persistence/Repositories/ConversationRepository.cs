@@ -34,6 +34,15 @@ namespace JCertPreApplication.Persistence.Repositories
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<Conversation>> GetConversationsForUserAsync(Guid userId)
+        {
+            return await _context.Conversations
+                .Include(c => c.Participants)
+                .Include(c => c.Messages)
+                .Where(c => c.Participants.Any(p => p.userId == userId))
+                .ToListAsync();
+        }
+
         public async Task InsertAsync(Conversation conversation)
         {
             if (conversation == null)

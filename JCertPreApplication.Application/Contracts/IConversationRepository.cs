@@ -13,12 +13,11 @@ namespace JCertPreApplication.Application.Contracts
 
         Task<List<Conversation>> GetAllAsync();
 
+        Task<IEnumerable<Conversation>> GetConversationsForUserAsync(Guid userId);
 
         Task InsertAsync(Conversation conversation);
 
-
         Task UpdateAsync(Conversation conversation);
-
 
         Task DeleteAsync(Guid conversationId);
 
