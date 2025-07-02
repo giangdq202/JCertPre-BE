@@ -1,4 +1,5 @@
 ﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.StudyPlan;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,28 +17,41 @@ namespace JCertPreApplication.Application.Features.StudyPlan
             _studyPlanRepository = studyPlanRepository ?? throw new ArgumentNullException(nameof(studyPlanRepository));
         }
 
-        public async Task<Domain.Entities.StudyPlan> CreateStudyPlanAsync(Domain.Entities.StudyPlan studyPlan)
+        public async Task<StudyPlanDto> CreateStudyPlanAsync(Guid studentId, Guid createdByStaffId, string planName, string description, DateTime startDate, DateTime endDate)
         {
-            // Add any business logic/validation before creating
-            return await _studyPlanRepository.CreateStudyPlanAsync(studyPlan);
+            var studyPlan = new Domain.Entities.StudyPlan
+            {
+                planId = Guid.NewGuid(),
+                studentId = studentId,
+                createdByStaffId = createdByStaffId,
+                planName = planName,
+                description = description,
+                startDate = startDate,
+                endDate = endDate
+            };
+            await _studyPlanRepository.CreateStudyPlanAsync(studyPlan);
+            return MapToStudyPlanDto(studyPlan);
         }
 
-        public async Task<Domain.Entities.StudyPlan> GetStudyPlanByIdAsync(Guid planId)
+        public async Task<StudyPlanDto> GetStudyPlanByIdAsync(Guid planId)
         {
-            return await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
+            var plan =  await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
+            return plan != null ? MapToStudyPlanDto(plan) : null; // Return null if not found   
         }
 
-        public async Task<IEnumerable<Domain.Entities.StudyPlan>> GetAllStudyPlansAsync()
+        public async Task<IEnumerable<StudyPlanDto>> GetAllStudyPlansAsync()
         {
-            return await _studyPlanRepository.GetAllStudyPlansAsync();
+            var plan = await _studyPlanRepository.GetAllStudyPlansAsync();
+            return plan.Select(MapToStudyPlanDto).ToList(); // Convert to DTOs
         }
 
-        public async Task<IEnumerable<Domain.Entities.StudyPlan>> GetStudyPlansByStudentIdAsync(Guid studentId)
+        public async Task<IEnumerable<StudyPlanDto>> GetStudyPlansByStudentIdAsync(Guid studentId)
         {
-            return await _studyPlanRepository.GetStudyPlansByStudentIdAsync(studentId);
+            var plan = await _studyPlanRepository.GetStudyPlansByStudentIdAsync(studentId);
+            return plan.Select(MapToStudyPlanDto).ToList(); // Convert to DTOs
         }
 
-        public async Task<Domain.Entities.StudyPlan> UpdateStudyPlanAsync(Guid planId, Domain.Entities.StudyPlan studyPlan)
+        public async Task<StudyPlanDto> UpdateStudyPlanAsync(Guid planId, Domain.Entities.StudyPlan studyPlan)
         {
             var existingStudyPlan = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
             if (existingStudyPlan == null)
@@ -54,9 +68,22 @@ namespace JCertPreApplication.Application.Features.StudyPlan
 
             // Add any business logic/validation before updating
 
-            return await _studyPlanRepository.UpdateStudyPlanAsync(existingStudyPlan);
+            var plan =  await _studyPlanRepository.UpdateStudyPlanAsync(existingStudyPlan);
+            return MapToStudyPlanDto(plan);
         }
 
-        
+        private StudyPlanDto MapToStudyPlanDto(Domain.Entities.StudyPlan studyPlan)
+        {
+            return new StudyPlanDto
+            {
+                PlanId = studyPlan.planId,
+                StudentId = studyPlan.studentId,
+                CreatedByStaffId = studyPlan.createdByStaffId,
+                PlanName = studyPlan.planName,
+                Description = studyPlan.description,
+                StartDate = studyPlan.startDate,
+                EndDate = studyPlan.endDate
+            };
+        }
     }
 }

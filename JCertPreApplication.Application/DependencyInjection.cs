@@ -6,6 +6,8 @@ using JCertPreApplication.Application.Features.Conversation;
 using Microsoft.Extensions.DependencyInjection;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.StudentProfile;
+using JCertPreApplication.Application.Features.StudyPlan;
+using JCertPreApplication.Application.Features.StudyPlanItem;
 
 namespace JCertPreApplication.Application
 {
@@ -19,6 +21,8 @@ namespace JCertPreApplication.Application
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IInstructorProfileService, InstructorProfileService>();
             services.AddScoped<IStudentProfileService, StudentProfileService>();
+            services.AddScoped<IStudyPlanService, StudyPlanService>();
+            services.AddScoped<IStudyPlanItemService, StudyPlanItemService>();
             return services;
         }
     }

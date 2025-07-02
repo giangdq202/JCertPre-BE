@@ -1,4 +1,6 @@
-﻿using System;
+﻿using JCertPreApplication.Application.Dtos.StudyPlan;
+using JCertPreApplication.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,10 +10,10 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
 {
     public interface IStudyPlanItemService
     {
-        Task<Domain.Entities.StudyPlanItem> CreateStudyPlanItemAsync(Domain.Entities.StudyPlanItem studyPlanItem);
-        Task<Domain.Entities.StudyPlanItem> GetStudyPlanItemByIdAsync(Guid itemId);
-        Task<IEnumerable<Domain.Entities.StudyPlanItem>> GetStudyPlanItemsByPlanIdAsync(Guid planId);
-        Task<Domain.Entities.StudyPlanItem> UpdateStudyPlanItemAsync(Guid itemId, Domain.Entities.StudyPlanItem studyPlanItem);
+        Task<StudyPlanItemDto> CreateStudyPlanItemAsync(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status);
+        Task<StudyPlanItemDto> GetStudyPlanItemByIdAsync(Guid itemId);
+        Task<IEnumerable<StudyPlanItemDto>> GetStudyPlanItemsByPlanIdAsync(Guid planId);
+        Task<StudyPlanItemDto> UpdateStudyPlanItemAsync(Guid itemId, Domain.Entities.StudyPlanItem studyPlanItem);
         Task<bool> DeleteStudyPlanItemAsync(Guid itemId);
     }
 }

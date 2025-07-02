@@ -1,4 +1,6 @@
 ﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.StudyPlan;
+using JCertPreApplication.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,25 +20,29 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
             _studyPlanRepository = studyPlanRepository ?? throw new ArgumentNullException(nameof(studyPlanRepository));
         }
 
-        public async Task<Domain.Entities.StudyPlanItem> CreateStudyPlanItemAsync(Domain.Entities.StudyPlanItem studyPlanItem)
+        public async Task<StudyPlanItemDto> CreateStudyPlanItemAsync(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status)
         {
-            // Validate if the associated StudyPlan exists
-            var studyPlanExists = await _studyPlanRepository.GetStudyPlanByIdAsync(studyPlanItem.planId);
-            if (studyPlanExists == null)
+            var studyPlanItem = new Domain.Entities.StudyPlanItem
             {
-                throw new ArgumentException("Associated StudyPlan does not exist.");
-            }
-
-            // Add any business logic/validation before creating
-            return await _studyPlanItemRepository.CreateStudyPlanItemAsync(studyPlanItem);
+                itemId = Guid.NewGuid(),
+                planId = planId,
+                sequence = sequence,
+                itemType = itemType,
+                courseId = courseId,
+                testId = testId,
+                status = status
+            };
+            await _studyPlanItemRepository.CreateStudyPlanItemAsync(studyPlanItem);
+            return MapToStudyPlanItemDto(studyPlanItem);
         }
 
-        public async Task<Domain.Entities.StudyPlanItem> GetStudyPlanItemByIdAsync(Guid itemId)
+        public async Task<StudyPlanItemDto> GetStudyPlanItemByIdAsync(Guid itemId)
         {
-            return await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
+            var item = await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
+            return item != null ? MapToStudyPlanItemDto(item) : null; // Return null if not found
         }
 
-        public async Task<IEnumerable<Domain.Entities.StudyPlanItem>> GetStudyPlanItemsByPlanIdAsync(Guid planId)
+        public async Task<IEnumerable<StudyPlanItemDto>> GetStudyPlanItemsByPlanIdAsync(Guid planId)
         {
             // Validate if the associated StudyPlan exists
             var studyPlanExists = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
@@ -44,10 +50,11 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
             {
                 return null; // Or throw a specific exception
             }
-            return await _studyPlanItemRepository.GetStudyPlanItemsByPlanIdAsync(planId);
+            var item =  await _studyPlanItemRepository.GetStudyPlanItemsByPlanIdAsync(planId);
+            return item.Select(MapToStudyPlanItemDto).ToList(); // Convert to DTOs
         }
 
-        public async Task<Domain.Entities.StudyPlanItem> UpdateStudyPlanItemAsync(Guid itemId, Domain.Entities.StudyPlanItem studyPlanItem)
+        public async Task<StudyPlanItemDto> UpdateStudyPlanItemAsync(Guid itemId, Domain.Entities.StudyPlanItem studyPlanItem)
         {
             var existingStudyPlanItem = await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
             if (existingStudyPlanItem == null)
@@ -75,12 +82,27 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
 
             // Add any business logic/validation before updating
 
-            return await _studyPlanItemRepository.UpdateStudyPlanItemAsync(existingStudyPlanItem);
+            var item = await _studyPlanItemRepository.UpdateStudyPlanItemAsync(existingStudyPlanItem);
+            return MapToStudyPlanItemDto(item);
         }
 
         public async Task<bool> DeleteStudyPlanItemAsync(Guid itemId)
         {
             return await _studyPlanItemRepository.DeleteStudyPlanItemAsync(itemId);
+        }
+
+        private StudyPlanItemDto MapToStudyPlanItemDto(Domain.Entities.StudyPlanItem studyPlanItem)
+        {
+            return new StudyPlanItemDto
+            {
+                ItemId = studyPlanItem.itemId,
+                PlanId = studyPlanItem.planId,
+                Sequence = studyPlanItem.sequence,
+                ItemType = studyPlanItem.itemType,
+                CourseId = studyPlanItem.courseId,
+                TestId = studyPlanItem.testId,
+                Status = studyPlanItem.status
+            };
         }
     }
 }

@@ -1,11 +1,15 @@
-﻿using JCertPreApplication.Application.Features.StudyPlanItem;
+﻿using JCertPreApplication.Application.Dtos.StudyPlan;
+using JCertPreApplication.Application.Features.StudyPlanItem;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     [ApiController]
     [Route("api/study-plan-item")]
+    [Tags("StudyplanItems")]
+    [Produces("application/json")]
     public class StudyPlanItemsController : ControllerBase
     {
         private readonly IStudyPlanItemService _studyPlanItemService;
@@ -16,7 +20,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateStudyPlanItem([FromBody] StudyPlanItem studyPlanItem)
+        [ProducesResponseType(typeof(StudyPlanItemDto), StatusCodes.Status201Created)]
+        
+        public async Task<IActionResult> CreateStudyPlanItem(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status)
         {
             if (!ModelState.IsValid)
             {
@@ -25,8 +31,8 @@ namespace JCertPreApplication.API.Controllers
 
             try
             {
-                var createdStudyPlanItem = await _studyPlanItemService.CreateStudyPlanItemAsync(studyPlanItem);
-                return CreatedAtAction(nameof(GetStudyPlanItemById), new { itemId = createdStudyPlanItem.itemId }, createdStudyPlanItem);
+                var createdStudyPlanItem = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
+                return CreatedAtAction(nameof(GetStudyPlanItemById), new { itemId = createdStudyPlanItem.ItemId }, createdStudyPlanItem);
             }
             catch (ArgumentException ex)
             {
@@ -39,6 +45,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpGet("get-by-id/{itemId}")]
+        [ProducesResponseType(typeof(StudyPlanItemDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public async Task<IActionResult> GetStudyPlanItemById(Guid itemId)
         {
             var studyPlanItem = await _studyPlanItemService.GetStudyPlanItemByIdAsync(itemId);
@@ -50,6 +59,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpGet("get-by-plan/{planId}")]
+        [ProducesResponseType(typeof(IEnumerable<StudyPlanItemDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public async Task<IActionResult> GetStudyPlanItemsByPlanId(Guid planId)
         {
             try
@@ -68,6 +80,10 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpPut("update/{itemId}")]
+        [ProducesResponseType(typeof(StudyPlanItemDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public async Task<IActionResult> UpdateStudyPlanItem(Guid itemId, [FromBody] StudyPlanItem studyPlanItem)
         {
             if (!ModelState.IsValid)
@@ -100,6 +116,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpDelete("delete/{itemId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteStudyPlanItem(Guid itemId)
         {
             var result = await _studyPlanItemService.DeleteStudyPlanItemAsync(itemId);

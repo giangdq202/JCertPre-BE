@@ -1,11 +1,17 @@
-﻿using JCertPreApplication.Application.Features.InstructorProfile;
+﻿using JCertPreApplication.API.Common;
+using JCertPreApplication.Application.Dtos.Conversation;
+using JCertPreApplication.Application.Dtos.Profile;
+using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace JCertPreApplication.API.Controllers
 {
     [Route("api/instructor-profile")]
     [ApiController]
+    [Tags("InstructorProfile")]
+    [Produces("application/json")]
     public class InstructorProfileController : ControllerBase
     {
         private readonly IInstructorProfileService _instructorProfileService;
@@ -16,14 +22,19 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpPost("create")]
-        public async Task<ActionResult<InstructorProfile>> CreateInstructorProfile([FromQuery] Guid userId, [FromQuery] string introduction, [FromQuery] string? experience, [FromQuery] string? teachingStyle)
+        [ProducesResponseType(typeof(InstructorProfileDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> CreateInstructorProfile([FromQuery] Guid userId, [FromQuery] string introduction, [FromQuery] string? experience, [FromQuery] string? teachingStyle)
         {
             var profile = await _instructorProfileService.CreateInstructorProfileAsync(userId, introduction, experience, teachingStyle);
             if (profile == null) return NotFound();
             return Ok(profile);
         }
         [HttpGet("{userId}")]
-        public async Task<ActionResult<InstructorProfile>> GetInstructorProfile(Guid userId)
+        [ProducesResponseType(typeof(InstructorProfileDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<InstructorProfileDto>> GetInstructorProfile(Guid userId)
         {
             var profile = await _instructorProfileService.GetInstructorProfileAsync(userId);
             if (profile == null) return NotFound();
@@ -31,7 +42,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpPut("update/{userId}")]
-        public async Task<ActionResult<InstructorProfile>> UpdateInstructorProfile(Guid userId, [FromQuery] string introduction, [FromQuery] string? experience, [FromQuery] string? teachingStyle)
+        [ProducesResponseType(typeof(InstructorProfileDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<InstructorProfileDto>> UpdateInstructorProfile(Guid userId, [FromQuery] string introduction, [FromQuery] string? experience, [FromQuery] string? teachingStyle)
         {
             var profile = await _instructorProfileService.UpdateInstructorProfileAsync(userId, introduction, experience, teachingStyle);
             if (profile == null) return NotFound();
@@ -39,6 +52,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         [HttpDelete("delete/{userId}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteInstructorProfile(Guid userId)
         {
             var result = await _instructorProfileService.DeleteInstructorProfileAsync(userId);

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using JCertPreApplication.Application.Dtos.Profile;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,9 +9,9 @@ namespace JCertPreApplication.Application.Features.InstructorProfile
 {
     public interface IInstructorProfileService
     {
-        Task<Domain.Entities.InstructorProfile> CreateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle);
-        Task<Domain.Entities.InstructorProfile> GetInstructorProfileAsync(Guid userId);
-        Task<Domain.Entities.InstructorProfile> UpdateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle);
+        Task<InstructorProfileDto> CreateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle);
+        Task<InstructorProfileDto> GetInstructorProfileAsync(Guid userId);
+        Task<InstructorProfileDto> UpdateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle);
         Task<bool> DeleteInstructorProfileAsync(Guid userId);
     }
 }

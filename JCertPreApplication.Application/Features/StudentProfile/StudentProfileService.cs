@@ -1,4 +1,5 @@
 ﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Profile;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,9 +15,10 @@ namespace JCertPreApplication.Application.Features.StudentProfile
         {
             _studentProfileRepository = studentProfileRepository ?? throw new ArgumentNullException(nameof(studentProfileRepository));
         }
-        public Task<Domain.Entities.StudentProfile> CreateStudentProfileAsync(Guid userId, string currentLevel, string learningGoals)
+        public async Task<StudentProfileDto> CreateStudentProfileAsync(Guid userId, string currentLevel, string learningGoals)
         {
-            return _studentProfileRepository.CreateStudentProfileAsync(userId, currentLevel, learningGoals);
+            var profile = _studentProfileRepository.CreateStudentProfileAsync(userId, currentLevel, learningGoals);
+            return MapToStudentProfileDto(profile);
         }
 
         public Task<bool> DeleteStudentProfileAsync(Guid userId)
@@ -24,14 +26,26 @@ namespace JCertPreApplication.Application.Features.StudentProfile
             return _studentProfileRepository.DeleteStudentProfileAsync(userId);
         }
 
-        public Task<Domain.Entities.StudentProfile> GetStudentProfileAsync(Guid userId)
+        public async Task<StudentProfileDto> GetStudentProfileAsync(Guid userId)
         {
-            return _studentProfileRepository.ReadStudentProfileAsync(userId);
+            var profile = _studentProfileRepository.ReadStudentProfileAsync(userId);
+            return MapToStudentProfileDto(profile);
         }
 
-        public Task<Domain.Entities.StudentProfile> UpdateStudentProfileAsync(Guid userId, string currentLevel, string learningGoals)
+        public async Task<StudentProfileDto> UpdateStudentProfileAsync(Guid userId, string currentLevel, string learningGoals)
         {
-            return _studentProfileRepository.UpdateStudentProfileAsync(userId, currentLevel, learningGoals);
+            var profile = _studentProfileRepository.UpdateStudentProfileAsync(userId, currentLevel, learningGoals);
+            return MapToStudentProfileDto(profile);
+        }
+
+        private static StudentProfileDto MapToStudentProfileDto(Task<Domain.Entities.StudentProfile> profile)
+        {
+            return new StudentProfileDto
+            {
+                UserId = profile.Result.userId,
+                CurrentLevel = profile.Result.currentLevel,
+                LearningGoals = profile.Result.learningGoals
+            };
         }
     }
 }
