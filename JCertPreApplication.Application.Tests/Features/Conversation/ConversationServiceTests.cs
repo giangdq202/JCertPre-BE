@@ -37,23 +37,40 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
                 roleId = Guid.NewGuid(),
                 fullName = "Test User"
             };
-            var role = new Role { roleId = user.roleId, roleName = "Student" };
+            var role = new Role { roleId = user.roleId, roleName = "STUDENT" };
             user.Role = role;
 
             _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(user);
 
+            // Setup academic manager
+            var academicManagerId = Guid.NewGuid();
+            var academicManager = new User
+            {
+                userId = academicManagerId,
+                roleId = Guid.NewGuid(),
+                fullName = "Academic Manager"
+            };
+            var managerRole = new Role { roleId = academicManager.roleId, roleName = "ACADEMIC_MANAGER" };
+            academicManager.Role = managerRole;
+
+            _mockUserRepository.Setup(x => x.GetAcademicManagersAsync())
+                .ReturnsAsync(new List<User> { academicManager });
+
             var conversation = new Domain.Entities.Conversation
             {
                 conversationId = Guid.NewGuid(),
                 conversationName = "Test Conversation",
-                Participants = new List<User> { user }
+                Participants = new List<User> { user, academicManager }
             };
 
             _mockConversationRepository.Setup(x => x.GetConversationsForUserAsync(userId))
                 .ReturnsAsync(new List<Domain.Entities.Conversation>());
 
             _mockConversationRepository.Setup(x => x.InsertAsync(It.IsAny<Domain.Entities.Conversation>()))
+                .Returns(Task.CompletedTask);
+
+            _mockConversationRepository.Setup(x => x.SaveChangesAsync())
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -90,7 +107,17 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
                 .ReturnsAsync(user);
 
             _mockMessageRepository.Setup(x => x.InsertAsync(It.IsAny<Message>()))
-                .ReturnsAsync(new Message());
+                .ReturnsAsync(new Message 
+                { 
+                    messageId = Guid.NewGuid(),
+                    content = messageRequest.Content,
+                    senderId = userId,
+                    conversationId = conversationId,
+                    sentAt = DateTime.UtcNow
+                });
+
+            _mockMessageRepository.Setup(x => x.SaveChangesAsync())
+                .ReturnsAsync(1);
 
             // Act
             var result = await _conversationService.SendMessageAsync(conversationId, userId, messageRequest);
@@ -129,6 +156,12 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var user = new User
+            {
+                userId = userId,
+                fullName = "Test User"
+            };
+
             var conversations = new List<Domain.Entities.Conversation>
             {
                 new Domain.Entities.Conversation
@@ -144,6 +177,9 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
                     Participants = new List<User>()
                 }
             };
+
+            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync(user);
 
             _mockConversationRepository.Setup(x => x.GetConversationsForUserAsync(userId))
                 .ReturnsAsync(conversations);
@@ -204,7 +240,15 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var user = new User
+            {
+                userId = userId,
+                fullName = "Test User"
+            };
             var emptyConversations = new List<Domain.Entities.Conversation>();
+
+            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync(user);
 
             _mockConversationRepository.Setup(x => x.GetConversationsForUserAsync(userId))
                 .ReturnsAsync(emptyConversations);
