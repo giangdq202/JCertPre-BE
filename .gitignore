@@ -648,4 +648,4 @@ appsettings.*.json
 secrets.json
 
 # Entity Framework
-Migrations/
+# Migrations/ - Commented out to track migrations
