@@ -5,8 +5,8 @@ namespace JCertPreApplication.Domain.Entities
     public class Course
     {
         public Guid courseId { get; set; }
-        public string title { get; set; }
-        public string description { get; set; }
+        public string title { get; set; } = null!;
+        public string description { get; set; } = null!;
         public CourseLevel level { get; set; }
         public CourseType courseType { get; set; }
         public decimal price { get; set; }
@@ -16,10 +16,10 @@ namespace JCertPreApplication.Domain.Entities
 
         // Navigation properties
         public virtual ICollection<User> Instructors { get; set; } = new List<User>();
-        public virtual ICollection<Lesson> Lessons { get; set; }
-        public virtual ICollection<Livestream> Livestreams { get; set; }
-        public virtual ICollection<Feedback> Feedbacks { get; set; }
-        public virtual ICollection<Enrollment> Enrollments { get; set; }
-        public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; }
+        public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
+        public virtual ICollection<Livestream> Livestreams { get; set; } = new List<Livestream>();
+        public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
+        public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+        public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();
     }
 }

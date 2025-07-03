@@ -8,8 +8,8 @@
         public Guid choiceId { get; set; }
 
         // Navigation properties
-        public virtual TestAttempt TestAttempt { get; set; }
-        public virtual Question Question { get; set; }
-        public virtual Choice Choice { get; set; }
+        public virtual TestAttempt TestAttempt { get; set; } = null!;
+        public virtual Question Question { get; set; } = null!;
+        public virtual Choice Choice { get; set; } = null!;
     }
 }

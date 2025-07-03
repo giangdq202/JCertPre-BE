@@ -12,11 +12,8 @@ namespace JCertPreApplication.Persistence.Repositories
 {
     public class StudyPlanRepository : GenericRepository<StudyPlan>, IStudyPlanRepository
     {
-        private readonly JCertPreDatabaseContext _context;
-
         public StudyPlanRepository(JCertPreDatabaseContext context) : base(context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<StudyPlan> CreateStudyPlanAsync(StudyPlan studyPlan)

@@ -7,10 +7,10 @@ namespace JCertPreApplication.Application.Features.Questions.Dtos
     {
         [Required]
         [StringLength(500)]
-        public string QuestionText { get; set; }
+        public string QuestionText { get; set; } = null!;
 
         [Required]
-        public string QuestionType { get; set; }
+        public string QuestionType { get; set; } = null!;
 
         public string? Explanation { get; set; }
 

@@ -9,7 +9,7 @@
         public decimal price { get; set; }
 
         // Navigation properties
-        public virtual User User { get; set; }
-        public virtual Course Course { get; set; }
+        public virtual User User { get; set; } = null!;
+        public virtual Course Course { get; set; } = null!;
     }
 }

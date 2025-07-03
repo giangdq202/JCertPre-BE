@@ -12,7 +12,7 @@ namespace JCertPreApplication.Application.Dtos.StudyPlan
         public Guid ItemId { get; set; }
         public Guid PlanId { get; set; }
         public int Sequence { get; set; }
-        public string ItemType { get; set; }
+        public string ItemType { get; set; } = null!;
         public Guid? CourseId { get; set; }
         public Guid? TestId { get; set; }
         public ItemStatus Status { get; set; }

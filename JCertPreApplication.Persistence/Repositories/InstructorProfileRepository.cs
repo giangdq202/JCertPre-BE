@@ -12,14 +12,11 @@ namespace JCertPreApplication.Persistence.Repositories
 {
     public class InstructorProfileRepository : GenericRepository<InstructorProfile>, IInstructorProfileRepository
     {
-        private readonly JCertPreDatabaseContext _context;
-
         public InstructorProfileRepository(JCertPreDatabaseContext context) : base(context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        public async Task<InstructorProfile> CreateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle)
+        public async Task<InstructorProfile?> CreateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle)
         {
             var user = await _context.Users
             .Include(u => u.Role)
@@ -38,7 +35,7 @@ namespace JCertPreApplication.Persistence.Repositories
             return instructorProfile;
         }
 
-        public async Task<InstructorProfile> ReadInstructorProfileAsync(Guid userId)
+        public async Task<InstructorProfile?> ReadInstructorProfileAsync(Guid userId)
         {
             var user = await _context.Users
                 .Include(u => u.Role)
@@ -49,7 +46,7 @@ namespace JCertPreApplication.Persistence.Repositories
                 .FirstOrDefaultAsync(ip => ip.userId == userId);
         }
 
-        public async Task<InstructorProfile> UpdateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle)
+        public async Task<InstructorProfile?> UpdateInstructorProfileAsync(Guid userId, string introduction, string? experience, string? teachingStyle)
         {
             var user = await _context.Users
                 .Include(u => u.Role)
