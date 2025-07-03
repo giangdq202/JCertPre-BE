@@ -13,6 +13,6 @@ namespace JCertPreApplication.Application.Features.StudyPlan
         Task<StudyPlanDto> GetStudyPlanByIdAsync(Guid planId);
         Task<IEnumerable<StudyPlanDto>> GetAllStudyPlansAsync();
         Task<IEnumerable<StudyPlanDto>> GetStudyPlansByStudentIdAsync(Guid studentId);
-        Task<   StudyPlanDto> UpdateStudyPlanAsync(Guid planId, Domain.Entities.StudyPlan studyPlan);
+        Task<StudyPlanDto> UpdateStudyPlanAsync(Guid planId, Domain.Entities.StudyPlan studyPlan);
     }
 }

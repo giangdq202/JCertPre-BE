@@ -1,5 +1,6 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.StudyPlan;
+using JCertPreApplication.Application.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,57 +20,112 @@ namespace JCertPreApplication.Application.Features.StudyPlan
 
         public async Task<StudyPlanDto> CreateStudyPlanAsync(Guid studentId, Guid createdByStaffId, string planName, string description, DateTime startDate, DateTime endDate)
         {
-            var studyPlan = new Domain.Entities.StudyPlan
+            try
             {
-                planId = Guid.NewGuid(),
-                studentId = studentId,
-                createdByStaffId = createdByStaffId,
-                planName = planName,
-                description = description,
-                startDate = startDate,
-                endDate = endDate
-            };
-            await _studyPlanRepository.CreateStudyPlanAsync(studyPlan);
-            return MapToStudyPlanDto(studyPlan);
+                var studyPlan = new Domain.Entities.StudyPlan
+                {
+                    planId = Guid.NewGuid(),
+                    studentId = studentId,
+                    createdByStaffId = createdByStaffId,
+                    planName = planName,
+                    description = description,
+                    startDate = startDate,
+                    endDate = endDate
+                };
+                await _studyPlanRepository.CreateStudyPlanAsync(studyPlan);
+                return MapToStudyPlanDto(studyPlan);
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("STUDY_PLAN_CREATE_ERROR", $"An error occurred while creating study plan: {ex.Message}");
+            }
         }
 
         public async Task<StudyPlanDto> GetStudyPlanByIdAsync(Guid planId)
         {
-            var plan =  await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
-            return plan != null ? MapToStudyPlanDto(plan) : null; // Return null if not found   
+            try
+            {
+                var plan = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
+                if (plan == null)
+                    throw ApiException.NotFound("StudyPlan", planId);
+
+                return MapToStudyPlanDto(plan);
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("STUDY_PLAN_SERVICE_ERROR", $"An error occurred while retrieving study plan: {ex.Message}");
+            }
         }
 
         public async Task<IEnumerable<StudyPlanDto>> GetAllStudyPlansAsync()
         {
-            var plan = await _studyPlanRepository.GetAllStudyPlansAsync();
-            return plan.Select(MapToStudyPlanDto).ToList(); // Convert to DTOs
+            try
+            {
+                var plans = await _studyPlanRepository.GetAllStudyPlansAsync();
+                return plans.Select(MapToStudyPlanDto).ToList();
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("STUDY_PLAN_SERVICE_ERROR", $"An error occurred while retrieving study plans: {ex.Message}");
+            }
         }
 
         public async Task<IEnumerable<StudyPlanDto>> GetStudyPlansByStudentIdAsync(Guid studentId)
         {
-            var plan = await _studyPlanRepository.GetStudyPlansByStudentIdAsync(studentId);
-            return plan.Select(MapToStudyPlanDto).ToList(); // Convert to DTOs
+            try
+            {
+                var plans = await _studyPlanRepository.GetStudyPlansByStudentIdAsync(studentId);
+                return plans.Select(MapToStudyPlanDto).ToList();
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("STUDY_PLAN_SERVICE_ERROR", $"An error occurred while retrieving student study plans: {ex.Message}");
+            }
         }
 
         public async Task<StudyPlanDto> UpdateStudyPlanAsync(Guid planId, Domain.Entities.StudyPlan studyPlan)
         {
-            var existingStudyPlan = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
-            if (existingStudyPlan == null)
+            try
             {
-                return null; // Or throw a specific exception
+                var existingStudyPlan = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
+                if (existingStudyPlan == null)
+                    throw ApiException.NotFound("StudyPlan", planId);
+
+                // Update properties
+                existingStudyPlan.planName = studyPlan.planName;
+                existingStudyPlan.description = studyPlan.description;
+                existingStudyPlan.startDate = studyPlan.startDate;
+                existingStudyPlan.endDate = studyPlan.endDate;
+                existingStudyPlan.studentId = studyPlan.studentId; // Be careful with changing foreign keys
+
+                // Add any business logic/validation before updating
+                var updatedPlan = await _studyPlanRepository.UpdateStudyPlanAsync(existingStudyPlan);
+                return MapToStudyPlanDto(updatedPlan);
             }
-
-            // Update properties
-            existingStudyPlan.planName = studyPlan.planName;
-            existingStudyPlan.description = studyPlan.description;
-            existingStudyPlan.startDate = studyPlan.startDate;
-            existingStudyPlan.endDate = studyPlan.endDate;
-            existingStudyPlan.studentId = studyPlan.studentId; // Be careful with changing foreign keys
-
-            // Add any business logic/validation before updating
-
-            var plan =  await _studyPlanRepository.UpdateStudyPlanAsync(existingStudyPlan);
-            return MapToStudyPlanDto(plan);
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("STUDY_PLAN_UPDATE_ERROR", $"An error occurred while updating study plan: {ex.Message}");
+            }
         }
 
         private StudyPlanDto MapToStudyPlanDto(Domain.Entities.StudyPlan studyPlan)

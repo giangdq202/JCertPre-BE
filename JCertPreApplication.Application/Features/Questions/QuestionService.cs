@@ -44,12 +44,17 @@ namespace JCertPreApplication.Application.Features.Questions
 
         /// <summary>
         /// Retrieves a question by its ID.
+        /// Throws ApiException.NotFound if question doesn't exist.
         /// </summary>
-        public async Task<Question?> GetByIdAsync(Guid id)
+        public async Task<Question> GetByIdAsync(Guid id)
         {
             try
             {
-                return await _questionRepository.GetByIdAsync(id);
+                var question = await _questionRepository.GetByIdAsync(id);
+                if (question == null)
+                    throw ApiException.NotFound("Question", id);
+
+                return question;
             }
             catch (ApiException)
             {
@@ -89,6 +94,11 @@ namespace JCertPreApplication.Application.Features.Questions
         {
             try
             {
+                // Check if question exists before updating
+                var existingQuestion = await _questionRepository.GetByIdAsync(question.questionId);
+                if (existingQuestion == null)
+                    throw ApiException.NotFound("Question", question.questionId);
+
                 await _questionRepository.UpdateAsync(question);
                 await _questionRepository.SaveChangesAsync();
             }
@@ -110,6 +120,9 @@ namespace JCertPreApplication.Application.Features.Questions
             try
             {
                 var entity = await _questionRepository.GetByIdAsync(id);
+                if (entity == null)
+                    throw ApiException.NotFound("Question", id);
+
                 await _questionRepository.DeleteAsync(entity);
                 await _questionRepository.SaveChangesAsync();
             }

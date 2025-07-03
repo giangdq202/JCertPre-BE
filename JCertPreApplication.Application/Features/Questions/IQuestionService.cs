@@ -10,7 +10,7 @@ namespace JCertPreApplication.Application.Features.Questions
     public interface IQuestionService
     {
         Task<IEnumerable<Question>> GetAllAsync();
-        Task<Question?> GetByIdAsync(Guid id);
+        Task<Question> GetByIdAsync(Guid id);
         Task<Question> CreateAsync(Question question);
         Task UpdateAsync(Question question);
         Task DeleteAsync(Guid id);
