@@ -5,7 +5,6 @@ using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {

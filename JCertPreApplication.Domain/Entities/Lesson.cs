@@ -4,13 +4,13 @@
     {
         public Guid lessonId { get; set; }
         public Guid courseId { get; set; }
-        public string title { get; set; }
+        public string title { get; set; } = null!;
         public int lessonOrder { get; set; }
-        public string content { get; set; }
+        public string content { get; set; } = null!;
 
         // Navigation properties
-        public virtual Course Course { get; set; }
-        public virtual ICollection<Document> Documents { get; set; }
-        public virtual ICollection<Test> Tests { get; set; }
+        public virtual Course Course { get; set; } = null!;
+        public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
+        public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
     }
 }

@@ -1,7 +1,6 @@
-using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Domain.Enums;
-using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Application.Dtos.Course;
+using JCertPreApplication.Application.Utilities;
+using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Contracts
 {

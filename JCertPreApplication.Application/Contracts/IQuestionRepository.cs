@@ -1,9 +1,4 @@
 ﻿using JCertPreApplication.Domain.Entities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Contracts
 {
@@ -17,12 +12,12 @@ namespace JCertPreApplication.Application.Contracts
         /// Gets all questions with their related attachments.
         /// </summary>
         /// <returns>List of questions including attachments.</returns>
-        Task<List<Question>> GetQuestionsWithAttachmentsAsync();
+        Task<IEnumerable<Question>> GetQuestionsWithAttachmentsAsync();
 
         /// <summary>
         /// Gets all questions with their related choices and attachments.
         /// </summary>
         /// <returns>List of questions including choices and attachments.</returns>
-        Task<List<Question>> GetQuestionsWithDetailsAsync();
+        Task<IEnumerable<Question>> GetQuestionsWithDetailsAsync();
     }
 }

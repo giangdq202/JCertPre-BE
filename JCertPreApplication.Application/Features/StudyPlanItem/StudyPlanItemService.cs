@@ -1,11 +1,7 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.StudyPlan;
+using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.StudyPlanItem
 {
@@ -22,6 +18,10 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
 
         public async Task<StudyPlanItemDto> CreateStudyPlanItemAsync(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status)
         {
+            var studyPlanExists = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
+            if (studyPlanExists == null)
+                throw ApiException.NotFound("StudyPlan", planId);
+
             var studyPlanItem = new Domain.Entities.StudyPlanItem
             {
                 itemId = Guid.NewGuid(),
@@ -39,55 +39,49 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
         public async Task<StudyPlanItemDto> GetStudyPlanItemByIdAsync(Guid itemId)
         {
             var item = await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
-            return item != null ? MapToStudyPlanItemDto(item) : null; // Return null if not found
+            if (item == null)
+                throw ApiException.NotFound("StudyPlanItem", itemId);
+
+            return MapToStudyPlanItemDto(item);
         }
 
         public async Task<IEnumerable<StudyPlanItemDto>> GetStudyPlanItemsByPlanIdAsync(Guid planId)
         {
-            // Validate if the associated StudyPlan exists
             var studyPlanExists = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
             if (studyPlanExists == null)
-            {
-                return null; // Or throw a specific exception
-            }
-            var item =  await _studyPlanItemRepository.GetStudyPlanItemsByPlanIdAsync(planId);
-            return item.Select(MapToStudyPlanItemDto).ToList(); // Convert to DTOs
+                throw ApiException.NotFound("StudyPlan", planId);
+
+            var items = await _studyPlanItemRepository.GetStudyPlanItemsByPlanIdAsync(planId);
+            return items.Select(MapToStudyPlanItemDto).ToList();
         }
 
-        public async Task<StudyPlanItemDto> UpdateStudyPlanItemAsync(Guid itemId, Domain.Entities.StudyPlanItem studyPlanItem)
+        public async Task<StudyPlanItemDto> UpdateStudyPlanItemAsync(Guid itemId, UpdateStudyPlanItemDto updateDto)
         {
-            var existingStudyPlanItem = await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
-            if (existingStudyPlanItem == null)
-            {
-                return null; // Or throw a specific exception
-            }
+            var existingItem = await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
+            if (existingItem == null)
+                throw ApiException.NotFound("StudyPlanItem", itemId);
 
-            // Ensure the planId is not changed or is valid if changed
-            if (existingStudyPlanItem.planId != studyPlanItem.planId)
-            {
-                var newStudyPlanExists = await _studyPlanRepository.GetStudyPlanByIdAsync(studyPlanItem.planId);
-                if (newStudyPlanExists == null)
-                {
-                    throw new ArgumentException("New associated StudyPlan does not exist.");
-                }
-            }
+            if (updateDto.Sequence.HasValue)
+                existingItem.sequence = updateDto.Sequence.Value;
+            if (!string.IsNullOrWhiteSpace(updateDto.ItemType))
+                existingItem.itemType = updateDto.ItemType;
+            if (updateDto.CourseId.HasValue)
+                existingItem.courseId = updateDto.CourseId;
+            if (updateDto.TestId.HasValue)
+                existingItem.testId = updateDto.TestId;
+            if (updateDto.Status.HasValue)
+                existingItem.status = updateDto.Status.Value;
 
-            // Update properties
-            existingStudyPlanItem.planId = studyPlanItem.planId;
-            existingStudyPlanItem.sequence = studyPlanItem.sequence;
-            existingStudyPlanItem.itemType = studyPlanItem.itemType;
-            existingStudyPlanItem.courseId = studyPlanItem.courseId;
-            existingStudyPlanItem.testId = studyPlanItem.testId;
-            existingStudyPlanItem.status = studyPlanItem.status;
-
-            // Add any business logic/validation before updating
-
-            var item = await _studyPlanItemRepository.UpdateStudyPlanItemAsync(existingStudyPlanItem);
-            return MapToStudyPlanItemDto(item);
+            var updated = await _studyPlanItemRepository.UpdateStudyPlanItemAsync(existingItem);
+            return MapToStudyPlanItemDto(updated);
         }
 
         public async Task<bool> DeleteStudyPlanItemAsync(Guid itemId)
         {
+            var existingItem = await _studyPlanItemRepository.GetStudyPlanItemByIdAsync(itemId);
+            if (existingItem == null)
+                throw ApiException.NotFound("StudyPlanItem", itemId);
+
             return await _studyPlanItemRepository.DeleteStudyPlanItemAsync(itemId);
         }
 

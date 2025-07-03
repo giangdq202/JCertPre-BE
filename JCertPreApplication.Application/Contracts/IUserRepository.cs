@@ -1,5 +1,4 @@
 ﻿using JCertPreApplication.Domain.Entities;
-using System.Runtime.CompilerServices;
 
 namespace JCertPreApplication.Application.Contracts
 {

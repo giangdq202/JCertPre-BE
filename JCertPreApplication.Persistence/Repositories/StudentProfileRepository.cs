@@ -12,11 +12,8 @@ namespace JCertPreApplication.Persistence.Repositories
 {
     public class StudentProfileRepository : GenericRepository<StudentProfile>, IStudentProfileRepository
     {
-        private readonly JCertPreDatabaseContext _context;
-
         public StudentProfileRepository(JCertPreDatabaseContext context) : base(context)
         {
-            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         public async Task<StudentProfile> CreateStudentProfileAsync(Guid userId, string currentLevel, string learningGoals)

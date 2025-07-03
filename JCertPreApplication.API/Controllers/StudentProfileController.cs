@@ -1,6 +1,5 @@
 ﻿using JCertPreApplication.API.Common;
 using JCertPreApplication.Application.Dtos.Profile;
-using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.StudentProfile;
 using Microsoft.AspNetCore.Mvc;
 

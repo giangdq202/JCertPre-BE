@@ -1,12 +1,7 @@
+using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Features.Questions;
-using JCertPreApplication.Application.Features.Questions.Dtos;
 using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -31,15 +26,7 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> GetAll()
         {
             var questions = await _questionService.GetAllAsync();
-            var result = questions.Select(q => new QuestionReadDto
-            {
-                QuestionId = q.questionId,
-                QuestionText = q.questionText,
-                QuestionType = q.questionType,
-                Explanation = q.explanation,
-                TagId = q.tagId
-            });
-            return Ok(result);
+            return Ok(questions);
         }
 
         /// <summary>
@@ -48,68 +35,36 @@ namespace JCertPreApplication.API.Controllers
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
-            var q = await _questionService.GetByIdAsync(id);
-            if (q == null)
+            var question = await _questionService.GetByIdAsync(id);
+            if (question == null)
                 return NotFound();
-            var dto = new QuestionReadDto
-            {
-                QuestionId = q.questionId,
-                QuestionText = q.questionText,
-                QuestionType = q.questionType,
-                Explanation = q.explanation,
-                TagId = q.tagId
-            };
-            return Ok(dto);
+            return Ok(question);
         }
 
         /// <summary>
         /// Create a new question.
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] QuestionCreateDto dto)
+        public async Task<IActionResult> Create([FromBody] CreateQuestionDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var question = new Question
-            {
-                questionId = Guid.NewGuid(),
-                questionText = dto.QuestionText,
-                questionType = dto.QuestionType,
-                explanation = dto.Explanation,
-                tagId = dto.TagId
-            };
-            var created = await _questionService.CreateAsync(question);
-            var result = new QuestionReadDto
-            {
-                QuestionId = created.questionId,
-                QuestionText = created.questionText,
-                QuestionType = created.questionType,
-                Explanation = created.explanation,
-                TagId = created.tagId
-            };
-            return CreatedAtAction(nameof(GetById), new { id = result.QuestionId }, result);
+            var created = await _questionService.CreateAsync(dto);
+            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
         /// <summary>
         /// Update an existing question.
         /// </summary>
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] QuestionUpdateDto dto)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateQuestionDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var question = new Question
-            {
-                questionId = dto.QuestionId,
-                questionText = dto.QuestionText,
-                questionType = dto.QuestionType,
-                explanation = dto.Explanation,
-                tagId = dto.TagId
-            };
-            await _questionService.UpdateAsync(question);
-            return NoContent();
+            var updated = await _questionService.UpdateAsync(id, dto);
+            return Ok(updated);
         }
 
         /// <summary>
@@ -129,29 +84,7 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> GetQuestionsWithDetails()
         {
             var questions = await _questionService.GetQuestionsWithDetailsAsync();
-            var result = questions.Select(q => new
-            {
-                QuestionId = q.questionId,
-                QuestionText = q.questionText,
-                QuestionType = q.questionType,
-                Explanation = q.explanation,
-                Choices = q.Choices?.Select(c => new
-                {
-                    c.choiceId,
-                    c.choiceText,
-                    c.isCorrect
-                }),
-                Attachments = q.QuestionAttachments?.Select(a => new
-                {
-                    a.attachmentId,
-            
-                }),
-                Tag = q.Tag?.Select(t => new
-                {
-                    t.tagId,
-                })
-            });
-            return Ok(result);
+            return Ok(questions);
         }
 
         /// <summary>
@@ -163,31 +96,8 @@ namespace JCertPreApplication.API.Controllers
             [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null)
         {
-            Expression<Func<Question, bool>>? predicate = null;
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                predicate = q => q.questionText.Contains(search);
-            }
-
-            var result = await _questionService.GetPagingAsync(predicate, "Choices,QuestionAttachments,Tag", pageIndex, pageSize);
-
-            // Map to DTOs
-            var dtoResult = new Pagination<QuestionReadDto>
-            {
-                PageIndex = result.PageIndex,
-                PageSize = result.PageSize,
-                TotalItemsCount = result.TotalItemsCount,
-                Items = result.Items.Select(q => new QuestionReadDto
-                {
-                    QuestionId = q.questionId,
-                    QuestionText = q.questionText,
-                    QuestionType = q.questionType,
-                    Explanation = q.explanation,
-                    TagId = q.tagId
-                }).ToList()
-            };
-
-            return Ok(dtoResult);
+            var result = await _questionService.GetPaginatedAsync(search, includeChoices: true, pageIndex, pageSize);
+            return Ok(result);
         }
     }
 }

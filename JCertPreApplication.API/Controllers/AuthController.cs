@@ -2,7 +2,6 @@ using JCertPreApplication.API.Common;
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Features.Auth;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace JCertPreApplication.API.Controllers
 {

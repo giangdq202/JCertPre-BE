@@ -13,8 +13,8 @@
         public int listeningScore { get; set; }
         public bool isPass { get; set; }
 
-        public virtual User User { get; set; }
-        public virtual Test Test { get; set; }
-        public virtual ICollection<AttemptAnswer> AttemptAnswers { get; set; }
+        public virtual User User { get; set; } = null!;
+        public virtual Test Test { get; set; } = null!;
+        public virtual ICollection<AttemptAnswer> AttemptAnswers { get; set; } = new List<AttemptAnswer>();
     }
 }
