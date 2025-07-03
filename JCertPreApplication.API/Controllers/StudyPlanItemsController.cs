@@ -29,19 +29,8 @@ namespace JCertPreApplication.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            try
-            {
-                var createdStudyPlanItem = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
-                return CreatedAtAction(nameof(GetStudyPlanItemById), new { itemId = createdStudyPlanItem.ItemId }, createdStudyPlanItem);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var createdStudyPlanItem = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
+            return CreatedAtAction(nameof(GetStudyPlanItemById), new { itemId = createdStudyPlanItem.ItemId }, createdStudyPlanItem);
         }
 
         [HttpGet("get-by-id/{itemId}")]
@@ -64,19 +53,8 @@ namespace JCertPreApplication.API.Controllers
 
         public async Task<IActionResult> GetStudyPlanItemsByPlanId(Guid planId)
         {
-            try
-            {
-                var studyPlanItems = await _studyPlanItemService.GetStudyPlanItemsByPlanIdAsync(planId);
-                if (studyPlanItems == null) // This indicates the planId itself wasn't found by the service
-                {
-                    return NotFound($"Study Plan with ID {planId} not found.");
-                }
-                return Ok(studyPlanItems);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var studyPlanItems = await _studyPlanItemService.GetStudyPlanItemsByPlanIdAsync(planId);
+            return Ok(studyPlanItems);
         }
 
         [HttpPut("update/{itemId}")]
@@ -84,35 +62,15 @@ namespace JCertPreApplication.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
 
-        public async Task<IActionResult> UpdateStudyPlanItem(Guid itemId, [FromBody] StudyPlanItem studyPlanItem)
+        public async Task<IActionResult> UpdateStudyPlanItem(Guid itemId, [FromBody] UpdateStudyPlanItemDto updateDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (itemId != studyPlanItem.itemId)
-            {
-                return BadRequest("Item ID mismatch.");
-            }
-
-            try
-            {
-                var updatedStudyPlanItem = await _studyPlanItemService.UpdateStudyPlanItemAsync(itemId, studyPlanItem);
-                if (updatedStudyPlanItem == null)
-                {
-                    return NotFound($"Study Plan Item with ID {itemId} not found.");
-                }
-                return Ok(updatedStudyPlanItem);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
+            var updatedStudyPlanItem = await _studyPlanItemService.UpdateStudyPlanItemAsync(itemId, updateDto);
+            return Ok(updatedStudyPlanItem);
         }
 
         [HttpDelete("delete/{itemId}")]
