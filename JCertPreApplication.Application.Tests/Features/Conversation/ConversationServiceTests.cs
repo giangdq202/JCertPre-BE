@@ -3,6 +3,10 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Application.Dtos.Message;
+using JCertPreApplication.Application.Exceptions;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace JCertPreApplication.Application.Tests.Features.Conversation
@@ -26,91 +30,70 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
         }
 
         [Fact]
-        public async Task CreateConversationAsync_ValidData_ReturnsConversation()
-        {
-            // Arrange
-            var studentId = Guid.NewGuid();
-            var student = new User { Id = studentId, Role = new Role { Name = "Student" } };
-            
-            _mockUserRepository.Setup(x => x.GetByIdAsync(studentId))
-                .ReturnsAsync(student);
-            _mockConversationRepository.Setup(x => x.CreateAsync(It.IsAny<Domain.Entities.Conversation>()))
-                .ReturnsAsync((Domain.Entities.Conversation conv) => conv);
-
-            // Act
-            var result = await _conversationService.CreateConversationAsync(studentId);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(studentId, result.StudentId);
-        }
-
-        [Fact]
-        public async Task CreateConversationAsync_UserNotFound_ThrowsException()
+        public async Task CreateConversationAsync_WhenUserExists_ReturnsConversationDto()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((User)null);
+            var user = new User 
+            { 
+                userId = userId, 
+                roleId = Guid.NewGuid(),
+                fullName = "Test User"
+            };
+            var role = new Role { roleId = user.roleId, roleName = "Student" };
+            user.Role = role;
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.CreateConversationAsync(userId));
-        }
-
-        [Fact]
-        public async Task CreateConversationAsync_NotStudent_ThrowsException()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = new User { Id = userId, Role = new Role { Name = "Instructor" } };
-            
             _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
                 .ReturnsAsync(user);
 
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.CreateConversationAsync(userId));
+            var conversation = new Domain.Entities.Conversation
+            {
+                conversationId = Guid.NewGuid(),
+                conversationName = "Test Conversation",
+                Participants = new List<User> { user }
+            };
+
+            _mockConversationRepository.Setup(x => x.GetConversationsForUserAsync(userId))
+                .ReturnsAsync(new List<Domain.Entities.Conversation>());
+
+            _mockConversationRepository.Setup(x => x.InsertAsync(It.IsAny<Domain.Entities.Conversation>()))
+                .Returns(Task.CompletedTask);
+
+            // Act
+            var result = await _conversationService.CreateConversationAsync(userId);
+
+            // Assert
+            Assert.NotNull(result);
         }
 
         [Fact]
-        public async Task CreateConversationAsync_ExistingActiveConversation_ThrowsException()
-        {
-            // Arrange
-            var studentId = Guid.NewGuid();
-            var student = new User { Id = studentId, Role = new Role { Name = "Student" } };
-            var existingConversation = new Domain.Entities.Conversation { StudentId = studentId, InstructorId = Guid.NewGuid() };
-            
-            _mockUserRepository.Setup(x => x.GetByIdAsync(studentId))
-                .ReturnsAsync(student);
-            _mockConversationRepository.Setup(x => x.GetActiveConversationForUserAsync(studentId))
-                .ReturnsAsync(existingConversation);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.CreateConversationAsync(studentId));
-        }
-
-        [Fact]
-        public async Task SendMessageAsync_ValidMessage_ReturnsMessage()
+        public async Task SendMessageAsync_ValidMessage_ReturnsMessageDto()
         {
             // Arrange
             var conversationId = Guid.NewGuid();
             var userId = Guid.NewGuid();
             var messageRequest = new MessageRequest { Content = "Test message" };
+
+            var user = new User 
+            { 
+                userId = userId,
+                fullName = "Test User"
+            };
             var conversation = new Domain.Entities.Conversation 
             { 
-                Id = conversationId,
-                StudentId = userId,
-                InstructorId = null
+                conversationId = conversationId,
+                conversationName = "Test Conversation",
+                Participants = new List<User> { user }
             };
 
-            _mockConversationRepository.Setup(x => x.GetByIdAsync(conversationId))
+            _mockConversationRepository.Setup(x => x.GetByIdWithDetailsAsync(conversationId))
                 .ReturnsAsync(conversation);
+
             _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(new User { Id = userId });
-            _mockMessageRepository.Setup(x => x.CreateAsync(It.IsAny<Message>()))
-                .ReturnsAsync((Message msg) => msg);
+                .ReturnsAsync(user);
+
+            _mockMessageRepository.Setup(x => x.InsertAsync(It.IsAny<Message>()))
+                .ReturnsAsync(new Message());
 
             // Act
             var result = await _conversationService.SendMessageAsync(conversationId, userId, messageRequest);
@@ -121,117 +104,19 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
         }
 
         [Fact]
-        public async Task SendMessageAsync_ConversationNotFound_ThrowsException()
+        public async Task GetConversationAsync_ExistingConversation_ReturnsConversationWithMessages()
         {
             // Arrange
             var conversationId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
-            var messageRequest = new MessageRequest { Content = "Test message" };
-
-            _mockConversationRepository.Setup(x => x.GetByIdAsync(conversationId))
-                .ReturnsAsync((Domain.Entities.Conversation)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.SendMessageAsync(conversationId, userId, messageRequest));
-        }
-
-        [Fact]
-        public async Task SendMessageAsync_UserNotInConversation_ThrowsException()
-        {
-            // Arrange
-            var conversationId = Guid.NewGuid();
-            var userId = Guid.NewGuid();
-            var messageRequest = new MessageRequest { Content = "Test message" };
-            var conversation = new Domain.Entities.Conversation 
-            { 
-                Id = conversationId,
-                StudentId = Guid.NewGuid(),
-                InstructorId = Guid.NewGuid()
+            var conversation = new Domain.Entities.Conversation
+            {
+                conversationId = conversationId,
+                conversationName = "Test Conversation",
+                Messages = new List<Message>(),
+                Participants = new List<User>()
             };
 
-            _mockConversationRepository.Setup(x => x.GetByIdAsync(conversationId))
-                .ReturnsAsync(conversation);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.SendMessageAsync(conversationId, userId, messageRequest));
-        }
-
-        [Fact]
-        public async Task AssignInstructorAsync_ValidAssignment_ReturnsConversation()
-        {
-            // Arrange
-            var conversationId = Guid.NewGuid();
-            var instructorId = Guid.NewGuid();
-            var instructor = new User { Id = instructorId, Role = new Role { Name = "Instructor" } };
-            var conversation = new Domain.Entities.Conversation 
-            { 
-                Id = conversationId,
-                StudentId = Guid.NewGuid(),
-                InstructorId = null
-            };
-
-            _mockConversationRepository.Setup(x => x.GetByIdAsync(conversationId))
-                .ReturnsAsync(conversation);
-            _mockUserRepository.Setup(x => x.GetByIdAsync(instructorId))
-                .ReturnsAsync(instructor);
-            _mockConversationRepository.Setup(x => x.UpdateAsync(It.IsAny<Domain.Entities.Conversation>()))
-                .ReturnsAsync((Domain.Entities.Conversation conv) => conv);
-
-            // Act
-            var result = await _conversationService.AssignInstructorAsync(conversationId, instructorId);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(instructorId, result.InstructorId);
-        }
-
-        [Fact]
-        public async Task AssignInstructorAsync_ConversationNotFound_ThrowsException()
-        {
-            // Arrange
-            var conversationId = Guid.NewGuid();
-            var instructorId = Guid.NewGuid();
-
-            _mockConversationRepository.Setup(x => x.GetByIdAsync(conversationId))
-                .ReturnsAsync((Domain.Entities.Conversation)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.AssignInstructorAsync(conversationId, instructorId));
-        }
-
-        [Fact]
-        public async Task AssignInstructorAsync_InstructorNotFound_ThrowsException()
-        {
-            // Arrange
-            var conversationId = Guid.NewGuid();
-            var instructorId = Guid.NewGuid();
-            var conversation = new Domain.Entities.Conversation { Id = conversationId };
-
-            _mockConversationRepository.Setup(x => x.GetByIdAsync(conversationId))
-                .ReturnsAsync(conversation);
-            _mockUserRepository.Setup(x => x.GetByIdAsync(instructorId))
-                .ReturnsAsync((User)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.AssignInstructorAsync(conversationId, instructorId));
-        }
-
-        [Fact]
-        public async Task GetConversationAsync_ExistingConversation_ReturnsConversation()
-        {
-            // Arrange
-            var conversationId = Guid.NewGuid();
-            var conversation = new Domain.Entities.Conversation 
-            { 
-                Id = conversationId,
-                Messages = new List<Message>()
-            };
-
-            _mockConversationRepository.Setup(x => x.GetByIdWithMessagesAsync(conversationId))
+            _mockConversationRepository.Setup(x => x.GetByIdWithDetailsAsync(conversationId))
                 .ReturnsAsync(conversation);
 
             // Act
@@ -239,31 +124,28 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(conversationId, result.Id);
+            Assert.Equal(conversationId, result.ConversationId);
         }
 
         [Fact]
-        public async Task GetConversationAsync_NonExistentConversation_ThrowsException()
-        {
-            // Arrange
-            var conversationId = Guid.NewGuid();
-            _mockConversationRepository.Setup(x => x.GetByIdWithMessagesAsync(conversationId))
-                .ReturnsAsync((Domain.Entities.Conversation)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.GetConversationAsync(conversationId));
-        }
-
-        [Fact]
-        public async Task GetConversationsForUserAsync_ReturnsConversations()
+        public async Task GetConversationsForUserAsync_ReturnsUserConversations()
         {
             // Arrange
             var userId = Guid.NewGuid();
             var conversations = new List<Domain.Entities.Conversation>
             {
-                new Domain.Entities.Conversation { Id = Guid.NewGuid(), StudentId = userId },
-                new Domain.Entities.Conversation { Id = Guid.NewGuid(), InstructorId = userId }
+                new Domain.Entities.Conversation
+                {
+                    conversationId = Guid.NewGuid(),
+                    conversationName = "Test Conversation 1",
+                    Participants = new List<User>()
+                },
+                new Domain.Entities.Conversation
+                {
+                    conversationId = Guid.NewGuid(),
+                    conversationName = "Test Conversation 2",
+                    Participants = new List<User>()
+                }
             };
 
             _mockConversationRepository.Setup(x => x.GetConversationsForUserAsync(userId))
@@ -274,7 +156,50 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(2, result.Count);
+            Assert.Equal(2, result.Count());
+        }
+
+        [Fact]
+        public async Task CreateConversationAsync_UserNotFound_ThrowsApiException()
+        {
+            // Arrange
+            var userId = Guid.NewGuid();
+            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
+                .ReturnsAsync((User?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ApiException>(() => 
+                _conversationService.CreateConversationAsync(userId));
+        }
+
+        [Fact]
+        public async Task SendMessageAsync_ConversationNotFound_ThrowsApiException()
+        {
+            // Arrange
+            var conversationId = Guid.NewGuid();
+            var userId = Guid.NewGuid();
+            var messageRequest = new MessageRequest { Content = "Test message" };
+
+            _mockConversationRepository.Setup(x => x.GetByIdWithDetailsAsync(conversationId))
+                .ReturnsAsync((Domain.Entities.Conversation?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ApiException>(() => 
+                _conversationService.SendMessageAsync(conversationId, userId, messageRequest));
+        }
+
+        [Fact]
+        public async Task GetConversationAsync_NonExistentConversation_ThrowsApiException()
+        {
+            // Arrange
+            var conversationId = Guid.NewGuid();
+
+            _mockConversationRepository.Setup(x => x.GetByIdWithDetailsAsync(conversationId))
+                .ReturnsAsync((Domain.Entities.Conversation?)null);
+
+            // Act & Assert
+            await Assert.ThrowsAsync<ApiException>(() => 
+                _conversationService.GetConversationAsync(conversationId));
         }
 
         [Fact]
@@ -282,8 +207,10 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
         {
             // Arrange
             var userId = Guid.NewGuid();
+            var emptyConversations = new List<Domain.Entities.Conversation>();
+
             _mockConversationRepository.Setup(x => x.GetConversationsForUserAsync(userId))
-                .ReturnsAsync(new List<Domain.Entities.Conversation>());
+                .ReturnsAsync(emptyConversations);
 
             // Act
             var result = await _conversationService.GetConversationsForUserAsync(userId);
@@ -291,19 +218,6 @@ namespace JCertPreApplication.Application.Tests.Features.Conversation
             // Assert
             Assert.NotNull(result);
             Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task GetConversationsForUserAsync_UserNotFound_ThrowsException()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync((User)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _conversationService.GetConversationsForUserAsync(userId));
         }
     }
 } 

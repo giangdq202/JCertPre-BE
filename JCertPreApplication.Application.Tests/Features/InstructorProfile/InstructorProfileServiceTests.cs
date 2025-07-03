@@ -1,8 +1,7 @@
 using Moq;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Features.InstructorProfile;
-using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Application.Dtos.Profile;
+using JCertPreApplication.Application.Exceptions;
 using Xunit;
 
 namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
@@ -10,16 +9,12 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
     public class InstructorProfileServiceTests
     {
         private readonly Mock<IInstructorProfileRepository> _mockInstructorProfileRepository;
-        private readonly Mock<IUserRepository> _mockUserRepository;
         private readonly InstructorProfileService _instructorProfileService;
 
         public InstructorProfileServiceTests()
         {
             _mockInstructorProfileRepository = new Mock<IInstructorProfileRepository>();
-            _mockUserRepository = new Mock<IUserRepository>();
-            _instructorProfileService = new InstructorProfileService(
-                _mockInstructorProfileRepository.Object,
-                _mockUserRepository.Object);
+            _instructorProfileService = new InstructorProfileService(_mockInstructorProfileRepository.Object);
         }
 
         [Fact]
@@ -27,77 +22,30 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var user = new User 
-            { 
-                Id = userId,
-                Role = new Role { Name = "Instructor" }
-            };
-            var profileDto = new InstructorProfileDto
+            var introduction = "Test Introduction";
+            var experience = "Test Experience";
+            var teachingStyle = "Test Style";
+
+            var profile = new Domain.Entities.InstructorProfile
             {
-                UserId = userId,
-                Bio = "Test Bio",
-                Specialization = "Test Specialization"
+                userId = userId,
+                introduction = introduction,
+                experience = experience,
+                teachingStyle = teachingStyle
             };
 
-            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(user);
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
-                .ReturnsAsync((Domain.Entities.InstructorProfile)null);
-            _mockInstructorProfileRepository.Setup(x => x.CreateAsync(It.IsAny<Domain.Entities.InstructorProfile>()))
-                .ReturnsAsync((Domain.Entities.InstructorProfile profile) => profile);
+            _mockInstructorProfileRepository.Setup(x => x.CreateInstructorProfileAsync(userId, introduction, experience, teachingStyle))
+                .ReturnsAsync(profile);
 
             // Act
-            var result = await _instructorProfileService.CreateInstructorProfileAsync(profileDto);
+            var result = await _instructorProfileService.CreateInstructorProfileAsync(userId, introduction, experience, teachingStyle);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(profileDto.Bio, result.Bio);
-            Assert.Equal(profileDto.Specialization, result.Specialization);
-        }
-
-        [Fact]
-        public async Task CreateInstructorProfileAsync_UserNotFound_ThrowsException()
-        {
-            // Arrange
-            var profileDto = new InstructorProfileDto
-            {
-                UserId = Guid.NewGuid(),
-                Bio = "Test Bio"
-            };
-
-            _mockUserRepository.Setup(x => x.GetByIdAsync(profileDto.UserId))
-                .ReturnsAsync((User)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _instructorProfileService.CreateInstructorProfileAsync(profileDto));
-        }
-
-        [Fact]
-        public async Task CreateInstructorProfileAsync_ProfileAlreadyExists_ThrowsException()
-        {
-            // Arrange
-            var userId = Guid.NewGuid();
-            var user = new User 
-            { 
-                Id = userId,
-                Role = new Role { Name = "Instructor" }
-            };
-            var profileDto = new InstructorProfileDto
-            {
-                UserId = userId,
-                Bio = "Test Bio"
-            };
-            var existingProfile = new Domain.Entities.InstructorProfile { UserId = userId };
-
-            _mockUserRepository.Setup(x => x.GetByIdAsync(userId))
-                .ReturnsAsync(user);
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
-                .ReturnsAsync(existingProfile);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _instructorProfileService.CreateInstructorProfileAsync(profileDto));
+            Assert.Equal(userId, result.UserId);
+            Assert.Equal(introduction, result.Introduction);
+            Assert.Equal(experience, result.Experience);
+            Assert.Equal(teachingStyle, result.TeachingStyle);
         }
 
         [Fact]
@@ -105,15 +53,15 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var profile = new Domain.Entities.InstructorProfile 
-            { 
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Bio = "Test Bio",
-                Specialization = "Test Specialization"
+            var profile = new Domain.Entities.InstructorProfile
+            {
+                userId = userId,
+                introduction = "Test Introduction",
+                experience = "Test Experience",
+                teachingStyle = "Test Style"
             };
 
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
+            _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
                 .ReturnsAsync(profile);
 
             // Act
@@ -121,8 +69,9 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(profile.Bio, result.Bio);
-            Assert.Equal(profile.Specialization, result.Specialization);
+            Assert.Equal(profile.introduction, result.Introduction);
+            Assert.Equal(profile.experience, result.Experience);
+            Assert.Equal(profile.teachingStyle, result.TeachingStyle);
         }
 
         [Fact]
@@ -130,11 +79,11 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
+            _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
                 .ReturnsAsync((Domain.Entities.InstructorProfile)null);
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
+            await Assert.ThrowsAsync<ApiException>(() => 
                 _instructorProfileService.GetInstructorProfileAsync(userId));
         }
 
@@ -143,67 +92,76 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var existingProfile = new Domain.Entities.InstructorProfile 
-            { 
-                Id = Guid.NewGuid(),
-                UserId = userId,
-                Bio = "Old Bio",
-                Specialization = "Old Specialization"
-            };
-            var updateDto = new InstructorProfileDto
+            var introduction = "Updated Introduction";
+            var experience = "Updated Experience";
+            var teachingStyle = "Updated Style";
+
+            var existingProfile = new Domain.Entities.InstructorProfile
             {
-                UserId = userId,
-                Bio = "Updated Bio",
-                Specialization = "Updated Specialization"
+                userId = userId,
+                introduction = "Old Introduction",
+                experience = "Old Experience",
+                teachingStyle = "Old Style"
             };
 
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
+            _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
                 .ReturnsAsync(existingProfile);
-            _mockInstructorProfileRepository.Setup(x => x.UpdateAsync(It.IsAny<Domain.Entities.InstructorProfile>()))
-                .ReturnsAsync((Domain.Entities.InstructorProfile profile) => profile);
+
+            var updatedProfile = new Domain.Entities.InstructorProfile
+            {
+                userId = userId,
+                introduction = introduction,
+                experience = experience,
+                teachingStyle = teachingStyle
+            };
+
+            _mockInstructorProfileRepository.Setup(x => x.UpdateInstructorProfileAsync(userId, introduction, experience, teachingStyle))
+                .ReturnsAsync(updatedProfile);
 
             // Act
-            var result = await _instructorProfileService.UpdateInstructorProfileAsync(updateDto);
+            var result = await _instructorProfileService.UpdateInstructorProfileAsync(userId, introduction, experience, teachingStyle);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(updateDto.Bio, result.Bio);
-            Assert.Equal(updateDto.Specialization, result.Specialization);
+            Assert.Equal(introduction, result.Introduction);
+            Assert.Equal(experience, result.Experience);
+            Assert.Equal(teachingStyle, result.TeachingStyle);
         }
 
         [Fact]
         public async Task UpdateInstructorProfileAsync_ProfileNotFound_ThrowsException()
         {
             // Arrange
-            var updateDto = new InstructorProfileDto
-            {
-                UserId = Guid.NewGuid(),
-                Bio = "Updated Bio"
-            };
+            var userId = Guid.NewGuid();
+            var introduction = "Updated Introduction";
+            var experience = "Updated Experience";
+            var teachingStyle = "Updated Style";
 
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(updateDto.UserId))
+            _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
                 .ReturnsAsync((Domain.Entities.InstructorProfile)null);
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
-                _instructorProfileService.UpdateInstructorProfileAsync(updateDto));
+            await Assert.ThrowsAsync<ApiException>(() => 
+                _instructorProfileService.UpdateInstructorProfileAsync(userId, introduction, experience, teachingStyle));
         }
 
         [Fact]
-        public async Task DeleteInstructorProfileAsync_ExistingProfile_Succeeds()
+        public async Task DeleteInstructorProfileAsync_ExistingProfile_ReturnsTrue()
         {
             // Arrange
             var userId = Guid.NewGuid();
-            var profile = new Domain.Entities.InstructorProfile { Id = Guid.NewGuid(), UserId = userId };
+            var profile = new Domain.Entities.InstructorProfile { userId = userId };
 
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
+            _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
                 .ReturnsAsync(profile);
-            _mockInstructorProfileRepository.Setup(x => x.DeleteAsync(It.IsAny<Domain.Entities.InstructorProfile>()))
-                .Returns(Task.CompletedTask);
+            _mockInstructorProfileRepository.Setup(x => x.DeleteInstructorProfileAsync(userId))
+                .ReturnsAsync(true);
 
-            // Act & Assert
-            await _instructorProfileService.DeleteInstructorProfileAsync(userId);
-            _mockInstructorProfileRepository.Verify(x => x.DeleteAsync(It.IsAny<Domain.Entities.InstructorProfile>()), Times.Once);
+            // Act
+            var result = await _instructorProfileService.DeleteInstructorProfileAsync(userId);
+
+            // Assert
+            Assert.True(result);
         }
 
         [Fact]
@@ -211,11 +169,11 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
         {
             // Arrange
             var userId = Guid.NewGuid();
-            _mockInstructorProfileRepository.Setup(x => x.GetByUserIdAsync(userId))
+            _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
                 .ReturnsAsync((Domain.Entities.InstructorProfile)null);
 
             // Act & Assert
-            await Assert.ThrowsAsync<Exception>(() => 
+            await Assert.ThrowsAsync<ApiException>(() => 
                 _instructorProfileService.DeleteInstructorProfileAsync(userId));
         }
     }
