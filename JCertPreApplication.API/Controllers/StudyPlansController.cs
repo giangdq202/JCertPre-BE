@@ -1,6 +1,4 @@
 ﻿using JCertPreApplication.API.Common;
-using JCertPreApplication.Application.Dtos.Conversation;
-using JCertPreApplication.Application.Dtos.Profile;
 using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlan;
 using JCertPreApplication.Domain.Entities;

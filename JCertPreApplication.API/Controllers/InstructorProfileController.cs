@@ -1,10 +1,7 @@
 ﻿using JCertPreApplication.API.Common;
-using JCertPreApplication.Application.Dtos.Conversation;
 using JCertPreApplication.Application.Dtos.Profile;
 using JCertPreApplication.Application.Features.InstructorProfile;
-using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace JCertPreApplication.API.Controllers
 {

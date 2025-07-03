@@ -1,3 +1,5 @@
+using JCertPreApplication.Application.Dtos.Choice;
+
 namespace JCertPreApplication.Application.Features.Choices
 {
     public interface IChoiceService

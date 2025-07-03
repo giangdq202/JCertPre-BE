@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace JCertPreApplication.Application.Dtos.StudyPlan
+﻿namespace JCertPreApplication.Application.Dtos.StudyPlan
 {
     public class StudyPlanDto
     {

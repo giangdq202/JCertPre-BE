@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Application.Dtos.Choice;
 
 namespace JCertPreApplication.Application.Features.Choices
 {
@@ -20,9 +21,10 @@ namespace JCertPreApplication.Application.Features.Choices
                 var choices = await _choiceRepo.GetByQuestionIdAsync(questionId);
                 return choices.Select(c => new ChoiceReadDto
                 {
-                    ChoiceId = c.choiceId,
-                    ChoiceText = c.choiceText,
-                    IsCorrect = c.isCorrect
+                    Id = c.choiceId,
+                    Content = c.choiceText,
+                    IsCorrect = c.isCorrect,
+                    QuestionId = c.questionId
                 });
             }
             catch (ApiException)
@@ -43,15 +45,16 @@ namespace JCertPreApplication.Application.Features.Choices
                 {
                     choiceId = Guid.NewGuid(),
                     questionId = questionId,
-                    choiceText = dto.ChoiceText,
+                    choiceText = dto.Content,
                     isCorrect = dto.IsCorrect
                 };
                 var created = await _choiceRepo.AddAsync(questionId, choice);
                 return new ChoiceReadDto
                 {
-                    ChoiceId = created.choiceId,
-                    ChoiceText = created.choiceText,
-                    IsCorrect = created.isCorrect
+                    Id = created.choiceId,
+                    Content = created.choiceText,
+                    IsCorrect = created.isCorrect,
+                    QuestionId = created.questionId
                 };
             }
             catch (ApiException)
@@ -70,9 +73,9 @@ namespace JCertPreApplication.Application.Features.Choices
             {
                 var choices = dtos.Select(dto => new Choice
                 {
-                    choiceId = dto.ChoiceId,
+                    choiceId = Guid.NewGuid(), // For update list, we create new choices
                     questionId = questionId,
-                    choiceText = dto.ChoiceText,
+                    choiceText = dto.Content,
                     isCorrect = dto.IsCorrect
                 });
                 await _choiceRepo.UpdateListAsync(questionId, choices);

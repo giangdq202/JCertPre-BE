@@ -1,14 +1,6 @@
 ﻿using JCertPreApplication.Application.Contracts;
-using JCertPreApplication.Application.Dtos.Conversation;
 using JCertPreApplication.Application.Dtos.Profile;
-using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace JCertPreApplication.Application.Features.InstructorProfile
 {

@@ -1,9 +1,6 @@
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Questions
 {

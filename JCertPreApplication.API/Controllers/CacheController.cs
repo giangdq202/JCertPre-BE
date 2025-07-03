@@ -1,5 +1,4 @@
-﻿using JCertPreApplication.API.Common;
-using JCertPreApplication.Application.Features.Cache;
+﻿using JCertPreApplication.Application.Features.Cache;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers

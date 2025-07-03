@@ -2,11 +2,7 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
-using System;
-using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Net;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Questions
 {

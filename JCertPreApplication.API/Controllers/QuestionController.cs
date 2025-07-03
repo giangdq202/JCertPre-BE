@@ -1,12 +1,9 @@
+using System.Linq.Expressions;
+using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Features.Questions;
-using JCertPreApplication.Application.Features.Questions.Dtos;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -33,11 +30,12 @@ namespace JCertPreApplication.API.Controllers
             var questions = await _questionService.GetAllAsync();
             var result = questions.Select(q => new QuestionReadDto
             {
-                QuestionId = q.questionId,
-                QuestionText = q.questionText,
-                QuestionType = q.questionType,
+                Id = q.questionId,
+                Content = q.questionText,
+                Type = q.questionType,
+                Points = 0, // Default value, update as needed
                 Explanation = q.explanation,
-                TagId = q.tagId
+                AttachmentIds = q.QuestionAttachments?.Select(a => a.attachmentId).ToList()
             });
             return Ok(result);
         }
@@ -53,11 +51,12 @@ namespace JCertPreApplication.API.Controllers
                 return NotFound();
             var dto = new QuestionReadDto
             {
-                QuestionId = q.questionId,
-                QuestionText = q.questionText,
-                QuestionType = q.questionType,
+                Id = q.questionId,
+                Content = q.questionText,
+                Type = q.questionType,
+                Points = 0, // Default value, update as needed
                 Explanation = q.explanation,
-                TagId = q.tagId
+                AttachmentIds = q.QuestionAttachments?.Select(a => a.attachmentId).ToList()
             };
             return Ok(dto);
         }
@@ -74,39 +73,38 @@ namespace JCertPreApplication.API.Controllers
             var question = new Question
             {
                 questionId = Guid.NewGuid(),
-                questionText = dto.QuestionText,
-                questionType = dto.QuestionType,
-                explanation = dto.Explanation,
-                tagId = dto.TagId
+                questionText = dto.Content,
+                questionType = dto.Type,
+                explanation = dto.Explanation
             };
             var created = await _questionService.CreateAsync(question);
             var result = new QuestionReadDto
             {
-                QuestionId = created.questionId,
-                QuestionText = created.questionText,
-                QuestionType = created.questionType,
+                Id = created.questionId,
+                Content = created.questionText,
+                Type = created.questionType,
+                Points = dto.Points,
                 Explanation = created.explanation,
-                TagId = created.tagId
+                AttachmentIds = created.QuestionAttachments?.Select(a => a.attachmentId).ToList()
             };
-            return CreatedAtAction(nameof(GetById), new { id = result.QuestionId }, result);
+            return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
         }
 
         /// <summary>
         /// Update an existing question.
         /// </summary>
-        [HttpPut]
-        public async Task<IActionResult> Update([FromBody] QuestionUpdateDto dto)
+        [HttpPut("{id:guid}")]
+        public async Task<IActionResult> Update(Guid id, [FromBody] QuestionUpdateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
             var question = new Question
             {
-                questionId = dto.QuestionId,
-                questionText = dto.QuestionText,
-                questionType = dto.QuestionType,
-                explanation = dto.Explanation,
-                tagId = dto.TagId
+                questionId = id,
+                questionText = dto.Content,
+                questionType = dto.Type,
+                explanation = dto.Explanation
             };
             await _questionService.UpdateAsync(question);
             return NoContent();
@@ -129,27 +127,14 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> GetQuestionsWithDetails()
         {
             var questions = await _questionService.GetQuestionsWithDetailsAsync();
-            var result = questions.Select(q => new
+            var result = questions.Select(q => new QuestionReadDto
             {
-                QuestionId = q.questionId,
-                QuestionText = q.questionText,
-                QuestionType = q.questionType,
+                Id = q.questionId,
+                Content = q.questionText,
+                Type = q.questionType,
+                Points = 0, // Default value, update as needed
                 Explanation = q.explanation,
-                Choices = q.Choices?.Select(c => new
-                {
-                    c.choiceId,
-                    c.choiceText,
-                    c.isCorrect
-                }),
-                Attachments = q.QuestionAttachments?.Select(a => new
-                {
-                    a.attachmentId,
-            
-                }),
-                Tag = q.Tag?.Select(t => new
-                {
-                    t.tagId,
-                })
+                AttachmentIds = q.QuestionAttachments?.Select(a => a.attachmentId).ToList()
             });
             return Ok(result);
         }
@@ -169,7 +154,7 @@ namespace JCertPreApplication.API.Controllers
                 predicate = q => q.questionText.Contains(search);
             }
 
-            var result = await _questionService.GetPagingAsync(predicate, "Choices,QuestionAttachments,Tag", pageIndex, pageSize);
+            var result = await _questionService.GetPagingAsync(predicate, "Choices,QuestionAttachments", pageIndex, pageSize);
 
             // Map to DTOs
             var dtoResult = new Pagination<QuestionReadDto>
@@ -179,11 +164,12 @@ namespace JCertPreApplication.API.Controllers
                 TotalItemsCount = result.TotalItemsCount,
                 Items = result.Items.Select(q => new QuestionReadDto
                 {
-                    QuestionId = q.questionId,
-                    QuestionText = q.questionText,
-                    QuestionType = q.questionType,
+                    Id = q.questionId,
+                    Content = q.questionText,
+                    Type = q.questionType,
+                    Points = 0, // Default value, update as needed
                     Explanation = q.explanation,
-                    TagId = q.tagId
+                    AttachmentIds = q.QuestionAttachments?.Select(a => a.attachmentId).ToList()
                 }).ToList()
             };
 
