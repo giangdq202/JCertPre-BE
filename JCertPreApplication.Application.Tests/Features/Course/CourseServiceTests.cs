@@ -33,20 +33,27 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             {
                 Title = "Test Course",
                 Description = "Test Description",
-                Level = CourseLevel.Beginner,
-                CourseType = CourseType.SelfPaced,
+                Level = CourseLevel.N5,
+                CourseType = CourseType.Learn,
                 Price = 100,
                 ThumbnailUrl = "http://example.com/thumbnail.jpg"
             };
 
-            _mockCourseRepository.Setup(x => x.IsTitleUniqueAsync(It.IsAny<string>()))
+            Domain.Entities.Course? savedCourse = null;
+
+            _mockCourseRepository.Setup(x => x.IsTitleUniqueAsync(It.IsAny<string>(), It.IsAny<Guid?>()))
                 .ReturnsAsync(true);
+
+            _mockCourseRepository.Setup(x => x.InsertAsync(It.IsAny<Domain.Entities.Course>()))
+                .Callback<Domain.Entities.Course>(course => savedCourse = course)
+                .ReturnsAsync((Domain.Entities.Course course) => course);
 
             // Act
             var result = await _courseService.CreateCourseAsync(createDto);
 
             // Assert
             Assert.NotNull(result);
+            Assert.NotNull(savedCourse);
             Assert.Equal(createDto.Title, result.Title);
             Assert.Equal(createDto.Description, result.Description);
             Assert.Equal(createDto.Level, result.Level);
@@ -55,7 +62,13 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             Assert.Equal(createDto.ThumbnailUrl, result.ThumbnailUrl);
             Assert.Equal(CourseStatus.Draft, result.Status);
 
-            _mockCourseRepository.Verify(x => x.InsertAsync(It.IsAny<Domain.Entities.Course>()), Times.Once);
+            Assert.Equal(createDto.Title, savedCourse.title);
+            Assert.Equal(createDto.Description, savedCourse.description);
+            Assert.Equal(createDto.Level, savedCourse.level);
+            Assert.Equal(createDto.CourseType, savedCourse.courseType);
+            Assert.Equal(createDto.Price, savedCourse.price);
+            Assert.Equal(createDto.ThumbnailUrl, savedCourse.thumbnailUrl);
+
             _mockCourseRepository.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
@@ -65,7 +78,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             // Arrange
             var createDto = new CreateCourseDto { Title = "Existing Course" };
 
-            _mockCourseRepository.Setup(x => x.IsTitleUniqueAsync(It.IsAny<string>()))
+            _mockCourseRepository.Setup(x => x.IsTitleUniqueAsync(It.IsAny<string>(), It.IsAny<Guid?>()))
                 .ReturnsAsync(false);
 
             // Act & Assert
@@ -126,7 +139,12 @@ namespace JCertPreApplication.Application.Tests.Features.Course
         public async Task GetCoursesWithPaginationAsync_Should_ReturnPaginatedCourseListDto_When_Called()
         {
             // Arrange
-            var queryParameters = new CourseQueryParameters { PageIndex = 1, PageSize = 10 };
+            var queryParameters = new CourseQueryParameters 
+            { 
+                PageNumber = 1, 
+                PageSize = 10 
+            };
+            
             var courses = new List<Domain.Entities.Course>
             {
                 new() { courseId = Guid.NewGuid(), title = "Course 1" },
@@ -141,7 +159,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
                 PageSize = 10
             };
 
-            _mockCourseRepository.Setup(x => x.GetCoursesWithPaginationAsync(queryParameters))
+            _mockCourseRepository.Setup(x => x.GetCoursesWithPaginationAsync(It.IsAny<CourseQueryParameters>()))
                 .ReturnsAsync(paginatedCourses);
 
             // Act
