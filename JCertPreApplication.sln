@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Applica
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Persistence", "JCertPreApplication.Persistence\JCertPreApplication.Persistence.csproj", "{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Application.Tests", "JCertPreApplication.Application.Tests\JCertPreApplication.Application.Tests.csproj", "{F5101EEA-39AF-40C3-95C0-B6F2CAA01E03}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9BD1530D-0ECA-411A-BC59-04DEAA42A5DE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5101EEA-39AF-40C3-95C0-B6F2CAA01E03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5101EEA-39AF-40C3-95C0-B6F2CAA01E03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5101EEA-39AF-40C3-95C0-B6F2CAA01E03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5101EEA-39AF-40C3-95C0-B6F2CAA01E03}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
