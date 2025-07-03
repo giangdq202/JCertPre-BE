@@ -1,13 +1,14 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Features.Auth;
 using JCertPreApplication.Application.Features.Cache;
-using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Features.Conversation;
-using Microsoft.Extensions.DependencyInjection;
+using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Features.InstructorProfile;
+using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace JCertPreApplication.Application
 {
@@ -23,6 +24,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IStudentProfileService, StudentProfileService>();
             services.AddScoped<IStudyPlanService, StudyPlanService>();
             services.AddScoped<IStudyPlanItemService, StudyPlanItemService>();
+            services.AddScoped<IQuestionService, QuestionService>();
             return services;
         }
     }
