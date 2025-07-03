@@ -1,0 +1,19 @@
+<!-- New xUnit test project -->
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageReference Include="xunit" Version="2.5.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0" />
+    <PackageReference Include="Moq" Version="4.20.111" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\JCertPreApplication.Application\JCertPreApplication.Application.csproj" />
+    <ProjectReference Include="..\JCertPreApplication.Domain\JCertPreApplication.Domain.csproj" />
+  </ItemGroup>
+</Project> 
