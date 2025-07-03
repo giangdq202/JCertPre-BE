@@ -44,6 +44,7 @@ namespace JCertPreApplication.Persistence.Repositories
             return await _dbSet
                 .Include(q => q.Choices)
                 .Include(q => q.QuestionAttachments)
+                .Include(q => q.Tag)
                 .AsNoTracking()
                 .ToListAsync();
         }

@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Features.Auth;
 using JCertPreApplication.Application.Features.Cache;
+using JCertPreApplication.Application.Features.Choices;
 using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Features.InstructorProfile;
@@ -25,6 +26,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IStudyPlanService, StudyPlanService>();
             services.AddScoped<IStudyPlanItemService, StudyPlanItemService>();
             services.AddScoped<IQuestionService, QuestionService>();
+            services.AddScoped<IChoiceService, ChoiceService>();
             return services;
         }
     }

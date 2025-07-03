@@ -129,13 +129,27 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> GetQuestionsWithDetails()
         {
             var questions = await _questionService.GetQuestionsWithDetailsAsync();
-            var result = questions.Select(q => new QuestionReadDto
+            var result = questions.Select(q => new
             {
                 QuestionId = q.questionId,
                 QuestionText = q.questionText,
                 QuestionType = q.questionType,
                 Explanation = q.explanation,
-                TagId = q.tagId
+                Choices = q.Choices?.Select(c => new
+                {
+                    c.choiceId,
+                    c.choiceText,
+                    c.isCorrect
+                }),
+                Attachments = q.QuestionAttachments?.Select(a => new
+                {
+                    a.attachmentId,
+            
+                }),
+                Tag = q.Tag?.Select(t => new
+                {
+                    t.tagId,
+                })
             });
             return Ok(result);
         }
