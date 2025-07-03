@@ -1,20 +1,19 @@
+using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace JCertPreApplication.Application.Features.Questions
 {
     public interface IQuestionService
     {
-        Task<IEnumerable<Question>> GetAllAsync();
-        Task<Question> GetByIdAsync(Guid id);
-        Task<Question> CreateAsync(Question question);
-        Task UpdateAsync(Question question);
+        Task<QuestionDto> GetByIdAsync(Guid id);
+        Task<IEnumerable<QuestionDto>> GetAllAsync();
+        Task<QuestionDto> CreateAsync(CreateQuestionDto createDto);
+        Task<QuestionDto> UpdateAsync(Guid id, UpdateQuestionDto updateDto);
         Task DeleteAsync(Guid id);
-        Task<IEnumerable<Question>> GetQuestionsWithDetailsAsync();
-        Task<Pagination<Question>> GetPagingAsync(
-            Expression<Func<Question, bool>>? predicate = null,
-            string? includeProperties = null,
+        Task<IEnumerable<QuestionDto>> GetQuestionsWithDetailsAsync();
+        Task<Pagination<QuestionDto>> GetPaginatedAsync(
+            string? searchTerm = null,
+            bool includeChoices = false,
             int pageIndex = 1,
             int pageSize = 10);
     }

@@ -1,129 +1,119 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Exceptions;
+using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Features.StudyPlan
 {
     public class StudyPlanService : IStudyPlanService
     {
         private readonly IStudyPlanRepository _studyPlanRepository;
+        private readonly IUserRepository _userRepository;
 
-        public StudyPlanService(IStudyPlanRepository studyPlanRepository)
+        public StudyPlanService(
+            IStudyPlanRepository studyPlanRepository,
+            IUserRepository userRepository)
         {
             _studyPlanRepository = studyPlanRepository ?? throw new ArgumentNullException(nameof(studyPlanRepository));
-        }
-
-        public async Task<StudyPlanDto> CreateStudyPlanAsync(Guid studentId, Guid createdByStaffId, string planName, string description, DateTime startDate, DateTime endDate)
-        {
-            try
-            {
-                var studyPlan = new Domain.Entities.StudyPlan
-                {
-                    planId = Guid.NewGuid(),
-                    studentId = studentId,
-                    createdByStaffId = createdByStaffId,
-                    planName = planName,
-                    description = description,
-                    startDate = startDate,
-                    endDate = endDate
-                };
-                await _studyPlanRepository.CreateStudyPlanAsync(studyPlan);
-                return MapToStudyPlanDto(studyPlan);
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("STUDY_PLAN_CREATE_ERROR", $"An error occurred while creating study plan: {ex.Message}");
-            }
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         public async Task<StudyPlanDto> GetStudyPlanByIdAsync(Guid planId)
         {
-            try
-            {
-                var plan = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
-                if (plan == null)
-                    throw ApiException.NotFound("StudyPlan", planId);
+            var studyPlan = await _studyPlanRepository.GetByIdAsync(planId);
+            if (studyPlan == null)
+                throw ApiException.NotFound("StudyPlan", planId);
 
-                return MapToStudyPlanDto(plan);
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("STUDY_PLAN_SERVICE_ERROR", $"An error occurred while retrieving study plan: {ex.Message}");
-            }
+            return MapToStudyPlanDto(studyPlan);
         }
 
         public async Task<IEnumerable<StudyPlanDto>> GetAllStudyPlansAsync()
         {
-            try
+            var studyPlans = await _studyPlanRepository.GetAllAsync();
+            return studyPlans.Select(MapToStudyPlanDto);
+        }
+
+        public async Task<StudyPlanDto> CreateStudyPlanAsync(StudyPlanDto studyPlanDto)
+        {
+            // Validate student exists
+            var student = await _userRepository.GetByIdAsync(studyPlanDto.StudentId);
+            if (student == null)
+                throw ApiException.NotFound("Student", studyPlanDto.StudentId);
+
+            var studyPlan = new Domain.Entities.StudyPlan
             {
-                var plans = await _studyPlanRepository.GetAllStudyPlansAsync();
-                return plans.Select(MapToStudyPlanDto).ToList();
-            }
-            catch (ApiException)
+                planId = Guid.NewGuid(),
+                studentId = studyPlanDto.StudentId,
+                createdByStaffId = studyPlanDto.CreatedByStaffId,
+                planName = studyPlanDto.PlanName,
+                description = studyPlanDto.Description,
+                startDate = studyPlanDto.StartDate,
+                endDate = studyPlanDto.EndDate
+            };
+
+            var created = await _studyPlanRepository.InsertAsync(studyPlan);
+            await _studyPlanRepository.SaveChangesAsync();
+
+            return MapToStudyPlanDto(created);
+        }
+
+        public async Task<StudyPlanDto> UpdateStudyPlanAsync(Guid planId, UpdateStudyPlanDto updateDto)
+        {
+            var studyPlan = await _studyPlanRepository.GetByIdAsync(planId);
+            if (studyPlan == null)
+                throw ApiException.NotFound("StudyPlan", planId);
+
+            // If StudentId is being updated, validate the new student exists
+            if (updateDto.StudentId.HasValue && updateDto.StudentId.Value != studyPlan.studentId)
             {
-                throw;
+                var student = await _userRepository.GetByIdAsync(updateDto.StudentId.Value);
+                if (student == null)
+                    throw ApiException.NotFound("Student", updateDto.StudentId.Value);
+                studyPlan.studentId = updateDto.StudentId.Value;
             }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("STUDY_PLAN_SERVICE_ERROR", $"An error occurred while retrieving study plans: {ex.Message}");
-            }
+
+            // Update only provided fields
+            if (updateDto.PlanName != null)
+                studyPlan.planName = updateDto.PlanName;
+            if (updateDto.Description != null)
+                studyPlan.description = updateDto.Description;
+            if (updateDto.StartDate.HasValue)
+                studyPlan.startDate = updateDto.StartDate.Value;
+            if (updateDto.EndDate.HasValue)
+                studyPlan.endDate = updateDto.EndDate.Value;
+
+            await _studyPlanRepository.UpdateAsync(studyPlan);
+            await _studyPlanRepository.SaveChangesAsync();
+
+            return MapToStudyPlanDto(studyPlan);
+        }
+
+        public async Task DeleteStudyPlanAsync(Guid planId)
+        {
+            var studyPlan = await _studyPlanRepository.GetByIdAsync(planId);
+            if (studyPlan == null)
+                throw ApiException.NotFound("StudyPlan", planId);
+
+            // Check if study plan has any items before deleting
+            if (studyPlan.StudyPlanItems.Any())
+                throw ApiException.BadRequest("STUDY_PLAN_HAS_ITEMS", "Cannot delete study plan that has items. Delete the items first.");
+
+            await _studyPlanRepository.DeleteAsync(studyPlan);
+            await _studyPlanRepository.SaveChangesAsync();
         }
 
         public async Task<IEnumerable<StudyPlanDto>> GetStudyPlansByStudentIdAsync(Guid studentId)
         {
-            try
-            {
-                var plans = await _studyPlanRepository.GetStudyPlansByStudentIdAsync(studentId);
-                return plans.Select(MapToStudyPlanDto).ToList();
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("STUDY_PLAN_SERVICE_ERROR", $"An error occurred while retrieving student study plans: {ex.Message}");
-            }
+            // Validate student exists
+            var student = await _userRepository.GetByIdAsync(studentId);
+            if (student == null)
+                throw ApiException.NotFound("Student", studentId);
+
+            var studyPlans = await _studyPlanRepository.GetAllAsync();
+            return studyPlans.Where(sp => sp.studentId == studentId).Select(MapToStudyPlanDto);
         }
 
-        public async Task<StudyPlanDto> UpdateStudyPlanAsync(Guid planId, Domain.Entities.StudyPlan studyPlan)
-        {
-            try
-            {
-                var existingStudyPlan = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
-                if (existingStudyPlan == null)
-                    throw ApiException.NotFound("StudyPlan", planId);
-
-                // Update properties
-                existingStudyPlan.planName = studyPlan.planName;
-                existingStudyPlan.description = studyPlan.description;
-                existingStudyPlan.startDate = studyPlan.startDate;
-                existingStudyPlan.endDate = studyPlan.endDate;
-                existingStudyPlan.studentId = studyPlan.studentId; // Be careful with changing foreign keys
-
-                // Add any business logic/validation before updating
-                var updatedPlan = await _studyPlanRepository.UpdateStudyPlanAsync(existingStudyPlan);
-                return MapToStudyPlanDto(updatedPlan);
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("STUDY_PLAN_UPDATE_ERROR", $"An error occurred while updating study plan: {ex.Message}");
-            }
-        }
-
-        private StudyPlanDto MapToStudyPlanDto(Domain.Entities.StudyPlan studyPlan)
+        private static StudyPlanDto MapToStudyPlanDto(Domain.Entities.StudyPlan studyPlan)
         {
             return new StudyPlanDto
             {

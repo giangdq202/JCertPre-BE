@@ -25,7 +25,7 @@ namespace JCertPreApplication.Persistence.Repositories
         /// Gets all questions with their related attachments.
         /// </summary>
         /// <returns>List of questions including attachments.</returns>
-        public async Task<List<Question>> GetQuestionsWithAttachmentsAsync()
+        public async Task<IEnumerable<Question>> GetQuestionsWithAttachmentsAsync()
         {
             // Eagerly load QuestionAttachments navigation property
             return await _dbSet
@@ -38,7 +38,7 @@ namespace JCertPreApplication.Persistence.Repositories
         /// Gets all questions with their related choices and attachments.
         /// </summary>
         /// <returns>List of questions including choices and attachments.</returns>
-        public async Task<List<Question>> GetQuestionsWithDetailsAsync()
+        public async Task<IEnumerable<Question>> GetQuestionsWithDetailsAsync()
         {
             // Eagerly load Choices and QuestionAttachments navigation properties
             return await _dbSet
