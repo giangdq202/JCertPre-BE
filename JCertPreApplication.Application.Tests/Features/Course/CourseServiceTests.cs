@@ -122,7 +122,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             // Arrange
             var courseId = Guid.NewGuid();
             _mockCourseRepository.Setup(x => x.GetCourseWithDetailsAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course)null);
+                .ReturnsAsync((Domain.Entities.Course?)null);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
@@ -221,7 +221,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             var updateDto = new UpdateCourseDto { Title = "Updated Title" };
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course)null);
+                .ReturnsAsync((Domain.Entities.Course?)null);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
@@ -341,7 +341,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             // Arrange
             var courseId = Guid.NewGuid();
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course)null);
+                .ReturnsAsync((Domain.Entities.Course?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(
@@ -382,7 +382,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             var instructorId = Guid.NewGuid();
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course)null);
+                .ReturnsAsync((Domain.Entities.Course?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(
@@ -400,7 +400,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
                 .ReturnsAsync(course);
             _mockUserRepository.Setup(x => x.GetByIdAsync(instructorId))
-                .ReturnsAsync((User)null);
+                .ReturnsAsync((User?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(
@@ -438,7 +438,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             var instructorId = Guid.NewGuid();
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course)null);
+                .ReturnsAsync((Domain.Entities.Course?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(
@@ -481,7 +481,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             // Arrange
             var courseId = Guid.NewGuid();
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course)null);
+                .ReturnsAsync((Domain.Entities.Course?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(

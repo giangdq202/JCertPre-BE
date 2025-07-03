@@ -1,6 +1,5 @@
 using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Features.Questions;
-using JCertPreApplication.Application.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers

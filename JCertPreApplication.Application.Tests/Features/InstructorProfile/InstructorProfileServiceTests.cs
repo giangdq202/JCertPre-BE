@@ -80,7 +80,7 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
             // Arrange
             var userId = Guid.NewGuid();
             _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
-                .ReturnsAsync((Domain.Entities.InstructorProfile)null);
+                .ReturnsAsync((Domain.Entities.InstructorProfile?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(() => 
@@ -138,7 +138,7 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
             var teachingStyle = "Updated Style";
 
             _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
-                .ReturnsAsync((Domain.Entities.InstructorProfile)null);
+                .ReturnsAsync((Domain.Entities.InstructorProfile?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(() => 
@@ -170,7 +170,7 @@ namespace JCertPreApplication.Application.Tests.Features.InstructorProfile
             // Arrange
             var userId = Guid.NewGuid();
             _mockInstructorProfileRepository.Setup(x => x.ReadInstructorProfileAsync(userId))
-                .ReturnsAsync((Domain.Entities.InstructorProfile)null);
+                .ReturnsAsync((Domain.Entities.InstructorProfile?)null);
 
             // Act & Assert
             await Assert.ThrowsAsync<ApiException>(() => 

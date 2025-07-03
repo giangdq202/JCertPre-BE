@@ -1,6 +1,5 @@
 ﻿using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
-using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 

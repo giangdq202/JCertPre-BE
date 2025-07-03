@@ -17,14 +17,6 @@ var app = builder.Build();
 // Configure pipeline
 ConfigurePipeline(app);
 
-// Display configuration status (if enabled)
-//var apiConfig = new ApiConfiguration();
-//app.Configuration.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
-//if (apiConfig.ShowConfigurationStatus)
-//{
-//    DisplayConfigurationStatus(app);
-//}
-
 app.Run();
 
 #region Configuration Setup
@@ -119,7 +111,7 @@ static void SetupServices(WebApplicationBuilder builder)
 #region Pipeline Configuration
 static void ConfigurePipeline(WebApplication app)
 {
-    // Global Exception Handling - MUST be first in pipeline
+    // Global Exception Handling - MUST be first in a pipeline
     app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
     
     if (app.Environment.IsDevelopment())

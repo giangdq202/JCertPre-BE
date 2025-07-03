@@ -4,9 +4,6 @@ using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Application.Dtos.Message;
 using JCertPreApplication.Application.Exceptions;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace JCertPreApplication.Application.Tests.Features.Conversation
