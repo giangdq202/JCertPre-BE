@@ -25,7 +25,7 @@ namespace JCertPreApplication.API.Controllers
     /// - Many-to-many instructor relationships
     /// - Course status workflow (Draft → Published → Archived/Suspended)
     /// </remarks>
-    [Route("api/[controller]")]
+    [Route("api/course")]
     [ApiController]
     [Tags("Courses")]
     [Produces("application/json")]

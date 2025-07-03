@@ -20,5 +20,6 @@ namespace JCertPreApplication.Domain.Entities
         public virtual ICollection<Livestream> Livestreams { get; set; }
         public virtual ICollection<Feedback> Feedbacks { get; set; }
         public virtual ICollection<Enrollment> Enrollments { get; set; }
+        public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; }
     }
 }

@@ -17,12 +17,13 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.description).IsRequired();
             builder.Property(t => t.testType).IsRequired().HasMaxLength(50);
             builder.Property(t => t.durationMinutes).IsRequired();
-            builder.Property(t => t.lessonId).IsRequired();
+            builder.Property(t => t.lessonId); // Nullable foreign key, so no IsRequired() here
             builder.Property(t => t.createdByUserId).IsRequired();
 
             // Configure navigation properties
             builder.HasOne(t => t.Lesson)
                    .WithMany(q => q.Tests)
+                   .IsRequired(false)
                    .HasForeignKey(t => t.lessonId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(t => t.CreatedByUser)
@@ -35,6 +36,10 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(t => t.TestAttempts)
                    .WithOne(q => q.Test)
+                   .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
+            builder.HasMany(t => t.StudyPlanItems)
+                   .WithOne(q => q.Test)
+                   .IsRequired(false) // Nullable foreign key
                    .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
         }
     }

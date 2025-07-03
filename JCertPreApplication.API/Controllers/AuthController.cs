@@ -31,7 +31,7 @@ namespace JCertPreApplication.API.Controllers
     /// 3. When access token expires → Use refresh token to get new tokens
     /// 4. Logout → Revoke both tokens
     /// </remarks>
-    [Route("api/[controller]")]
+    [Route("api/auth")]
     [ApiController]
     [Tags("Authentication")]
     [Produces("application/json")]

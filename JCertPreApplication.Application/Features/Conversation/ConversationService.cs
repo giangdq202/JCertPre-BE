@@ -1,4 +1,4 @@
-﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Conversation;
 using JCertPreApplication.Application.Dtos.Message;
 using JCertPreApplication.Application.Dtos.User;

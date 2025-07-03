@@ -22,7 +22,7 @@ namespace JCertPreApplication.API.Controllers
     /// - Sender identity verified from JWT token
     /// - Participant validation for message sending
     /// </remarks>
-    [Route("api/[controller]")]
+    [Route("api/conversation")]
     [ApiController]
     [Tags("Conversations")]
     [Produces("application/json")]
