@@ -1,6 +1,5 @@
 using JCertPreApplication.Application.Contracts;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace JCertPreApplication.API.Middleware
 {
