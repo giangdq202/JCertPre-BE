@@ -359,12 +359,14 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             var courseId = Guid.NewGuid();
             var instructorId = Guid.NewGuid();
             var course = new Domain.Entities.Course { courseId = courseId };
-            var instructor = new User { userId = instructorId };
+            var user = new User { userId = instructorId };
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
                 .ReturnsAsync(course);
             _mockUserRepository.Setup(x => x.GetByIdAsync(instructorId))
-                .ReturnsAsync(instructor);
+                .ReturnsAsync(user);
+            _mockCourseRepository.Setup(x => x.HasActiveInstructorAsync(courseId, instructorId))
+                .ReturnsAsync(false);
 
             // Act
             await _courseService.AddInstructorToCourseAsync(courseId, instructorId);
@@ -375,44 +377,30 @@ namespace JCertPreApplication.Application.Tests.Features.Course
         }
 
         [Fact]
-        public async Task AddInstructorToCourseAsync_Should_ThrowApiException_When_CourseDoesNotExist()
-        {
-            // Arrange
-            var courseId = Guid.NewGuid();
-            var instructorId = Guid.NewGuid();
-
-            _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course?)null);
-
-            // Act & Assert
-            await Assert.ThrowsAsync<ApiException>(
-                () => _courseService.AddInstructorToCourseAsync(courseId, instructorId));
-        }
-
-        [Fact]
-        public async Task AddInstructorToCourseAsync_Should_ThrowApiException_When_UserDoesNotExist()
+        public async Task AddInstructorToCourseAsync_Should_ThrowApiException_When_InstructorAlreadyActive()
         {
             // Arrange
             var courseId = Guid.NewGuid();
             var instructorId = Guid.NewGuid();
             var course = new Domain.Entities.Course { courseId = courseId };
+            var user = new User { userId = instructorId };
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
                 .ReturnsAsync(course);
             _mockUserRepository.Setup(x => x.GetByIdAsync(instructorId))
-                .ReturnsAsync((User?)null);
+                .ReturnsAsync(user);
+            _mockCourseRepository.Setup(x => x.HasActiveInstructorAsync(courseId, instructorId))
+                .ReturnsAsync(true);
 
             // Act & Assert
-            await Assert.ThrowsAsync<ApiException>(
+            var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _courseService.AddInstructorToCourseAsync(courseId, instructorId));
+
+            Assert.Equal("INSTRUCTOR_ALREADY_ACTIVE", exception.ErrorCode);
         }
 
-        #endregion
-
-        #region RemoveInstructorFromCourseAsync Tests
-
         [Fact]
-        public async Task RemoveInstructorFromCourseAsync_Should_Succeed_When_CourseExists()
+        public async Task RemoveInstructorFromCourseAsync_Should_Succeed_When_InstructorIsActive()
         {
             // Arrange
             var courseId = Guid.NewGuid();
@@ -421,28 +409,35 @@ namespace JCertPreApplication.Application.Tests.Features.Course
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
                 .ReturnsAsync(course);
+            _mockCourseRepository.Setup(x => x.DeactivateInstructorFromCourseAsync(courseId, instructorId, null))
+                .ReturnsAsync(true);
 
             // Act
             await _courseService.RemoveInstructorFromCourseAsync(courseId, instructorId);
 
             // Assert
-            _mockCourseRepository.Verify(x => x.RemoveInstructorFromCourseAsync(courseId, instructorId), Times.Once);
+            _mockCourseRepository.Verify(x => x.DeactivateInstructorFromCourseAsync(courseId, instructorId, null), Times.Once);
             _mockCourseRepository.Verify(x => x.SaveChangesAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task RemoveInstructorFromCourseAsync_Should_ThrowApiException_When_CourseDoesNotExist()
+        public async Task RemoveInstructorFromCourseAsync_Should_ThrowApiException_When_InstructorNotActive()
         {
             // Arrange
             var courseId = Guid.NewGuid();
             var instructorId = Guid.NewGuid();
+            var course = new Domain.Entities.Course { courseId = courseId };
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course?)null);
+                .ReturnsAsync(course);
+            _mockCourseRepository.Setup(x => x.DeactivateInstructorFromCourseAsync(courseId, instructorId, null))
+                .ReturnsAsync(false);
 
             // Act & Assert
-            await Assert.ThrowsAsync<ApiException>(
+            var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _courseService.RemoveInstructorFromCourseAsync(courseId, instructorId));
+
+            Assert.Equal("INSTRUCTOR_NOT_ACTIVE", exception.ErrorCode);
         }
 
         #endregion
@@ -463,7 +458,7 @@ namespace JCertPreApplication.Application.Tests.Features.Course
 
             _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
                 .ReturnsAsync(course);
-            _mockCourseRepository.Setup(x => x.GetCourseInstructorsAsync(courseId))
+            _mockCourseRepository.Setup(x => x.GetActiveCourseInstructorsAsync(courseId))
                 .ReturnsAsync(instructors);
 
             // Act
@@ -473,19 +468,59 @@ namespace JCertPreApplication.Application.Tests.Features.Course
             Assert.NotNull(result);
             Assert.Equal(2, result.Count());
             Assert.Equal(instructors[0].fullName, result.First().fullName);
+            Assert.Equal(instructors[1].fullName, result.Last().fullName);
         }
 
         [Fact]
-        public async Task GetCourseInstructorsAsync_Should_ThrowApiException_When_CourseDoesNotExist()
+        public async Task GetCourseInstructorHistoryAsync_Should_ReturnHistory_When_CourseExists()
         {
             // Arrange
             var courseId = Guid.NewGuid();
-            _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
-                .ReturnsAsync((Domain.Entities.Course?)null);
+            var course = new Domain.Entities.Course { courseId = courseId };
+            var history = new List<CourseInstructor>
+            {
+                new()
+                {
+                    CourseId = courseId,
+                    InstructorId = Guid.NewGuid(),
+                    Instructor = new User { fullName = "Instructor 1" },
+                    AssignedOn = DateTime.UtcNow.AddDays(-10),
+                    IsActive = true
+                },
+                new()
+                {
+                    CourseId = courseId,
+                    InstructorId = Guid.NewGuid(),
+                    Instructor = new User { fullName = "Instructor 2" },
+                    AssignedOn = DateTime.UtcNow.AddDays(-20),
+                    LeftOn = DateTime.UtcNow.AddDays(-5),
+                    IsActive = false,
+                    Notes = "Left for personal reasons"
+                }
+            };
 
-            // Act & Assert
-            await Assert.ThrowsAsync<ApiException>(
-                () => _courseService.GetCourseInstructorsAsync(courseId));
+            _mockCourseRepository.Setup(x => x.GetByIdAsync(courseId))
+                .ReturnsAsync(course);
+            _mockCourseRepository.Setup(x => x.GetCourseInstructorHistoryAsync(courseId))
+                .ReturnsAsync(history);
+
+            // Act
+            var result = await _courseService.GetCourseInstructorHistoryAsync(courseId);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(2, result.Count());
+            
+            var activeInstructor = result.First();
+            Assert.True(activeInstructor.IsActive);
+            Assert.Equal("Instructor 1", activeInstructor.InstructorName);
+            Assert.Null(activeInstructor.LeftOn);
+
+            var inactiveInstructor = result.Last();
+            Assert.False(inactiveInstructor.IsActive);
+            Assert.Equal("Instructor 2", inactiveInstructor.InstructorName);
+            Assert.NotNull(inactiveInstructor.LeftOn);
+            Assert.Equal("Left for personal reasons", inactiveInstructor.Notes);
         }
 
         #endregion

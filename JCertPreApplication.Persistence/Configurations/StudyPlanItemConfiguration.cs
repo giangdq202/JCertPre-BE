@@ -18,7 +18,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(spi => spi.itemType).IsRequired().HasMaxLength(50);
             builder.Property(spi => spi.courseId);
             builder.Property(spi => spi.testId);
-            builder.Property(spi => spi.status).IsRequired();
+            builder.Property(spi => spi.status).IsRequired().HasConversion<string>();
 
             // Configure foreign key relationship
             builder.HasOne(spi => spi.StudyPlan)

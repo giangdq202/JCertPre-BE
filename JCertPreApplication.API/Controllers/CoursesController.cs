@@ -408,5 +408,37 @@ namespace JCertPreApplication.API.Controllers
             var instructors = await _courseService.GetCourseInstructorsAsync(courseId);
             return Ok(instructors);
         }
+
+        /// <summary>
+        /// Get instructor history for a course
+        /// </summary>
+        /// <remarks>
+        /// Retrieves the complete history of instructors for a course, including:
+        /// - Currently active instructors
+        /// - Past instructors who have left
+        /// - Assignment and departure dates
+        /// - Notes about instructor changes
+        /// 
+        /// This endpoint is useful for:
+        /// - Auditing instructor changes
+        /// - Understanding course staffing history
+        /// - Administrative review of course management
+        /// </remarks>
+        /// <param name="courseId">Course ID to get instructor history for</param>
+        /// <returns>List of instructor history records with timestamps and status</returns>
+        /// <response code="200">Successfully retrieved instructor history.</response>
+        /// <response code="404">Course with the specified ID was not found.</response>
+        /// <response code="400">Invalid course ID format.</response>
+        /// <response code="500">Internal server error occurred during processing.</response>
+        [HttpGet("{courseId}/instructors/history")]
+        [ProducesResponseType(typeof(IEnumerable<CourseInstructorHistoryDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status404NotFound)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCourseInstructorHistory(Guid courseId)
+        {
+            var history = await _courseService.GetCourseInstructorHistoryAsync(courseId);
+            return Ok(history);
+        }
     }
 } 
