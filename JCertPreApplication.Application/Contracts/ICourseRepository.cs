@@ -10,8 +10,10 @@ namespace JCertPreApplication.Application.Contracts
         Task<Course?> GetByTitleAsync(string title);
         Task<Pagination<Course>> GetCoursesWithPaginationAsync(CourseQueryParameters queryParameters);
         Task<bool> IsTitleUniqueAsync(string title, Guid? excludeCourseId = null);
-        Task AddInstructorToCourseAsync(Guid courseId, Guid instructorId);
-        Task RemoveInstructorFromCourseAsync(Guid courseId, Guid instructorId);
-        Task<IEnumerable<User>> GetCourseInstructorsAsync(Guid courseId);
+        Task<bool> HasActiveInstructorAsync(Guid courseId, Guid instructorId);
+        Task<CourseInstructor> AddInstructorToCourseAsync(Guid courseId, Guid instructorId);
+        Task<bool> DeactivateInstructorFromCourseAsync(Guid courseId, Guid instructorId, string? notes = null);
+        Task<IEnumerable<User>> GetActiveCourseInstructorsAsync(Guid courseId);
+        Task<IEnumerable<CourseInstructor>> GetCourseInstructorHistoryAsync(Guid courseId);
     }
 } 

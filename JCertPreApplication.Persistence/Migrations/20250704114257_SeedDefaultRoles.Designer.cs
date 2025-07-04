@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250704114257_SeedDefaultRoles")]
+    partial class SeedDefaultRoles
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,9 +114,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("courseType")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("courseType")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
@@ -123,9 +125,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("level")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("level")
+                        .HasColumnType("integer");
 
                     b.Property<decimal>("price")
                         .HasPrecision(18, 2)
@@ -407,9 +408,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("status")
+                        .HasColumnType("integer");
 
                     b.Property<string>("transactionId")
                         .IsRequired()
@@ -633,9 +633,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<int>("sequence")
                         .HasColumnType("integer");
 
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("status")
+                        .HasColumnType("integer");
 
                     b.Property<Guid?>("testId")
                         .HasColumnType("uuid");
@@ -801,9 +800,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<Guid>("roleId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<int>("status")
+                        .HasColumnType("integer");
 
                     b.HasKey("userId");
 

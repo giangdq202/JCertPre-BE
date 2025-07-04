@@ -15,11 +15,11 @@ namespace JCertPreApplication.Domain.Entities
         public DateTime createdAt { get; set; }
 
         // Navigation properties
-        public virtual ICollection<User> Instructors { get; set; } = new List<User>();
         public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
         public virtual ICollection<Livestream> Livestreams { get; set; } = new List<Livestream>();
         public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
         public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();
+        public virtual ICollection<CourseInstructor> CourseInstructors { get; set; } = new List<CourseInstructor>();
     }
 }
