@@ -4,6 +4,7 @@ using JCertPreApplication.Application.Features.Choices;
 using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Features.InstructorProfile;
+using JCertPreApplication.Application.Features.Lessons;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
@@ -26,6 +27,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IStudyPlanItemService, StudyPlanItemService>();
             services.AddScoped<IQuestionService, QuestionService>();
             services.AddScoped<IChoiceService, ChoiceService>();
+            services.AddScoped<ILessonService, LessonService>();
             return services;
         }
     }
