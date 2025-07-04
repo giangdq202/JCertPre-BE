@@ -15,8 +15,8 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure required properties and constraints
             builder.Property(c => c.title).IsRequired().HasMaxLength(100);
             builder.Property(c => c.description).IsRequired().HasMaxLength(1000);
-            builder.Property(c => c.level).IsRequired();
-            builder.Property(c => c.courseType).IsRequired();
+            builder.Property(c => c.level).IsRequired().HasConversion<string>();
+            builder.Property(c => c.courseType).IsRequired().HasConversion<string>();
             builder.Property(c => c.price).HasPrecision(18, 2).IsRequired();
             builder.Property(c => c.thumbnailUrl).HasMaxLength(500);
             builder.Property(c => c.status).IsRequired().HasConversion<string>();

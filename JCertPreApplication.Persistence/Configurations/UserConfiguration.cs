@@ -19,6 +19,8 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(u => u.phone).HasMaxLength(20);
             builder.Property(u => u.avatarUrl).HasMaxLength(500);
             builder.Property(u => u.roleId).IsRequired();
+            builder.Property(u => u.status).IsRequired().HasConversion<string>();
+
             // Configure navigation properties
             builder.HasOne(u => u.Role)
                    .WithMany(ur => ur.Users)
