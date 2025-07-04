@@ -17,7 +17,8 @@ namespace JCertPreApplication.Persistence.Repositories
         public async Task<Course?> GetCourseWithDetailsAsync(Guid courseId)
         {
             return await _dbSet
-                .Include(c => c.Instructors)
+                .Include(c => c.CourseInstructors)
+                    .ThenInclude(ci => ci.Instructor)
                 .Include(c => c.Lessons)
                 .Include(c => c.Livestreams)
                 .Include(c => c.Enrollments)
@@ -34,7 +35,8 @@ namespace JCertPreApplication.Persistence.Repositories
         public async Task<Pagination<Course>> GetCoursesWithPaginationAsync(CourseQueryParameters queryParameters)
         {
             var query = _dbSet
-                .Include(c => c.Instructors)
+                .Include(c => c.CourseInstructors)
+                    .ThenInclude(ci => ci.Instructor)
                 .Include(c => c.Enrollments)
                 .AsQueryable();
 
@@ -49,7 +51,8 @@ namespace JCertPreApplication.Persistence.Repositories
             // Apply instructor filter
             if (queryParameters.InstructorId.HasValue)
             {
-                query = query.Where(c => c.Instructors.Any(i => i.userId == queryParameters.InstructorId.Value));
+                query = query.Where(c => c.CourseInstructors.Any(ci => 
+                    ci.InstructorId == queryParameters.InstructorId.Value && ci.IsActive));
             }
 
             // Apply status filter
@@ -85,7 +88,7 @@ namespace JCertPreApplication.Persistence.Repositories
             {
                 Items = items,
                 TotalItemsCount = totalCount,
-                PageIndex = pageNumber - 1, // PageIndex is 0-based, but pageNumber parameter is 1-based
+                PageIndex = pageNumber - 1,
                 PageSize = pageSize
             };
         }
@@ -102,52 +105,69 @@ namespace JCertPreApplication.Persistence.Repositories
             return !await query.AnyAsync();
         }
 
-        public async Task AddInstructorToCourseAsync(Guid courseId, Guid instructorId)
+        public async Task<bool> HasActiveInstructorAsync(Guid courseId, Guid instructorId)
         {
-            var course = await _dbSet
-                .Include(c => c.Instructors)
-                .FirstOrDefaultAsync(c => c.courseId == courseId);
-
-            if (course == null)
-                throw new ArgumentException($"Course with ID {courseId} not found");
-
-            var instructor = await _context.Set<User>()
-                .FirstOrDefaultAsync(u => u.userId == instructorId);
-
-            if (instructor == null)
-                throw new ArgumentException($"User with ID {instructorId} not found");
-
-            if (!course.Instructors.Any(i => i.userId == instructorId))
-            {
-                course.Instructors.Add(instructor);
-                // Commit sẽ được thực hiện ở Service layer
-            }
+            return await _context.Set<CourseInstructor>()
+                .AnyAsync(ci => ci.CourseId == courseId && 
+                               ci.InstructorId == instructorId && 
+                               ci.IsActive);
         }
 
-        public async Task RemoveInstructorFromCourseAsync(Guid courseId, Guid instructorId)
+        public async Task<CourseInstructor> AddInstructorToCourseAsync(Guid courseId, Guid instructorId)
         {
-            var course = await _dbSet
-                .Include(c => c.Instructors)
-                .FirstOrDefaultAsync(c => c.courseId == courseId);
+            var course = await _dbSet.FindAsync(courseId)
+                ?? throw new ArgumentException($"Course with ID {courseId} not found");
 
-            if (course == null)
-                throw new ArgumentException($"Course with ID {courseId} not found");
+            var instructor = await _context.Set<User>().FindAsync(instructorId)
+                ?? throw new ArgumentException($"User with ID {instructorId} not found");
 
-            var instructor = course.Instructors.FirstOrDefault(i => i.userId == instructorId);
-            if (instructor != null)
+            var courseInstructor = new CourseInstructor
             {
-                course.Instructors.Remove(instructor);
-                // Commit sẽ được thực hiện ở Service layer
-            }
+                CourseId = courseId,
+                InstructorId = instructorId,
+                AssignedOn = DateTime.UtcNow,
+                IsActive = true
+            };
+
+            await _context.Set<CourseInstructor>().AddAsync(courseInstructor);
+            return courseInstructor;
         }
 
-        public async Task<IEnumerable<User>> GetCourseInstructorsAsync(Guid courseId)
+        public async Task<bool> DeactivateInstructorFromCourseAsync(Guid courseId, Guid instructorId, string? notes = null)
         {
-            var course = await _dbSet
-                .Include(c => c.Instructors)
-                .FirstOrDefaultAsync(c => c.courseId == courseId);
+            var courseInstructor = await _context.Set<CourseInstructor>()
+                .FirstOrDefaultAsync(ci => ci.CourseId == courseId && 
+                                         ci.InstructorId == instructorId && 
+                                         ci.IsActive);
 
-            return course?.Instructors ?? new List<User>();
+            if (courseInstructor == null)
+                return false;
+
+            courseInstructor.IsActive = false;
+            courseInstructor.LeftOn = DateTime.UtcNow;
+            courseInstructor.Notes = notes;
+
+            return true;
+        }
+
+        public async Task<IEnumerable<User>> GetActiveCourseInstructorsAsync(Guid courseId)
+        {
+            var instructors = await _context.Set<CourseInstructor>()
+                .Include(ci => ci.Instructor)
+                .Where(ci => ci.CourseId == courseId && ci.IsActive)
+                .Select(ci => ci.Instructor)
+                .ToListAsync();
+
+            return instructors;
+        }
+
+        public async Task<IEnumerable<CourseInstructor>> GetCourseInstructorHistoryAsync(Guid courseId)
+        {
+            return await _context.Set<CourseInstructor>()
+                .Include(ci => ci.Instructor)
+                .Where(ci => ci.CourseId == courseId)
+                .OrderByDescending(ci => ci.AssignedOn)
+                .ToListAsync();
         }
     }
 } 

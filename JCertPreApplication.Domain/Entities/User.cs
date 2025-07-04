@@ -22,7 +22,6 @@ namespace JCertPreApplication.Domain.Entities
         public virtual InstructorProfile InstructorProfile { get; set; } = null!;
         public virtual StudentProfile StudentProfile { get; set; } = null!;
         public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
-        public virtual ICollection<Course> InstructorCourses { get; set; } = new List<Course>();
         public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
         public virtual ICollection<Report> StudentReports { get; set; } = new List<Report>(); // For Report.StudentUser
         public virtual ICollection<Report> InstructorReports { get; set; } = new List<Report>(); // For Report.InstructorUser
@@ -31,6 +30,6 @@ namespace JCertPreApplication.Domain.Entities
         public virtual ICollection<StudyPlan> StaffCreatePlans { get; set; } = new List<StudyPlan>();
         public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
         public virtual ICollection<Test> CreatedTests { get; set; } = new List<Test>();
+        public virtual ICollection<CourseInstructor> InstructorCourses { get; set; } = new List<CourseInstructor>();
     }
-
 }

@@ -141,6 +141,10 @@ namespace JCertPreApplication.Application.Features.Course
             if (user == null)
                 throw ApiException.NotFound("User", instructorId);
 
+            // Check if instructor is already active in this course
+            if (await _courseRepository.HasActiveInstructorAsync(courseId, instructorId))
+                throw ApiException.BadRequest("INSTRUCTOR_ALREADY_ACTIVE", "This instructor is already active in this course");
+
             await _courseRepository.AddInstructorToCourseAsync(courseId, instructorId);
             await _courseRepository.SaveChangesAsync();
         }
@@ -151,7 +155,11 @@ namespace JCertPreApplication.Application.Features.Course
             if (course == null)
                 throw ApiException.NotFound("Course", courseId);
 
-            await _courseRepository.RemoveInstructorFromCourseAsync(courseId, instructorId);
+            // Try to deactivate the instructor
+            var deactivated = await _courseRepository.DeactivateInstructorFromCourseAsync(courseId, instructorId);
+            if (!deactivated)
+                throw ApiException.BadRequest("INSTRUCTOR_NOT_ACTIVE", "This instructor is not active in this course");
+
             await _courseRepository.SaveChangesAsync();
         }
 
@@ -161,8 +169,26 @@ namespace JCertPreApplication.Application.Features.Course
             if (course == null)
                 throw ApiException.NotFound("Course", courseId);
 
-            var instructors = await _courseRepository.GetCourseInstructorsAsync(courseId);
+            var instructors = await _courseRepository.GetActiveCourseInstructorsAsync(courseId);
             return instructors.Select(MapToAppUserDto);
+        }
+
+        public async Task<IEnumerable<CourseInstructorHistoryDto>> GetCourseInstructorHistoryAsync(Guid courseId)
+        {
+            var course = await _courseRepository.GetByIdAsync(courseId);
+            if (course == null)
+                throw ApiException.NotFound("Course", courseId);
+
+            var history = await _courseRepository.GetCourseInstructorHistoryAsync(courseId);
+            return history.Select(ci => new CourseInstructorHistoryDto
+            {
+                InstructorId = ci.InstructorId,
+                InstructorName = ci.Instructor.fullName,
+                AssignedOn = ci.AssignedOn,
+                LeftOn = ci.LeftOn,
+                IsActive = ci.IsActive,
+                Notes = ci.Notes
+            });
         }
 
         private static CourseDto MapToCourseDto(Domain.Entities.Course course)
@@ -181,7 +207,10 @@ namespace JCertPreApplication.Application.Features.Course
                 LessonsCount = course.Lessons?.Count ?? 0,
                 LivestreamsCount = course.Livestreams?.Count ?? 0,
                 EnrollmentsCount = course.Enrollments?.Count ?? 0,
-                Instructors = course.Instructors?.Select(MapToAppUserDto).ToList() ?? new List<AppUserDto>()
+                Instructors = course.CourseInstructors?
+                    .Where(ci => ci.IsActive)
+                    .Select(ci => MapToAppUserDto(ci.Instructor))
+                    .ToList() ?? new List<AppUserDto>()
             };
         }
 
@@ -199,7 +228,7 @@ namespace JCertPreApplication.Application.Features.Course
                 Status = course.status,
                 CreatedAt = course.createdAt,
                 EnrollmentsCount = course.Enrollments?.Count ?? 0,
-                InstructorsCount = course.Instructors?.Count ?? 0
+                InstructorsCount = course.CourseInstructors?.Count(ci => ci.IsActive) ?? 0
             };
         }
 

@@ -22,14 +22,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(c => c.status).IsRequired().HasConversion<string>();
             builder.Property(c => c.createdAt).IsRequired();
 
-            // Configure many-to-many relationship with instructors
-            builder.HasMany(c => c.Instructors)
-                   .WithMany(u => u.InstructorCourses)
-                   .UsingEntity(
-                       "course_instructor",
-                       l => l.HasOne(typeof(User)).WithMany().HasForeignKey("UserId"),
-                       r => r.HasOne(typeof(Course)).WithMany().HasForeignKey("CourseId"),
-                       j => j.HasKey("CourseId", "UserId"));
+            // Configure relationship with instructors through CourseInstructor
+            builder.HasMany(c => c.CourseInstructors)
+                   .WithOne(ci => ci.Course)
+                   .HasForeignKey(ci => ci.CourseId)
+                   .OnDelete(DeleteBehavior.NoAction);
 
             // Configure navigation properties
             builder.HasMany(c => c.Lessons)
