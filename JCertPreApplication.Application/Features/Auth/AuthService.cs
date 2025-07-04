@@ -69,7 +69,7 @@ namespace JCertPreApplication.Application.Features.Auth
             var defaultRole = await _roleRepository.GetByRoleNameAsync("STUDENT");
             if (defaultRole == null)
             {
-                throw new ApiException("Default role STUDENT not found.");
+                throw ApiException.InternalServerError("DEFAULT_ROLE_NOT_FOUND", "Default role STUDENT not found in the system.");
             }
 
             var user = new User
