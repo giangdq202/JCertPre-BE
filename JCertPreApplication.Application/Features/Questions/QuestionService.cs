@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.Question;
+using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
@@ -157,31 +158,10 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Retrieves all questions with their related choices and attachments.
+        /// Retrieves paginated questions with details (choices, attachments), not including tag.
         /// </summary>
-        public async Task<IEnumerable<QuestionDto>> GetQuestionsWithDetailsAsync()
-        {
-            try
-            {
-                var questions = await _questionRepository.GetQuestionsWithDetailsAsync();
-                return questions.Select(MapToQuestionDto);
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving question details: {ex.Message}");
-            }
-        }
-
-        /// <summary>
-        /// Retrieves paginated questions with optional filtering and includes.
-        /// </summary>
-        public async Task<Pagination<QuestionDto>> GetPaginatedAsync(
+        public async Task<Pagination<QuestionDto>> GetPaginatedWithDetailsAsync(
             string? searchTerm = null,
-            bool includeChoices = false,
             int pageIndex = 1,
             int pageSize = 10)
         {
@@ -196,8 +176,8 @@ namespace JCertPreApplication.Application.Features.Questions
                                    q.explanation.ToLower().Contains(term);
                 }
 
-                // Determine which properties to include
-                string? includeProperties = includeChoices ? "Choices" : null;
+                // Include Choices and QuestionAttachments, but NOT Tag
+                string includeProperties = "Choices,QuestionAttachments";
 
                 var paginatedQuestions = await _questionRepository.GetPaginationAsync(
                     predicate,
@@ -228,11 +208,13 @@ namespace JCertPreApplication.Application.Features.Questions
             return new QuestionDto
             {
                 Id = question.questionId,
+                QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+                {
+                    MediaUrl = a.mediaUrl,
+                    MediaType = a.mediaType
+                }).ToList(),
                 Content = question.questionText,
                 Explanation = question.explanation,
-                Points = 1, // This should be added to the Question entity if needed
-                CreatedAt = DateTime.UtcNow, // These should be added to the Question entity
-                UpdatedAt = null,
                 Choices = question.Choices?.Select(c => new ChoiceReadDto
                 {
                     Id = c.choiceId,
@@ -242,5 +224,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 }).ToList()
             };
         }
+
+        
     }
 }

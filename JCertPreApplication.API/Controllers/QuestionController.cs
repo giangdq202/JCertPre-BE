@@ -77,25 +77,15 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get all questions with their related details (choices, attachments, etc.).
+        /// Get paginated questions with details (choices, attachments), not including tag.
         /// </summary>
-        [HttpGet("details")]
-        public async Task<IActionResult> GetQuestionsWithDetails()
-        {
-            var questions = await _questionService.GetQuestionsWithDetailsAsync();
-            return Ok(questions);
-        }
-
-        /// <summary>
-        /// Get paginated questions with optional search.
-        /// </summary>
-        [HttpGet("paging")]
-        public async Task<IActionResult> GetPaging(
+        [HttpGet("paging-details")]
+        public async Task<IActionResult> GetPagingWithDetails(
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10,
             [FromQuery] string? search = null)
         {
-            var result = await _questionService.GetPaginatedAsync(search, includeChoices: true, pageIndex, pageSize);
+            var result = await _questionService.GetPaginatedWithDetailsAsync(search, pageIndex, pageSize);
             return Ok(result);
         }
     }

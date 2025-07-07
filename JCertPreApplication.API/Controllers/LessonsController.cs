@@ -18,6 +18,7 @@ namespace JCertPreApplication.API.Controllers
             _lessonService = lessonService;
         }
 
+        // 4. Controller remains the same
         /// <summary>
         /// Get paginated lessons by course id and search by title.
         /// </summary>
@@ -30,7 +31,6 @@ namespace JCertPreApplication.API.Controllers
             [FromQuery] int pageSize = 10)
         {
             var pagedEntities = await _lessonService.GetPaginatedAsync(courseId, searchTerm, pageIndex, pageSize);
-
             var pagedDtos = new Pagination<LessonDto>
             {
                 TotalItemsCount = pagedEntities.TotalItemsCount,
@@ -38,7 +38,6 @@ namespace JCertPreApplication.API.Controllers
                 PageIndex = pagedEntities.PageIndex,
                 Items = pagedEntities.Items.Select(MapToLessonDto).ToList()
             };
-
             return Ok(pagedDtos);
         }
 

@@ -8,5 +8,10 @@ namespace JCertPreApplication.Application.Contracts
     {
         // No custom paging method needed, use generic GetPaginationAsync
         Task DeleteAllByCourseIdAsync(Guid courseId);
+        Task<Pagination<Lesson>> GetPaginatedLessonsByCourseAsync(
+        Guid courseId,
+        string? searchTerm,
+        int pageIndex,
+        int pageSize);
     }
 }
