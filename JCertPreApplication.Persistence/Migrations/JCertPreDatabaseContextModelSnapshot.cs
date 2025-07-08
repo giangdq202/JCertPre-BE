@@ -450,6 +450,8 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("questionId");
 
+                    b.HasIndex("tagId");
+
                     b.ToTable("question", (string)null);
                 });
 
@@ -812,21 +814,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("user", (string)null);
                 });
 
-            modelBuilder.Entity("QuestionTag", b =>
-                {
-                    b.Property<Guid>("QuestionsquestionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("tagId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("QuestionsquestionId", "tagId");
-
-                    b.HasIndex("tagId");
-
-                    b.ToTable("question_tag", (string)null);
-                });
-
             modelBuilder.Entity("QuestionTest", b =>
                 {
                     b.Property<Guid>("QuestionsquestionId")
@@ -1026,6 +1013,17 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.Tag", "Tag")
+                        .WithMany("Questions")
+                        .HasForeignKey("tagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Tag");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.QuestionAttachment", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
@@ -1159,21 +1157,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Role");
                 });
 
-            modelBuilder.Entity("QuestionTag", b =>
-                {
-                    b.HasOne("JCertPreApplication.Domain.Entities.Question", null)
-                        .WithMany()
-                        .HasForeignKey("QuestionsquestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("JCertPreApplication.Domain.Entities.Tag", null)
-                        .WithMany()
-                        .HasForeignKey("tagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
             modelBuilder.Entity("QuestionTest", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", null)
@@ -1238,6 +1221,11 @@ namespace JCertPreApplication.Persistence.Migrations
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.StudyPlan", b =>
                 {
                     b.Navigation("StudyPlanItems");
+                });
+
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Tag", b =>
+                {
+                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>

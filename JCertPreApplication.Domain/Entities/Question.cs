@@ -9,7 +9,7 @@
         public Guid tagId { get; set; }
 
         // Navigation properties
-        public virtual ICollection<Tag> Tag { get; set; } = new List<Tag>();
+        public virtual Tag? Tag { get; set; }
         public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
         public virtual ICollection<Choice> Choices { get; set; } = new List<Choice>();
         public virtual ICollection<QuestionAttachment> QuestionAttachments { get; set; } = new List<QuestionAttachment>();

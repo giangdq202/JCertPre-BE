@@ -18,10 +18,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.contentDetail).IsRequired().HasMaxLength(1000);
             builder.Property(t => t.tagScore).IsRequired();
 
-            // Configure navigation property
-            builder.HasMany(t => t.Questions)
-               .WithMany(q => q.Tag)
-               .UsingEntity(j => j.ToTable("question_tag"));
+            // No need to configure many-to-many, handled in QuestionConfiguration
         }
     }
 }

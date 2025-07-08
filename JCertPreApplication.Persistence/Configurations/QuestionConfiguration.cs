@@ -18,10 +18,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(q => q.explanation).IsRequired();
             builder.Property(q => q.tagId).IsRequired();
 
-            // Configure foreign key relationship
-            builder.HasMany(q => q.Tag)
-               .WithMany(t => t.Questions)
-               .UsingEntity(j => j.ToTable("question_tag"));
+            // Configure foreign key relationship (one-to-many)
+            builder.HasOne(q => q.Tag)
+                   .WithMany(t => t.Questions)
+                   .HasForeignKey(q => q.tagId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
             // Configure navigation properties
             builder.HasMany(q => q.Tests)
