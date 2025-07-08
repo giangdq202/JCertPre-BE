@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -9,24 +8,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialCreate1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "Contents",
-                columns: table => new
-                {
-                    ContentId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ContentName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Contents", x => x.ContentId);
-                });
-
             migrationBuilder.CreateTable(
                 name: "conversation",
                 columns: table => new
@@ -60,19 +46,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Levels",
-                columns: table => new
-                {
-                    LevelId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    LevelName = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Levels", x => x.LevelId);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "role",
                 columns: table => new
                 {
@@ -89,20 +62,14 @@ namespace JCertPreApplication.Persistence.Migrations
                 name: "SubContents",
                 columns: table => new
                 {
-                    SubContentId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    ContentId = table.Column<int>(type: "integer", nullable: false),
-                    SubContentName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
+                    SubContentId = table.Column<Guid>(type: "uuid", nullable: false),
+                    SubContentName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Level = table.Column<string>(type: "character varying(10)", maxLength: 10, nullable: false),
+                    ContentName = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_SubContents", x => x.SubContentId);
-                    table.ForeignKey(
-                        name: "FK_SubContents_Contents_ContentId",
-                        column: x => x.ContentId,
-                        principalTable: "Contents",
-                        principalColumn: "ContentId",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,33 +145,21 @@ namespace JCertPreApplication.Persistence.Migrations
                 columns: table => new
                 {
                     questionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    LevelId = table.Column<int>(type: "integer", nullable: true),
-                    ContentId = table.Column<int>(type: "integer", nullable: true),
-                    SubContentId = table.Column<int>(type: "integer", nullable: true),
+                    SubContentId = table.Column<Guid>(type: "uuid", nullable: false),
                     questionText = table.Column<string>(type: "text", nullable: false),
-                    questionType = table.Column<string>(type: "text", nullable: false),
+                    questionType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     explanation = table.Column<string>(type: "text", nullable: false),
-                    points = table.Column<int>(type: "integer", nullable: true),
-                    GUID = table.Column<string>(type: "character varying(36)", maxLength: 36, nullable: true)
+                    points = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Questions", x => x.questionId);
                     table.ForeignKey(
-                        name: "FK_Questions_Contents_ContentId",
-                        column: x => x.ContentId,
-                        principalTable: "Contents",
-                        principalColumn: "ContentId");
-                    table.ForeignKey(
-                        name: "FK_Questions_Levels_LevelId",
-                        column: x => x.LevelId,
-                        principalTable: "Levels",
-                        principalColumn: "LevelId");
-                    table.ForeignKey(
                         name: "FK_Questions_SubContents_SubContentId",
                         column: x => x.SubContentId,
                         principalTable: "SubContents",
-                        principalColumn: "SubContentId");
+                        principalColumn: "SubContentId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -511,7 +466,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_choice_Questions_questionId",
                         column: x => x.questionId,
                         principalTable: "Questions",
-                        principalColumn: "questionId");
+                        principalColumn: "questionId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -635,7 +591,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         name: "FK_attempt_answer_Questions_questionId",
                         column: x => x.questionId,
                         principalTable: "Questions",
-                        principalColumn: "questionId");
+                        principalColumn: "questionId",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_attempt_answer_choice_choiceId",
                         column: x => x.choiceId,
@@ -750,16 +707,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 column: "TeststestId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Questions_ContentId",
-                table: "Questions",
-                column: "ContentId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Questions_LevelId",
-                table: "Questions",
-                column: "LevelId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Questions_SubContentId",
                 table: "Questions",
                 column: "SubContentId");
@@ -798,11 +745,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 name: "IX_study_plan_item_testId",
                 table: "study_plan_item",
                 column: "testId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SubContents_ContentId",
-                table: "SubContents",
-                column: "ContentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_test_createdByUserId",
@@ -897,9 +839,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 name: "test");
 
             migrationBuilder.DropTable(
-                name: "Levels");
-
-            migrationBuilder.DropTable(
                 name: "SubContents");
 
             migrationBuilder.DropTable(
@@ -907,9 +846,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "user");
-
-            migrationBuilder.DropTable(
-                name: "Contents");
 
             migrationBuilder.DropTable(
                 name: "course");

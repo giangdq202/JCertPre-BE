@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace JCertPreApplication.Persistence.Migrations
 {
-        [DbContext(typeof(JCertPreDatabaseContext))]
+    [DbContext(typeof(JCertPreDatabaseContext))]
     partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
