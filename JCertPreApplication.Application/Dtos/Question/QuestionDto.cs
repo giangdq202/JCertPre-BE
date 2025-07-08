@@ -1,4 +1,6 @@
 using JCertPreApplication.Application.Dtos.Choice;
+using JCertPreApplication.Application.Dtos.QuestionAttachment;
+using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Dtos.Question
 {
@@ -11,5 +13,6 @@ namespace JCertPreApplication.Application.Dtos.Question
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
         public ICollection<ChoiceReadDto>? Choices { get; set; }
+        public ICollection<QuestionAttachmentDto>? QuestionAttachments { get; set; }
     }
 } 

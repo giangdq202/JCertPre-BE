@@ -17,5 +17,36 @@ namespace JCertPreApplication.Persistence.Repositories
             var lessons = await _dbSet.Where(l => l.courseId == courseId).ToListAsync();
             _dbSet.RemoveRange(lessons);
         }
+        public async Task<Pagination<Lesson>> GetPaginatedLessonsByCourseAsync(
+        Guid courseId,
+        string? searchTerm,
+        int pageIndex,
+        int pageSize)
+        {
+            if (pageIndex < 1) throw new ArgumentException("PageIndex must be greater than 0.", nameof(pageIndex));
+            if (pageSize < 1) throw new ArgumentException("PageSize must be greater than 0.", nameof(pageSize));
+
+            IQueryable<Lesson> query = _dbSet.Where(l =>
+                l.courseId == courseId &&
+                (string.IsNullOrEmpty(searchTerm) || l.title.ToLower().Contains(searchTerm.ToLower())));
+
+            // Order by LessonOrder ascending (min to max)
+            query = query.OrderBy(l => l.lessonOrder);
+
+            var totalItems = await query.CountAsync();
+            var items = await query
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return new Pagination<Lesson>
+            {
+                PageIndex = pageIndex,
+                PageSize = pageSize,
+                TotalItemsCount = totalItems,
+                Items = items
+            };
+        }
     }
 }

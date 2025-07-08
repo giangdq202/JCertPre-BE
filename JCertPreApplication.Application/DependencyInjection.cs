@@ -1,3 +1,4 @@
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Features.Auth;
 using JCertPreApplication.Application.Features.Cache;
 using JCertPreApplication.Application.Features.Choices;
@@ -9,6 +10,7 @@ using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
+using JCertPreApplication.Application.Features.Tests;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JCertPreApplication.Application
@@ -28,6 +30,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IQuestionService, QuestionService>();
             services.AddScoped<IChoiceService, ChoiceService>();
             services.AddScoped<ILessonService, LessonService>();
+            services.AddScoped<ITestService, TestService>();
             return services;
         }
     }

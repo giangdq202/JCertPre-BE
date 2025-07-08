@@ -34,14 +34,9 @@ namespace JCertPreApplication.Application.Features.Lessons
                 if (course == null)
                     throw ApiException.NotFound("Course", courseId);
 
-                // Build predicate for courseId and optional title search
-                Expression<Func<Lesson, bool>> predicate = l =>
-                    l.courseId == courseId &&
-                    (string.IsNullOrEmpty(searchTerm) || l.title.ToLower().Contains(searchTerm.ToLower()));
-
-                var paged = await _lessonRepository.GetPaginationAsync(
-                    predicate,
-                    null,
+                var paged = await _lessonRepository.GetPaginatedLessonsByCourseAsync(
+                    courseId,
+                    searchTerm,
                     pageIndex <= 0 ? 1 : pageIndex,
                     pageSize <= 0 ? 10 : (pageSize > 100 ? 100 : pageSize)
                 );
