@@ -15,11 +15,17 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(sc => sc.SubContentName)
                 .IsRequired()
                 .HasConversion<string>()
-                .HasMaxLength(50);
+                .HasMaxLength(100);
 
-            builder.HasOne(sc => sc.Content)
-                .WithMany(c => c.SubContents)
-                .HasForeignKey(sc => sc.ContentId);
+            builder.Property(sc => sc.Level)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(10);
+
+            builder.Property(sc => sc.ContentName)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(50);
         }
     }
 }

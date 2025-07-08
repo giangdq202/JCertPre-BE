@@ -86,24 +86,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("choice", (string)null);
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Content", b =>
-                {
-                    b.Property<int>("ContentId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ContentId"));
-
-                    b.Property<string>("ContentName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("ContentId");
-
-                    b.ToTable("Contents", (string)null);
-                });
-
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Conversation", b =>
                 {
                     b.Property<Guid>("conversationId")
@@ -336,24 +318,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("lesson", (string)null);
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Level", b =>
-                {
-                    b.Property<int>("LevelId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LevelId"));
-
-                    b.Property<string>("LevelName")
-                        .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.HasKey("LevelId");
-
-                    b.ToTable("Levels", (string)null);
-                });
-
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Livestream", b =>
                 {
                     b.Property<Guid>("livestreamId")
@@ -468,24 +432,14 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int?>("ContentId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("GUID")
-                        .HasMaxLength(36)
-                        .HasColumnType("character varying(36)");
-
-                    b.Property<int?>("LevelId")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("SubContentId")
-                        .HasColumnType("integer");
+                    b.Property<Guid>("SubContentId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("explanation")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int?>("points")
+                    b.Property<int>("points")
                         .HasColumnType("integer");
 
                     b.Property<string>("questionText")
@@ -494,13 +448,10 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Property<string>("questionType")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("questionId");
-
-                    b.HasIndex("ContentId");
-
-                    b.HasIndex("LevelId");
 
                     b.HasIndex("SubContentId");
 
@@ -707,23 +658,26 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.SubContent", b =>
                 {
-                    b.Property<int>("SubContentId")
+                    b.Property<Guid>("SubContentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                        .HasColumnType("uuid");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SubContentId"));
-
-                    b.Property<int>("ContentId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("SubContentName")
+                    b.Property<string>("ContentName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.HasKey("SubContentId");
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
-                    b.HasIndex("ContentId");
+                    b.Property<string>("SubContentName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("SubContentId");
 
                     b.ToTable("SubContents", (string)null);
                 });
@@ -907,7 +861,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("AttemptAnswers")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Choice");
@@ -922,7 +876,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("Choices")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -1061,21 +1015,11 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>
                 {
-                    b.HasOne("JCertPreApplication.Domain.Entities.Content", "Content")
-                        .WithMany("Questions")
-                        .HasForeignKey("ContentId");
-
-                    b.HasOne("JCertPreApplication.Domain.Entities.Level", "Level")
-                        .WithMany("Questions")
-                        .HasForeignKey("LevelId");
-
                     b.HasOne("JCertPreApplication.Domain.Entities.SubContent", "SubContent")
                         .WithMany("Questions")
-                        .HasForeignKey("SubContentId");
-
-                    b.Navigation("Content");
-
-                    b.Navigation("Level");
+                        .HasForeignKey("SubContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("SubContent");
                 });
@@ -1165,17 +1109,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Test");
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.SubContent", b =>
-                {
-                    b.HasOne("JCertPreApplication.Domain.Entities.Content", "Content")
-                        .WithMany("SubContents")
-                        .HasForeignKey("ContentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Content");
-                });
-
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "CreatedByUser")
@@ -1244,13 +1177,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("AttemptAnswers");
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Content", b =>
-                {
-                    b.Navigation("Questions");
-
-                    b.Navigation("SubContents");
-                });
-
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Conversation", b =>
                 {
                     b.Navigation("Messages");
@@ -1276,11 +1202,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("Tests");
-                });
-
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Level", b =>
-                {
-                    b.Navigation("Questions");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>

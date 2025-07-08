@@ -4,12 +4,12 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class SubContent
     {
-        public int SubContentId { get; set; }
-        public int ContentId { get; set; }
+        public Guid SubContentId { get; set; }
         public SubContentName SubContentName { get; set; }
+        public CourseLevel Level { get; set; }
+        public ContentName ContentName { get; set; }
 
         // Navigation property
-        public virtual Content Content { get; set; } = null!;
         public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
     }
 }
