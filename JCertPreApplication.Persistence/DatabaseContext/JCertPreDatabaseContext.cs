@@ -14,7 +14,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         
         // DbSet cho tất cả các entity
         public DbSet<AttemptAnswer> AttemptAnswers { get; set; }
-        public DbSet<Content> contents { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Choice> Choices { get; set; }
@@ -23,7 +22,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<InstructorProfile> InstructorProfiles { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
-        public DbSet<Level> Levels { get; set; }
         public DbSet<Livestream> Livestreams { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Payment> Payments { get; set; }
@@ -46,7 +44,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             // Additional model configurations can be done here
             modelBuilder.ApplyConfiguration(new ReportConfiguration());
             modelBuilder.ApplyConfiguration(new AttemptAnswerConfiguration());
-            modelBuilder.ApplyConfiguration(new ContentConfiguration());
             modelBuilder.ApplyConfiguration(new ConversationConfiguration());
             modelBuilder.ApplyConfiguration(new CourseConfiguration());
             modelBuilder.ApplyConfiguration(new ChoiceConfiguration());
@@ -55,7 +52,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new FeedbackConfiguration());
             modelBuilder.ApplyConfiguration(new InstructorProfileConfiguration());
             modelBuilder.ApplyConfiguration(new LessonConfiguration());
-            modelBuilder.ApplyConfiguration(new LevelConfiguration());
             modelBuilder.ApplyConfiguration(new LivestreamConfiguration());
             modelBuilder.ApplyConfiguration(new MessageConfiguration());
             modelBuilder.ApplyConfiguration(new PaymentConfiguration());
