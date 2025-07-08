@@ -86,6 +86,24 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("choice", (string)null);
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Content", b =>
+                {
+                    b.Property<int>("ContentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ContentId"));
+
+                    b.Property<string>("ContentName")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("ContentId");
+
+                    b.ToTable("Contents", (string)null);
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Conversation", b =>
                 {
                     b.Property<Guid>("conversationId")
@@ -318,6 +336,24 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("lesson", (string)null);
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Level", b =>
+                {
+                    b.Property<int>("LevelId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("LevelId"));
+
+                    b.Property<string>("LevelName")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("LevelId");
+
+                    b.ToTable("Levels", (string)null);
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Livestream", b =>
                 {
                     b.Property<Guid>("livestreamId")
@@ -432,9 +468,25 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int?>("ContentId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("GUID")
+                        .HasMaxLength(36)
+                        .HasColumnType("character varying(36)");
+
+                    b.Property<int?>("LevelId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("SubContentId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("explanation")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int?>("points")
+                        .HasColumnType("integer");
 
                     b.Property<string>("questionText")
                         .IsRequired()
@@ -442,17 +494,17 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Property<string>("questionType")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.Property<Guid>("tagId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("text");
 
                     b.HasKey("questionId");
 
-                    b.HasIndex("tagId");
+                    b.HasIndex("ContentId");
 
-                    b.ToTable("question", (string)null);
+                    b.HasIndex("LevelId");
+
+                    b.HasIndex("SubContentId");
+
+                    b.ToTable("Questions", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.QuestionAttachment", b =>
@@ -653,33 +705,27 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("study_plan_item", (string)null);
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Tag", b =>
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.SubContent", b =>
                 {
-                    b.Property<Guid>("tagId")
+                    b.Property<int>("SubContentId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
 
-                    b.Property<string>("contentDetail")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("SubContentId"));
 
-                    b.Property<string>("contentSection")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<int>("ContentId")
+                        .HasColumnType("integer");
 
-                    b.Property<string>("tagLevel")
+                    b.Property<string>("SubContentName")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("tagScore")
-                        .HasColumnType("integer");
+                    b.HasKey("SubContentId");
 
-                    b.HasKey("tagId");
+                    b.HasIndex("ContentId");
 
-                    b.ToTable("tag", (string)null);
+                    b.ToTable("SubContents", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
@@ -1015,13 +1061,23 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>
                 {
-                    b.HasOne("JCertPreApplication.Domain.Entities.Tag", "Tag")
+                    b.HasOne("JCertPreApplication.Domain.Entities.Content", "Content")
                         .WithMany("Questions")
-                        .HasForeignKey("tagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("ContentId");
 
-                    b.Navigation("Tag");
+                    b.HasOne("JCertPreApplication.Domain.Entities.Level", "Level")
+                        .WithMany("Questions")
+                        .HasForeignKey("LevelId");
+
+                    b.HasOne("JCertPreApplication.Domain.Entities.SubContent", "SubContent")
+                        .WithMany("Questions")
+                        .HasForeignKey("SubContentId");
+
+                    b.Navigation("Content");
+
+                    b.Navigation("Level");
+
+                    b.Navigation("SubContent");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.QuestionAttachment", b =>
@@ -1109,6 +1165,17 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Test");
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.SubContent", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.Content", "Content")
+                        .WithMany("SubContents")
+                        .HasForeignKey("ContentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Content");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "CreatedByUser")
@@ -1177,6 +1244,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("AttemptAnswers");
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Content", b =>
+                {
+                    b.Navigation("Questions");
+
+                    b.Navigation("SubContents");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Conversation", b =>
                 {
                     b.Navigation("Messages");
@@ -1204,6 +1278,11 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Tests");
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Level", b =>
+                {
+                    b.Navigation("Questions");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>
                 {
                     b.Navigation("AttemptAnswers");
@@ -1223,7 +1302,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("StudyPlanItems");
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.Tag", b =>
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.SubContent", b =>
                 {
                     b.Navigation("Questions");
                 });

@@ -79,7 +79,7 @@ namespace JCertPreApplication.Application.Features.Questions
                     questionText = createDto.Content,
                     explanation = createDto.Explanation ?? string.Empty,
                     questionType = "multiple-choice", // Default type
-                    tagId = Guid.Empty // This should be handled properly in a real implementation
+                    
                 };
 
                 var created = await _questionRepository.InsertAsync(question);

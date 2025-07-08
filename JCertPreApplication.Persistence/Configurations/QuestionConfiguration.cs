@@ -8,23 +8,27 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Question> builder)
         {
-            // Configure primary key
-            builder.ToTable("question");
+            builder.ToTable("Questions");
             builder.HasKey(q => q.questionId);
-
-            // Configure required properties and constraints
             builder.Property(q => q.questionText).IsRequired();
-            builder.Property(q => q.questionType).IsRequired().HasMaxLength(50);
+            builder.Property(q => q.questionType).IsRequired();
             builder.Property(q => q.explanation).IsRequired();
-            builder.Property(q => q.tagId).IsRequired();
+            builder.Property(q => q.points);
+            builder.Property(q => q.GUID).HasMaxLength(36);
 
-            // Configure foreign key relationship (one-to-many)
-            builder.HasOne(q => q.Tag)
-                   .WithMany(t => t.Questions)
-                   .HasForeignKey(q => q.tagId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(q => q.Level)
+                .WithMany(l => l.Questions)
+                .HasForeignKey(q => q.LevelId);
 
-            // Configure navigation properties
+            builder.HasOne(q => q.Content)
+                .WithMany(c => c.Questions)
+                .HasForeignKey(q => q.ContentId);
+
+            builder.HasOne(q => q.SubContent)
+                .WithMany(sc => sc.Questions)
+                .HasForeignKey(q => q.SubContentId);
+
+            // Existing navigation properties
             builder.HasMany(q => q.Tests)
                    .WithMany(t => t.Questions)
                    .UsingEntity(j => j.ToTable("question_test"));
