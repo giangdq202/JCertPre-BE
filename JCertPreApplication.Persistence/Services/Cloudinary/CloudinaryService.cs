@@ -14,7 +14,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
         private readonly CloudinaryDotNet.Cloudinary _cloudinary;
         private readonly ILogger<CloudinaryService> _logger;
 
-        public CloudinaryService(IOptions<CloudinaryConfiguration> cloudinaryConfig, ILogger<CloudinaryService> logger)
+        public CloudinaryService(IOptions<JCertPreApplication.Domain.Configuration.CloudinaryConfiguration> cloudinaryConfig, ILogger<CloudinaryService> logger)
         {
             _logger = logger;
 

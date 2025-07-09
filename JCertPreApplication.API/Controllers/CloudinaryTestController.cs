@@ -41,8 +41,7 @@ namespace JCertPreApplication.API.Controllers
                 return BadRequest(new 
                 { 
                     error = "Upload failed",
-                    message = result.Error.Message,
-                    httpCode = result.Error.HttpCode
+                    message = result.Error.Message
                 });
             }
 
@@ -80,8 +79,7 @@ namespace JCertPreApplication.API.Controllers
                 return BadRequest(new 
                 { 
                     error = "Upload failed",
-                    message = result.Error.Message,
-                    httpCode = result.Error.HttpCode
+                    message = result.Error.Message
                 });
             }
 
@@ -120,8 +118,7 @@ namespace JCertPreApplication.API.Controllers
                 return BadRequest(new 
                 { 
                     error = "Upload failed",
-                    message = result.Error.Message,
-                    httpCode = result.Error.HttpCode
+                    message = result.Error.Message
                 });
             }
 
