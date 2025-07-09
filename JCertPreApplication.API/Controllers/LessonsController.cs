@@ -6,8 +6,12 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Manages course lessons and their content.
+    /// </summary>
     [Route("api/lessons")]
     [ApiController]
+    [Tags("Lessons")]
     [Produces("application/json")]
     public class LessonsController : ControllerBase
     {
@@ -18,12 +22,15 @@ namespace JCertPreApplication.API.Controllers
             _lessonService = lessonService;
         }
 
-        // 4. Controller remains the same
         /// <summary>
-        /// Get paginated lessons by course id and search by title.
+        /// Gets paginated lessons for a course.
         /// </summary>
+        /// <param name="courseId">Course ID.</param>
+        /// <param name="searchTerm">Optional title search term.</param>
+        /// <param name="pageIndex">Page number (starts from 1).</param>
+        /// <param name="pageSize">Items per page.</param>
+        /// <returns>Paginated list of lessons.</returns>
         [HttpGet("by-course/{courseId}")]
-        [ProducesResponseType(typeof(Pagination<LessonDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetLessonsByCourseId(
             Guid courseId,
             [FromQuery] string? searchTerm,
@@ -42,10 +49,12 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Update lesson by lesson id.
+        /// Updates a lesson.
         /// </summary>
+        /// <param name="lessonId">Lesson ID.</param>
+        /// <param name="updateLessonDto">Updated lesson data.</param>
+        /// <returns>Updated lesson details.</returns>
         [HttpPut("{lessonId}")]
-        [ProducesResponseType(typeof(LessonDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> UpdateLesson(Guid lessonId, [FromBody] UpdateLessonDto updateLessonDto)
         {
             var updatedEntity = await _lessonService.UpdateLessonAsync(lessonId, updateLessonDto);
@@ -54,10 +63,12 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Create lesson by course id.
+        /// Creates a new lesson.
         /// </summary>
+        /// <param name="courseId">Course ID.</param>
+        /// <param name="createLessonDto">Lesson creation data.</param>
+        /// <returns>Created lesson details.</returns>
         [HttpPost("{courseId}")]
-        [ProducesResponseType(typeof(LessonDto), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateLesson(Guid courseId, [FromBody] CreateLessonDto createLessonDto)
         {
             var createdEntity = await _lessonService.CreateLessonAsync(courseId, createLessonDto);
@@ -66,10 +77,11 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Delete all lessons by course id.
+        /// Deletes all lessons in a course.
         /// </summary>
+        /// <param name="courseId">Course ID.</param>
+        /// <returns>No content on success.</returns>
         [HttpDelete("by-course/{courseId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteAllByCourseId(Guid courseId)
         {
             await _lessonService.DeleteAllByCourseIdAsync(courseId);
@@ -77,17 +89,17 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Delete lesson by lesson id.
+        /// Deletes a specific lesson.
         /// </summary>
+        /// <param name="lessonId">Lesson ID.</param>
+        /// <returns>No content on success.</returns>
         [HttpDelete("{lessonId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> DeleteLessonById(Guid lessonId)
         {
             await _lessonService.DeleteLessonByIdAsync(lessonId);
             return NoContent();
         }
 
-        // Mapping logic at controller layer
         private static LessonDto MapToLessonDto(Lesson lesson)
         {
             return new LessonDto

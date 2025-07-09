@@ -5,10 +5,12 @@ using Microsoft.AspNetCore.Mvc;
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// API endpoints for managing Question entities.
+    /// Manages test questions and their details.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/question")]
+    [Tags("Questions")]
+    [Produces("application/json")]
     public class QuestionController : ControllerBase
     {
         private readonly IQuestionService _questionService;
@@ -19,8 +21,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get all questions.
+        /// Gets all questions.
         /// </summary>
+        /// <returns>List of all questions.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -29,8 +32,10 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get a question by its ID.
+        /// Gets a question by ID.
         /// </summary>
+        /// <param name="id">Question ID.</param>
+        /// <returns>Question details.</returns>
         [HttpGet("{id:guid}")]
         public async Task<IActionResult> GetById(Guid id)
         {
@@ -41,8 +46,10 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Create a new question.
+        /// Creates a new question.
         /// </summary>
+        /// <param name="dto">Question creation data.</param>
+        /// <returns>Created question details.</returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateQuestionDto dto)
         {
@@ -54,8 +61,11 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Update an existing question.
+        /// Updates an existing question.
         /// </summary>
+        /// <param name="id">Question ID.</param>
+        /// <param name="dto">Question update data.</param>
+        /// <returns>Updated question details.</returns>
         [HttpPut("{id:guid}")]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateQuestionDto dto)
         {
@@ -67,8 +77,10 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Delete a question by its ID.
+        /// Deletes a question.
         /// </summary>
+        /// <param name="id">Question ID.</param>
+        /// <returns>No content on success.</returns>
         [HttpDelete("{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -77,8 +89,12 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get paginated questions with details (choices, attachments), not including tag.
+        /// Gets paginated questions with their choices and attachments.
         /// </summary>
+        /// <param name="pageIndex">Page number (starts from 1).</param>
+        /// <param name="pageSize">Items per page.</param>
+        /// <param name="search">Optional search term.</param>
+        /// <returns>Paginated list of questions with details.</returns>
         [HttpGet("paging-details")]
         public async Task<IActionResult> GetPagingWithDetails(
             [FromQuery] int pageIndex = 1,
