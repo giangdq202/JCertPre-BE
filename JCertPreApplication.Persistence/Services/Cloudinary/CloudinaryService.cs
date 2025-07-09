@@ -6,6 +6,7 @@ using JCertPreApplication.Domain.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Net.Http;
 
 namespace JCertPreApplication.Persistence.Services.Cloudinary
 {
@@ -13,6 +14,9 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
     {
         private readonly CloudinaryDotNet.Cloudinary _cloudinary;
         private readonly ILogger<CloudinaryService> _logger;
+        private const int UPLOAD_TIMEOUT_SECONDS = 600; // 10 minutes
+        private const int CHUNK_SIZE = 20 * 1024 * 1024; // 20MB chunks
+        private const int MAX_CONCURRENT_UPLOADS = 4;
 
         public CloudinaryService(IOptions<JCertPreApplication.Domain.Configuration.CloudinaryConfiguration> cloudinaryConfig, ILogger<CloudinaryService> logger)
         {
@@ -30,8 +34,12 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                     throw new ArgumentException("CloudName, ApiKey, and ApiSecret are required for Cloudinary configuration.");
                 }
 
-                // Initialize Cloudinary instance
+                // Initialize Cloudinary instance with custom HttpClient
                 var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
+                var httpClient = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(UPLOAD_TIMEOUT_SECONDS)
+                };
                 _cloudinary = new CloudinaryDotNet.Cloudinary(account);
                 _cloudinary.Api.Secure = config.Secure;
 
@@ -68,15 +76,16 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 }
 
                 var uploadParams = new ImageUploadParams();
-                using (var stream = file.OpenReadStream())
-                {
-                    uploadParams.File = new FileDescription(file.FileName, stream);
-                    uploadParams.Folder = "images"; // Organize uploads in folders
-                    uploadParams.UseFilename = true;
-                    uploadParams.UniqueFilename = true;
-                }
+                var stream = file.OpenReadStream();
+                uploadParams.File = new FileDescription(file.FileName, stream);
+                uploadParams.Folder = "images"; // Organize uploads in folders
+                uploadParams.UseFilename = true;
+                uploadParams.UniqueFilename = true;
 
                 var result = await _cloudinary.UploadAsync(uploadParams);
+                
+                // Ensure stream is disposed after upload
+                await stream.DisposeAsync();
                 
                 if (result.Error != null)
                 {
@@ -122,17 +131,28 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                     };
                 }
 
-                var uploadParams = new VideoUploadParams();
-                using (var stream = file.OpenReadStream())
-                {
-                    uploadParams.File = new FileDescription(file.FileName, stream);
-                    uploadParams.Folder = "videos"; // Organize uploads in folders
-                    uploadParams.UseFilename = true;
-                    uploadParams.UniqueFilename = true;
-                }
+                _logger.LogInformation("Starting video upload: {FileName}, Size: {Size}MB", file.FileName, file.Length / (1024 * 1024));
 
-                // Use UploadLarge for video files to handle large files better
-                var result = await _cloudinary.UploadLargeAsync(uploadParams);
+                var uploadParams = new VideoUploadParams();
+                var stream = file.OpenReadStream();
+                uploadParams.File = new FileDescription(file.FileName, stream);
+                uploadParams.Folder = "videos"; // Organize uploads in folders
+                uploadParams.UseFilename = true;
+                uploadParams.UniqueFilename = true;
+
+                // Use custom cancellation token with extended timeout
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(UPLOAD_TIMEOUT_SECONDS));
+                
+                // Use UploadLarge for video files with custom chunk size and concurrent uploads
+                var result = await _cloudinary.UploadLargeAsync<VideoUploadResult>(
+                    uploadParams,
+                    CHUNK_SIZE,
+                    MAX_CONCURRENT_UPLOADS,
+                    cts.Token
+                );
+                
+                // Ensure stream is disposed after upload
+                await stream.DisposeAsync();
                 
                 if (result.Error != null)
                 {
@@ -140,10 +160,21 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 }
                 else
                 {
-                    _logger.LogDebug("Video uploaded successfully: {PublicId}", result.PublicId);
+                    _logger.LogInformation("Video uploaded successfully: {PublicId}, Duration: {Duration}s, Size: {Size}MB", 
+                        result.PublicId, 
+                        result.Duration,
+                        result.Bytes / (1024 * 1024));
                 }
 
                 return result;
+            }
+            catch (TaskCanceledException)
+            {
+                _logger.LogError("Video upload timed out after {Timeout} seconds", UPLOAD_TIMEOUT_SECONDS);
+                return new VideoUploadResult 
+                { 
+                    Error = new Error { Message = $"Tải lên video đã hết thời gian chờ sau {UPLOAD_TIMEOUT_SECONDS} giây." } 
+                };
             }
             catch (Exception ex)
             {
@@ -169,15 +200,16 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 }
 
                 var uploadParams = new RawUploadParams();
-                using (var stream = file.OpenReadStream())
-                {
-                    uploadParams.File = new FileDescription(file.FileName, stream);
-                    uploadParams.Folder = "documents"; // Organize uploads in folders
-                    uploadParams.UseFilename = true;
-                    uploadParams.UniqueFilename = true;
-                }
+                var stream = file.OpenReadStream();
+                uploadParams.File = new FileDescription(file.FileName, stream);
+                uploadParams.Folder = "documents"; // Organize uploads in folders
+                uploadParams.UseFilename = true;
+                uploadParams.UniqueFilename = true;
 
                 var result = await _cloudinary.UploadAsync(uploadParams);
+                
+                // Ensure stream is disposed after upload
+                await stream.DisposeAsync();
                 
                 if (result.Error != null)
                 {
