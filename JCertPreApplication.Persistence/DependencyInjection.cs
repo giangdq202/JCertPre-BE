@@ -3,6 +3,7 @@ using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
+using JCertPreApplication.Persistence.Services.Cloudinary;
 using JCertPreApplication.Persistence.Services.Firebase;
 using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
@@ -56,11 +57,13 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ITestRepository, TestRepository>();
             services.AddScoped<ISubContentRepository, SubContentRepository>();
             // Infrastructure Services
+            services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddSingleton<IPasswordService, PasswordService>();
 
             Console.WriteLine("✅ Database connection configured successfully");
             Console.WriteLine("✅ Redis cache configured successfully");
+            Console.WriteLine("✅ Cloudinary service configured successfully");
             return services;
         }
     }

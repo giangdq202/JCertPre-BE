@@ -7,6 +7,7 @@ namespace JCertPreApplication.Application.Features.InstructorProfile
     public class InstructorProfileService : IInstructorProfileService
     {
         private readonly IInstructorProfileRepository _instructorProfileRepository;
+        
         public InstructorProfileService(IInstructorProfileRepository instructorProfileRepository)
         {
             _instructorProfileRepository = instructorProfileRepository ?? throw new ArgumentNullException(nameof(instructorProfileRepository));

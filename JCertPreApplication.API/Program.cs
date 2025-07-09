@@ -63,6 +63,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
     builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
+    builder.Services.Configure<CloudinaryConfiguration>(config.GetSection(CloudinaryConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
 
     // Register LiveKit configuration
@@ -73,7 +74,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
 
 static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 {
-    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Firebase", "Redis", "LiveKit" };
+    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Cloudinary", "Firebase", "Redis", "LiveKit" };
     
     foreach (var sectionName in sections)
     {
