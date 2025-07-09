@@ -5,6 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Manages study plans for students.
+    /// </summary>
     [ApiController]
     [Route("api/study-plan")]
     [Tags("Studyplans")]
@@ -18,10 +21,12 @@ namespace JCertPreApplication.API.Controllers
             _studyPlanService = studyPlanService ?? throw new ArgumentNullException(nameof(studyPlanService));
         }
 
+        /// <summary>
+        /// Creates a new study plan.
+        /// </summary>
+        /// <param name="createDto">Study plan details.</param>
+        /// <returns>Created study plan.</returns>
         [HttpPost("create")]
-        [ProducesResponseType(typeof(StudyPlanDto), StatusCodes.Status201Created)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ApiErrorResponse), StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateStudyPlan([FromBody] StudyPlanDto createDto)
         {
             if (!ModelState.IsValid)
@@ -37,9 +42,12 @@ namespace JCertPreApplication.API.Controllers
             return CreatedAtAction(nameof(GetStudyPlanById), new { planId = createdStudyPlan.PlanId }, createdStudyPlan);
         }
 
+        /// <summary>
+        /// Gets a study plan by ID.
+        /// </summary>
+        /// <param name="planId">Study plan ID.</param>
+        /// <returns>Study plan details.</returns>
         [HttpGet("{planId}")]
-        [ProducesResponseType(typeof(StudyPlanDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetStudyPlanById(Guid planId)
         {
             var studyPlan = await _studyPlanService.GetStudyPlanByIdAsync(planId);
@@ -50,20 +58,23 @@ namespace JCertPreApplication.API.Controllers
             return Ok(studyPlan);
         }
 
+        /// <summary>
+        /// Gets all study plans.
+        /// </summary>
+        /// <returns>List of all study plans.</returns>
         [HttpGet("get-all")]
-        [ProducesResponseType(typeof(IEnumerable<StudyPlanDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllStudyPlans()
         {
             var studyPlans = await _studyPlanService.GetAllStudyPlansAsync();
             return Ok(studyPlans);
         }
 
+        /// <summary>
+        /// Gets all study plans for a student.
+        /// </summary>
+        /// <param name="studentId">Student ID.</param>
+        /// <returns>List of student's study plans.</returns>
         [HttpGet("get-by-studentid/{studentId}")]
-        [ProducesResponseType(typeof(IEnumerable<StudyPlanDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetStudyPlansByStudentId(Guid studentId)
         {
             var studyPlans = await _studyPlanService.GetStudyPlansByStudentIdAsync(studentId);
@@ -74,10 +85,13 @@ namespace JCertPreApplication.API.Controllers
             return Ok(studyPlans);
         }
 
+        /// <summary>
+        /// Updates a study plan.
+        /// </summary>
+        /// <param name="planId">Study plan ID.</param>
+        /// <param name="updateDto">Updated study plan details.</param>
+        /// <returns>Updated study plan.</returns>
         [HttpPut("update/{planId}")]
-        [ProducesResponseType(typeof(StudyPlanDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> UpdateStudyPlan(Guid planId, [FromBody] UpdateStudyPlanDto updateDto)
         {
             if (!ModelState.IsValid)
@@ -92,7 +106,5 @@ namespace JCertPreApplication.API.Controllers
             }
             return Ok(updatedStudyPlan);
         }
-
-       
     }
 }
