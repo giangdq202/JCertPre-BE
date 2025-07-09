@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,15 +9,16 @@ namespace JCertPreApplication.Domain.Enums
 {
     public enum ContentName
     {
-        [System.ComponentModel.Description("chữ hán")]
+        
+        [Description("chữ hán")]
         ChuHan,
-        [System.ComponentModel.Description("từ vựng")]
+        [Description("từ vựng")]
         TuVung,
-        [System.ComponentModel.Description("ngữ pháp")]
+        [Description("ngữ pháp")]
         NguPhap,
-        [System.ComponentModel.Description("đọc hiểu")]
+        [Description("đọc hiểu")]
         DocHieu,
-        [System.ComponentModel.Description("nghe hiểu")]
+        [Description("nghe hiểu")]
         NgheHieu
     }
 }

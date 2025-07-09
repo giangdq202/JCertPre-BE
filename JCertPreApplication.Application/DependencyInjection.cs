@@ -31,6 +31,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IChoiceService, ChoiceService>();
             services.AddScoped<ILessonService, LessonService>();
             services.AddScoped<ITestService, TestService>();
+            services.AddScoped<ISubContentService, SubContentService>();
             return services;
         }
     }
