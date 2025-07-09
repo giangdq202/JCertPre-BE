@@ -9,12 +9,6 @@ namespace JCertPreApplication.Application.Contracts
     public interface IQuestionRepository : IGenericRepository<Question>
     {
         /// <summary>
-        /// Gets all questions with their related attachments.
-        /// </summary>
-        /// <returns>List of questions including attachments.</returns>
-        Task<IEnumerable<Question>> GetQuestionsWithAttachmentsAsync();
-
-        /// <summary>
         /// Gets all questions with their related choices and attachments.
         /// </summary>
         /// <returns>List of questions including choices and attachments.</returns>

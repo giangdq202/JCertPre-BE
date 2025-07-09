@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Domain.Entities;
@@ -7,12 +9,18 @@ namespace JCertPreApplication.Application.Dtos.Question
     public class QuestionDto
     {
         public Guid Id { get; set; }
-        public string Content { get; set; } = string.Empty;
+        public string Content { get; set; } = null!;
         public string? Explanation { get; set; }
         public int Points { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public DateTime? UpdatedAt { get; set; }
         public ICollection<ChoiceReadDto>? Choices { get; set; }
         public ICollection<QuestionAttachmentDto>? QuestionAttachments { get; set; }
+
+        // SubContent info
+        public string ContentName { get; set; } = null!;
+        public string ContentNameDescription { get; set; } = null!;
+        public string Level { get; set; } = null!;
+        public string LevelDescription { get; set; } = null!;
+        public string SubContentName { get; set; } = null!;
+        public string SubContentNameDescription { get; set; } = null!;
     }
-} 
+}
