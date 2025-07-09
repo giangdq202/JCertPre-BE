@@ -1,92 +1,141 @@
+using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.Question;
+using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Application.Features.Questions;
+using JCertPreApplication.Application.Utilities;
+using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-namespace JCertPreApplication.API.Controllers
+/// <summary>
+/// API endpoints for managing Question entities.
+/// </summary>
+[ApiController]
+[Route("api/[controller]")]
+public class QuestionController : ControllerBase
 {
-    /// <summary>
-    /// API endpoints for managing Question entities.
-    /// </summary>
-    [ApiController]
-    [Route("api/[controller]")]
-    public class QuestionController : ControllerBase
+    private readonly IQuestionService _questionService;
+
+    public QuestionController(IQuestionService questionService)
     {
-        private readonly IQuestionService _questionService;
+        _questionService = questionService;
+    }
 
-        public QuestionController(IQuestionService questionService)
+    /// <summary>
+    /// Get all questions.
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GetAll()
+    {
+        var questions = await _questionService.GetAllAsync();
+        var dtos = questions.Select(MapToQuestionDto);
+        return Ok(dtos);
+    }
+
+    /// <summary>
+    /// Get a question by its ID.
+    /// </summary>
+    [HttpGet("{id:guid}")]
+    public async Task<IActionResult> GetById(Guid id)
+    {
+        var question = await _questionService.GetByIdAsync(id);
+        if (question == null)
+            return NotFound();
+        return Ok(MapToQuestionDto(question));
+    }
+
+    /// <summary>
+    /// Create a new question.
+    /// </summary>
+    [HttpPost]
+    public async Task<IActionResult> Create(
+        [FromBody] CreateQuestionDto dto,
+        [FromQuery] ContentName contentName,
+        [FromQuery] CourseLevel level,
+        [FromQuery] SubContentName subContentName)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var created = await _questionService.CreateAsync(dto, contentName, level, subContentName);
+        return CreatedAtAction(nameof(GetById), new { id = created.questionId }, MapToQuestionDto(created));
+    }
+
+    /// <summary>
+    /// Update an existing question.
+    /// </summary>
+    [HttpPut("{id:guid}")]
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateQuestionDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var updated = await _questionService.UpdateAsync(id, dto);
+        return Ok(MapToQuestionDto(updated));
+    }
+
+    /// <summary>
+    /// Delete a question by its ID.
+    /// </summary>
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        await _questionService.DeleteAsync(id);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Get paginated questions with details (choices, attachments), filterable by subcontent fields.
+    /// </summary>
+    [HttpGet("paging-details")]
+    public async Task<IActionResult> GetPagingWithDetails(
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10,
+        [FromQuery] string? search = null,
+        [FromQuery] ContentName? contentName = null,
+        [FromQuery] CourseLevel? level = null,
+        [FromQuery] SubContentName? subContentName = null)
+    {
+        var result = await _questionService.GetPaginatedWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName);
+
+        var dto = new Pagination<QuestionDto>
         {
-            _questionService = questionService;
-        }
+            PageIndex = result.PageIndex,
+            PageSize = result.PageSize,
+            TotalItemsCount = result.TotalItemsCount,
+            Items = result.Items.Select(MapToQuestionDto).ToList()
+        };
+        return Ok(dto);
+    }
 
-        /// <summary>
-        /// Get all questions.
-        /// </summary>
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+    // Mapping logic at controller layer
+    private static QuestionDto MapToQuestionDto(Question question)
+    {
+        var subContent = question.SubContent;
+        return new QuestionDto
         {
-            var questions = await _questionService.GetAllAsync();
-            return Ok(questions);
-        }
-
-        /// <summary>
-        /// Get a question by its ID.
-        /// </summary>
-        [HttpGet("{id:guid}")]
-        public async Task<IActionResult> GetById(Guid id)
-        {
-            var question = await _questionService.GetByIdAsync(id);
-            if (question == null)
-                return NotFound();
-            return Ok(question);
-        }
-
-        /// <summary>
-        /// Create a new question.
-        /// </summary>
-        [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CreateQuestionDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var created = await _questionService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
-        }
-
-        /// <summary>
-        /// Update an existing question.
-        /// </summary>
-        [HttpPut("{id:guid}")]
-        public async Task<IActionResult> Update(Guid id, [FromBody] UpdateQuestionDto dto)
-        {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var updated = await _questionService.UpdateAsync(id, dto);
-            return Ok(updated);
-        }
-
-        /// <summary>
-        /// Delete a question by its ID.
-        /// </summary>
-        [HttpDelete("{id:guid}")]
-        public async Task<IActionResult> Delete(Guid id)
-        {
-            await _questionService.DeleteAsync(id);
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Get paginated questions with details (choices, attachments), not including tag.
-        /// </summary>
-        [HttpGet("paging-details")]
-        public async Task<IActionResult> GetPagingWithDetails(
-            [FromQuery] int pageIndex = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] string? search = null)
-        {
-            var result = await _questionService.GetPaginatedWithDetailsAsync(search, pageIndex, pageSize);
-            return Ok(result);
-        }
+            Id = question.questionId,
+            Content = question.questionText,
+            Explanation = question.explanation,
+            Points = question.points,
+            Choices = question.Choices?.Select(c => new ChoiceReadDto
+            {
+                Id = c.choiceId,
+                Content = c.choiceText,
+                IsCorrect = c.isCorrect,
+                QuestionId = c.questionId
+            }).ToList(),
+            QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+            {
+                MediaUrl = a.mediaUrl,
+                MediaType = a.mediaType
+            }).ToList(),
+            ContentName = subContent?.ContentName.ToString() ?? "",
+            ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
+            Level = subContent?.Level.ToString() ?? "",
+            LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
+            SubContentName = subContent?.SubContentName.ToString() ?? "",
+            SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
+        };
     }
 }

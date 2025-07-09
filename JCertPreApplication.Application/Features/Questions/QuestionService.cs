@@ -1,10 +1,9 @@
 using JCertPreApplication.Application.Contracts;
-using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.Question;
-using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 using System.Linq.Expressions;
 
 namespace JCertPreApplication.Application.Features.Questions
@@ -16,26 +15,25 @@ namespace JCertPreApplication.Application.Features.Questions
     public class QuestionService : IQuestionService
     {
         private readonly IQuestionRepository _questionRepository;
+        private readonly ISubContentRepository _subContentRepository;
 
-        public QuestionService(IQuestionRepository questionRepository)
+        public QuestionService(IQuestionRepository questionRepository, ISubContentRepository subContentRepository)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
+            _subContentRepository = subContentRepository ?? throw new ArgumentNullException(nameof(subContentRepository));
         }
 
         /// <summary>
         /// Retrieves all questions.
         /// </summary>
-        public async Task<IEnumerable<QuestionDto>> GetAllAsync()
+        public async Task<IEnumerable<Question>> GetAllAsync()
         {
             try
             {
-                var questions = await _questionRepository.GetAllAsync();
-                return questions.Select(MapToQuestionDto);
+                var questions = await _questionRepository.GetAllAsync("SubContent");
+                return questions;
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving questions: {ex.Message}");
@@ -46,7 +44,7 @@ namespace JCertPreApplication.Application.Features.Questions
         /// Retrieves a question by its ID.
         /// Throws ApiException.NotFound if question doesn't exist.
         /// </summary>
-        public async Task<QuestionDto> GetByIdAsync(Guid id)
+        public async Task<Question> GetByIdAsync(Guid id)
         {
             try
             {
@@ -54,12 +52,9 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
-                return MapToQuestionDto(question);
+                return question;
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving the question: {ex.Message}");
@@ -69,28 +64,35 @@ namespace JCertPreApplication.Application.Features.Questions
         /// <summary>
         /// Creates a new question.
         /// </summary>
-        public async Task<QuestionDto> CreateAsync(CreateQuestionDto createDto)
+        public async Task<Question> CreateAsync(CreateQuestionDto createDto, ContentName contentName, CourseLevel level, SubContentName subContentName)
         {
             try
             {
+                // Find subcontent by enums
+                var subContent = await _subContentRepository.GetFirstOrDefaultAsync(
+                    s => s.ContentName == contentName && s.Level == level && s.SubContentName == subContentName
+                );
+                if (subContent == null)
+                    throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
+
                 var question = new Question
                 {
                     questionId = Guid.NewGuid(),
                     questionText = createDto.Content,
                     explanation = createDto.Explanation ?? string.Empty,
-                    questionType = "multiple-choice", // Default type
-                    
+                    questionType = "multiple-choice",
+                    points = createDto.Points,
+                    SubContentId = subContent.SubContentId
                 };
 
                 var created = await _questionRepository.InsertAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                return MapToQuestionDto(created);
+                created = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == created.questionId, "SubContent");
+
+                return created;
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while creating the question: {ex.Message}");
@@ -100,7 +102,7 @@ namespace JCertPreApplication.Application.Features.Questions
         /// <summary>
         /// Updates an existing question.
         /// </summary>
-        public async Task<QuestionDto> UpdateAsync(Guid id, UpdateQuestionDto updateDto)
+        public async Task<Question> UpdateAsync(Guid id, UpdateQuestionDto updateDto)
         {
             try
             {
@@ -108,21 +110,19 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
-                // Update only provided fields
                 if (updateDto.Content != null)
                     question.questionText = updateDto.Content;
                 if (updateDto.Explanation != null)
                     question.explanation = updateDto.Explanation;
+                if (updateDto.Points.HasValue)
+                    question.points = updateDto.Points.Value;
 
                 await _questionRepository.UpdateAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                return MapToQuestionDto(question);
+                return question;
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while updating the question: {ex.Message}");
@@ -140,17 +140,13 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
-                // Check if question has any attempts or is used in tests
                 if (question.Tests.Any() || question.AttemptAnswers.Any())
                     throw ApiException.BadRequest("QUESTION_IN_USE", "Cannot delete question that is used in tests or has student attempts.");
 
                 await _questionRepository.DeleteAsync(question);
                 await _questionRepository.SaveChangesAsync();
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while deleting the question: {ex.Message}");
@@ -160,24 +156,30 @@ namespace JCertPreApplication.Application.Features.Questions
         /// <summary>
         /// Retrieves paginated questions with details (choices, attachments), not including tag.
         /// </summary>
-        public async Task<Pagination<QuestionDto>> GetPaginatedWithDetailsAsync(
-            string? searchTerm = null,
-            int pageIndex = 1,
-            int pageSize = 10)
+        public async Task<Pagination<Question>> GetPaginatedWithDetailsAsync(
+            string? searchTerm,
+            int pageIndex,
+            int pageSize,
+            ContentName? contentName = null,
+            CourseLevel? level = null,
+            SubContentName? subContentName = null)
         {
             try
             {
-                // Build the predicate based on search term
                 Expression<Func<Question, bool>>? predicate = null;
-                if (!string.IsNullOrWhiteSpace(searchTerm))
+
+                if (!string.IsNullOrWhiteSpace(searchTerm) || contentName.HasValue || level.HasValue || subContentName.HasValue)
                 {
-                    var term = searchTerm.Trim().ToLower();
-                    predicate = q => q.questionText.ToLower().Contains(term) ||
-                                   q.explanation.ToLower().Contains(term);
+                    predicate = q =>
+                        (string.IsNullOrEmpty(searchTerm) ||
+                            q.questionText.ToLower().Contains(searchTerm.ToLower()) ||
+                            q.explanation.ToLower().Contains(searchTerm.ToLower()))
+                        && (!contentName.HasValue || q.SubContent.ContentName == contentName.Value)
+                        && (!level.HasValue || q.SubContent.Level == level.Value)
+                        && (!subContentName.HasValue || q.SubContent.SubContentName == subContentName.Value);
                 }
 
-                // Include Choices and QuestionAttachments, but NOT Tag
-                string includeProperties = "Choices,QuestionAttachments";
+                string includeProperties = "Choices,QuestionAttachments,SubContent";
 
                 var paginatedQuestions = await _questionRepository.GetPaginationAsync(
                     predicate,
@@ -185,46 +187,19 @@ namespace JCertPreApplication.Application.Features.Questions
                     pageIndex,
                     pageSize);
 
-                return new Pagination<QuestionDto>
+                return new Pagination<Question>
                 {
-                    Items = paginatedQuestions.Items.Select(MapToQuestionDto).ToList(),
+                    Items = paginatedQuestions.Items,
                     TotalItemsCount = paginatedQuestions.TotalItemsCount,
                     PageIndex = paginatedQuestions.PageIndex,
                     PageSize = paginatedQuestions.PageSize
                 };
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving paginated questions: {ex.Message}");
             }
         }
-
-        private static QuestionDto MapToQuestionDto(Question question)
-        {
-            return new QuestionDto
-            {
-                Id = question.questionId,
-                QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
-                {
-                    MediaUrl = a.mediaUrl,
-                    MediaType = a.mediaType
-                }).ToList(),
-                Content = question.questionText,
-                Explanation = question.explanation,
-                Choices = question.Choices?.Select(c => new ChoiceReadDto
-                {
-                    Id = c.choiceId,
-                    Content = c.choiceText,
-                    IsCorrect = c.isCorrect,
-                    QuestionId = c.questionId
-                }).ToList()
-            };
-        }
-
-        
     }
 }

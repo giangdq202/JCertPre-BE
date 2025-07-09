@@ -1,0 +1,137 @@
+using JCertPreApplication.Application.Utilities;
+using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Mvc;
+
+/// <summary>
+/// API controller for SubContent CRUD operations.
+/// </summary>
+[Route("api/subcontents")]
+[ApiController]
+public class SubContentsController : ControllerBase
+{
+    private readonly ISubContentService _service;
+
+    public SubContentsController(ISubContentService service)
+    {
+        _service = service;
+    }
+
+    /// <summary>
+    /// Get all SubContents with search, paging, and filtering by enums.
+    /// </summary>
+    [HttpGet]
+    [ProducesResponseType(typeof(Pagination<SubContentDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? search,
+        [FromQuery] CourseLevel? level,
+        [FromQuery] ContentName? contentName,
+        [FromQuery] SubContentName? subContentName,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var result = await _service.GetAllAsync(search, level, contentName, subContentName, pageIndex, pageSize);
+
+        // Map entities to DTOs at controller layer, including enum descriptions
+        var dto = new Pagination<SubContentDto>
+        {
+            PageIndex = result.PageIndex,
+            PageSize = result.PageSize,
+            TotalItemsCount = result.TotalItemsCount,
+            Items = result.Items.Select(x => new SubContentDto
+            {
+                SubContentId = x.SubContentId,
+                SubContentName = x.SubContentName.ToString(),
+                SubContentNameDescription = EnumHelper.GetEnumDescription(x.SubContentName),
+                Level = x.Level.ToString(),
+                LevelDescription = EnumHelper.GetEnumDescription(x.Level),
+                ContentName = x.ContentName.ToString(),
+                ContentNameDescription = EnumHelper.GetEnumDescription(x.ContentName)
+            }).ToList()
+        };
+        return Ok(dto);
+    }
+
+    /// <summary>
+    /// Create a new SubContent.
+    /// </summary>
+    [HttpPost]
+    [ProducesResponseType(typeof(SubContentDto), StatusCodes.Status201Created)]
+    public async Task<IActionResult> Create([FromBody] CreateSubContentDto dto)
+    {
+        var entity = await _service.CreateAsync(dto);
+        var result = new SubContentDto
+        {
+            SubContentId = entity.SubContentId,
+            SubContentName = entity.SubContentName.ToString(),
+            SubContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContentName),
+            Level = entity.Level.ToString(),
+            LevelDescription = EnumHelper.GetEnumDescription(entity.Level),
+            ContentName = entity.ContentName.ToString(),
+            ContentNameDescription = EnumHelper.GetEnumDescription(entity.ContentName)
+        };
+        return CreatedAtAction(nameof(GetAll), new { subContentId = result.SubContentId }, result);
+    }
+
+    /// <summary>
+    /// Update an existing SubContent by ID.
+    /// </summary>
+    [HttpPut("{subContentId}")]
+    [ProducesResponseType(typeof(SubContentDto), StatusCodes.Status200OK)]
+    public async Task<IActionResult> Update(Guid subContentId, [FromBody] UpdateSubContentDto dto)
+    {
+        var entity = await _service.UpdateAsync(subContentId, dto);
+        var result = new SubContentDto
+        {
+            SubContentId = entity.SubContentId,
+            SubContentName = entity.SubContentName.ToString(),
+            SubContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContentName),
+            Level = entity.Level.ToString(),
+            LevelDescription = EnumHelper.GetEnumDescription(entity.Level),
+            ContentName = entity.ContentName.ToString(),
+            ContentNameDescription = EnumHelper.GetEnumDescription(entity.ContentName)
+        };
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Delete a SubContent by ID.
+    /// </summary>
+    [HttpDelete("{subContentId}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> Delete(Guid subContentId)
+    {
+        await _service.DeleteAsync(subContentId);
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Get all values and descriptions for SubContentName enum.
+    /// </summary>
+    [HttpGet("enum-values/subcontent-name")]
+    public IActionResult GetSubContentNameEnumValues()
+    {
+        var values = EnumHelper.GetEnumValuesWithDescriptions<SubContentName>();
+        return Ok(values);
+    }
+
+    /// <summary>
+    /// Get all values and descriptions for CourseLevel enum.
+    /// </summary>
+    [HttpGet("enum-values/level")]
+    public IActionResult GetLevelEnumValues()
+    {
+        var values = EnumHelper.GetEnumValuesWithDescriptions<CourseLevel>();
+        return Ok(values);
+    }
+
+    /// <summary>
+    /// Get all values and descriptions for ContentName enum.
+    /// </summary>
+    [HttpGet("enum-values/content-name")]
+    public IActionResult GetContentNameEnumValues()
+    {
+        var values = EnumHelper.GetEnumValuesWithDescriptions<ContentName>();
+        return Ok(values);
+    }
+}

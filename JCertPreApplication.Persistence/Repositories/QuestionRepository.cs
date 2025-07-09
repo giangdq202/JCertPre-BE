@@ -22,19 +22,6 @@ namespace JCertPreApplication.Persistence.Repositories
         }
 
         /// <summary>
-        /// Gets all questions with their related attachments.
-        /// </summary>
-        /// <returns>List of questions including attachments.</returns>
-        public async Task<IEnumerable<Question>> GetQuestionsWithAttachmentsAsync()
-        {
-            // Eagerly load QuestionAttachments navigation property
-            return await _dbSet
-                .Include(q => q.QuestionAttachments)
-                .AsNoTracking()
-                .ToListAsync();
-        }
-
-        /// <summary>
         /// Gets all questions with their related choices and attachments.
         /// </summary>
         /// <returns>List of questions including choices and attachments.</returns>
