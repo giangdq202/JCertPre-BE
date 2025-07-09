@@ -146,6 +146,30 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
+        /// Get all resources from Cloudinary (Images, Videos, Raw files).
+        /// Retrieves all resources with automatic pagination handling and provides summary statistics.
+        /// Note: This operation might take some time if you have many resources.
+        /// </summary>
+        /// <returns>Complete list of all resources with statistics</returns>
+        [HttpGet("all-resources")]
+        public async Task<IActionResult> GetAllResources()
+        {
+            var result = await _cloudinaryService.GetAllResourcesAsync();
+
+            return Ok(new
+            {
+                message = "Đã lấy thành công tất cả resources từ Cloudinary!",
+                data = result,
+                performance = new
+                {
+                    totalResources = result.TotalResources,
+                    totalSizeMB = Math.Round(result.TotalBytes / (1024.0 * 1024.0), 2),
+                    processingTimeSeconds = Math.Round(result.ProcessingTimeMs / 1000.0, 2)
+                }
+            });
+        }
+
+        /// <summary>
         /// Get CloudinaryService health status.
         /// </summary>
         /// <returns>Service status information</returns>
@@ -159,6 +183,7 @@ namespace JCertPreApplication.API.Controllers
                 message = "CloudinaryService đã sẵn sàng để sử dụng!",
                 availableEndpoints = new[]
                 {
+                    "GET /api/cloudinary-test/all-resources",
                     "POST /api/cloudinary-test/upload-image",
                     "POST /api/cloudinary-test/upload-video", 
                     "POST /api/cloudinary-test/upload-document",

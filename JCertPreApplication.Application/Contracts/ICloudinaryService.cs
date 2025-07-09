@@ -1,4 +1,5 @@
 using CloudinaryDotNet.Actions;
+using JCertPreApplication.Application.Dtos.Cloudinary;
 using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Contracts
@@ -46,5 +47,12 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="publicId">Public ID của tệp cần xóa.</param>
         /// <returns>Kết quả xóa từ Cloudinary.</returns>
         Task<DeletionResult> DeleteRawFileAsync(string publicId);
+
+        /// <summary>
+        /// Lấy tất cả các resource từ Cloudinary (Images, Videos, Raw files).
+        /// Xử lý phân trang tự động và gộp kết quả từ tất cả các loại resource.
+        /// </summary>
+        /// <returns>Danh sách tất cả resources với thông tin thống kê</returns>
+        Task<CloudinaryResourcesResponseDto> GetAllResourcesAsync();
     }
 } 

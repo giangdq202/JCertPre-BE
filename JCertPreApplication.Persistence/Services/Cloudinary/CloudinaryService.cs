@@ -1,10 +1,12 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Cloudinary;
 using JCertPreApplication.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 
 namespace JCertPreApplication.Persistence.Services.Cloudinary
 {
@@ -343,6 +345,114 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
             {
                 _logger.LogError(ex, "Unexpected error during raw file deletion for publicId: {PublicId}", publicId);
                 throw ApiException.InternalServerError("RAW_FILE_DELETE_ERROR", "Đã xảy ra lỗi trong quá trình xóa tệp.");
+            }
+        }
+
+        public async Task<CloudinaryResourcesResponseDto> GetAllResourcesAsync()
+        {
+            _logger.LogInformation("Starting to retrieve all resources from Cloudinary...");
+            var stopwatch = Stopwatch.StartNew();
+
+            try
+            {
+                var allResources = new List<CloudinaryResourceDto>();
+
+                // Lặp qua từng loại resource: Image, Video, Raw
+                var resourceTypes = new[] { ResourceType.Image, ResourceType.Video, ResourceType.Raw };
+
+                foreach (var resourceType in resourceTypes)
+                {
+                    _logger.LogDebug("Retrieving resources of type: {ResourceType}", resourceType);
+                    
+                    // Tạo tham số cho yêu cầu API - chỉ lấy page đầu tiên để test
+                    var listParams = new ListResourcesParams()
+                    {
+                        ResourceType = resourceType,
+                        MaxResults = 100, // Giảm số lượng để test
+                        Tags = true,
+                        Context = true
+                    };
+
+                    // Gọi API
+                    ListResourcesResult result;
+                    try
+                    {
+                        result = await _cloudinary.ListResourcesAsync(listParams);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error retrieving resources of type {ResourceType}", resourceType);
+                        throw ApiException.InternalServerError(
+                            "CLOUDINARY_LIST_FAILED", 
+                            $"Failed to retrieve {resourceType} resources from Cloudinary: {ex.Message}"
+                        );
+                    }
+
+                    // Check for Cloudinary-specific errors
+                    if (result.Error != null)
+                    {
+                        _logger.LogError("Cloudinary list resources failed for type {ResourceType}: {ErrorMessage}", resourceType, result.Error.Message);
+                        throw ApiException.BadRequest("CLOUDINARY_LIST_FAILED", $"Failed to list {resourceType} resources: {result.Error.Message}");
+                    }
+
+                    if (result.Resources != null && result.Resources.Any())
+                    {
+                        _logger.LogDebug("Found {Count} resources of type {ResourceType}", result.Resources.Count(), resourceType);
+                        
+                        // Chuyển đổi Cloudinary Resources sang DTOs
+                        foreach (var resource in result.Resources)
+                        {
+                            try
+                            {
+                                var dto = CloudinaryResourceDto.FromCloudinaryResource(resource);
+                                allResources.Add(dto);
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "Failed to convert resource {PublicId} to DTO", resource.PublicId);
+                                // Continue with other resources
+                            }
+                        }
+                    }
+
+                    _logger.LogDebug("Completed retrieving resources of type: {ResourceType}", resourceType);
+                }
+
+                stopwatch.Stop();
+
+                // Tạo summary đơn giản
+                var summary = new ResourceSummaryDto
+                {
+                    Images = new ResourceTypeStatDto { Count = allResources.Count(r => r.ResourceType.Equals("image", StringComparison.OrdinalIgnoreCase)) },
+                    Videos = new ResourceTypeStatDto { Count = allResources.Count(r => r.ResourceType.Equals("video", StringComparison.OrdinalIgnoreCase)) },
+                    RawFiles = new ResourceTypeStatDto { Count = allResources.Count(r => r.ResourceType.Equals("raw", StringComparison.OrdinalIgnoreCase)) }
+                };
+
+                var response = new CloudinaryResourcesResponseDto
+                {
+                    Resources = allResources,
+                    Summary = summary,
+                    TotalResources = allResources.Count,
+                    TotalBytes = allResources.Sum(r => r.Bytes),
+                    RetrievedAt = DateTime.UtcNow,
+                    ProcessingTimeMs = stopwatch.ElapsedMilliseconds
+                };
+
+                _logger.LogInformation("Successfully retrieved {TotalResources} resources from Cloudinary in {ProcessingTimeMs}ms", 
+                    response.TotalResources, response.ProcessingTimeMs);
+
+                return response;
+            }
+            catch (ApiException)
+            {
+                stopwatch.Stop();
+                throw; // Re-throw ApiException as-is
+            }
+            catch (Exception ex)
+            {
+                stopwatch.Stop();
+                _logger.LogError(ex, "Unexpected error while retrieving all resources from Cloudinary");
+                throw ApiException.InternalServerError("GET_ALL_RESOURCES_ERROR", "Đã xảy ra lỗi trong quá trình lấy danh sách resources.");
             }
         }
 
