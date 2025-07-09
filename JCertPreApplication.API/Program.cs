@@ -64,11 +64,16 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
     builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
+
+    // Register LiveKit configuration
+    var liveKitConfig = new LiveKitConfiguration();
+    config.GetSection("LiveKit").Bind(liveKitConfig);
+    builder.Services.AddSingleton(liveKitConfig);
 }
 
 static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
 {
-    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Firebase", "Redis" };
+    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Firebase", "Redis", "LiveKit" };
     
     foreach (var sectionName in sections)
     {

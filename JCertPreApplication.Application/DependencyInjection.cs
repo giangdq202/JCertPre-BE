@@ -6,6 +6,7 @@ using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.Lessons;
+using JCertPreApplication.Application.Features.LiveKit;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
@@ -19,9 +20,10 @@ namespace JCertPreApplication.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
+            // Register services
             services.AddScoped<IAuthService, AuthService>();
-            services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<ICacheService, CacheService>();
+            services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<ICourseService, CourseService>();
             services.AddScoped<IInstructorProfileService, InstructorProfileService>();
             services.AddScoped<IStudentProfileService, StudentProfileService>();
@@ -31,7 +33,9 @@ namespace JCertPreApplication.Application
             services.AddScoped<IChoiceService, ChoiceService>();
             services.AddScoped<ILessonService, LessonService>();
             services.AddScoped<ITestService, TestService>();
+            services.AddScoped<ILiveKitService, LiveKitService>();
             services.AddScoped<ISubContentService, SubContentService>();
+
             return services;
         }
     }

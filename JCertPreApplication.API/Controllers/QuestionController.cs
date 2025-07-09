@@ -12,6 +12,8 @@ using Microsoft.AspNetCore.Mvc;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Tags("Questions")]
+[Produces("application/json")]
 public class QuestionController : ControllerBase
 {
     private readonly IQuestionService _questionService;

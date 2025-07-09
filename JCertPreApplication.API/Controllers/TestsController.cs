@@ -8,8 +8,12 @@ using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Manages tests and assessments.
+    /// </summary>
     [Route("api/tests")]
     [ApiController]
+    [Tags("Tests")]
     [Produces("application/json")]
     public class TestsController : ControllerBase
     {
@@ -21,10 +25,14 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get all tests by user id with paging and search by title.
+        /// Gets all tests for a user with pagination.
         /// </summary>
+        /// <param name="userId">User ID.</param>
+        /// <param name="searchTerm">Optional search term for test title.</param>
+        /// <param name="pageIndex">Page number (default: 1).</param>
+        /// <param name="pageSize">Items per page (default: 10).</param>
+        /// <returns>Paginated list of tests.</returns>
         [HttpGet("by-user/{userId}")]
-        [ProducesResponseType(typeof(Pagination<TestDto>), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetAllByUserId(
             Guid userId,
             [FromQuery] string? searchTerm,
@@ -45,10 +53,11 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get a test by lesson id.
+        /// Gets a test by lesson ID.
         /// </summary>
+        /// <param name="lessonId">Lesson ID.</param>
+        /// <returns>Test details.</returns>
         [HttpGet("by-lesson/{lessonId}")]
-        [ProducesResponseType(typeof(TestDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetByLessonId(Guid lessonId)
         {
             var entity = await _testService.GetByLessonIdAsync(lessonId);
@@ -57,25 +66,27 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Create a test by lesson id. The current authenticated user will be set as CreatedByUser.
+        /// Creates a test for a lesson.
         /// </summary>
+        /// <param name="lessonId">Lesson ID.</param>
+        /// <param name="createTestDto">Test details.</param>
+        /// <returns>Created test.</returns>
         [HttpPost("by-lesson/{lessonId}")]
-        [ProducesResponseType(typeof(TestDto), StatusCodes.Status201Created)]
         public async Task<IActionResult> CreateByLessonId(Guid lessonId, [FromBody] CreateTestDto createTestDto)
         {
-            // Get current user id from claims
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-
             var entity = await _testService.CreateByLessonIdAsync(lessonId, createTestDto, userId);
             var dto = MapToTestDto(entity);
             return CreatedAtAction(nameof(GetByLessonId), new { lessonId = dto.LessonId }, dto);
         }
 
         /// <summary>
-        /// Update a test by test id.
+        /// Updates a test.
         /// </summary>
+        /// <param name="testId">Test ID.</param>
+        /// <param name="updateTestDto">Updated test details.</param>
+        /// <returns>Updated test.</returns>
         [HttpPut("{testId}")]
-        [ProducesResponseType(typeof(TestDto), StatusCodes.Status200OK)]
         public async Task<IActionResult> Update(Guid testId, [FromBody] UpdateTestDto updateTestDto)
         {
             var entity = await _testService.UpdateAsync(testId, updateTestDto);
@@ -84,17 +95,17 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Delete a test by test id.
+        /// Deletes a test.
         /// </summary>
+        /// <param name="testId">Test ID.</param>
+        /// <returns>No content on success.</returns>
         [HttpDelete("{testId}")]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Delete(Guid testId)
         {
             await _testService.DeleteAsync(testId);
             return NoContent();
         }
 
-        // Mapping logic at controller layer
         private static TestDto MapToTestDto(Test test)
         {
             return new TestDto

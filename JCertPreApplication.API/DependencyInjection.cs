@@ -35,6 +35,11 @@ namespace JCertPreApplication.API
             // Global Exception Handling Middleware
             services.AddScoped<GlobalExceptionHandlingMiddleware>();
 
+            // Register LiveKit configuration
+            var liveKitConfig = new LiveKitConfiguration();
+            configuration.GetSection("LiveKit").Bind(liveKitConfig);
+            services.AddSingleton(liveKitConfig);
+
             return services;
         }
 
