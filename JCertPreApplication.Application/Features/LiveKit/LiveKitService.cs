@@ -12,67 +12,59 @@ namespace JCertPreApplication.Application.Features.LiveKit
     /// </summary>
     public class LiveKitService : ILiveKitService
     {
-        private readonly LiveKitConfiguration _configuration;
+        private readonly LiveKitConfiguration _liveKitConfig;
 
-        public LiveKitService(LiveKitConfiguration configuration)
+        public LiveKitService(LiveKitConfiguration liveKitConfig)
         {
-            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
-            
-            if (string.IsNullOrEmpty(_configuration.ApiKey))
-                throw ApiException.BadRequest("LIVEKIT_CONFIG_ERROR", "LiveKit API Key is not configured");
-            
-            if (string.IsNullOrEmpty(_configuration.ApiSecret))
-                throw ApiException.BadRequest("LIVEKIT_CONFIG_ERROR", "LiveKit API Secret is not configured");
+            _liveKitConfig = liveKitConfig;
         }
 
-        /// <inheritdoc />
-        public async Task<string> GenerateTokenAsync(
-            string roomName,
-            string participantIdentity,
-            string? participantName = null,
-            bool canPublish = true,
-            bool canPublishData = true,
-            bool canSubscribe = true)
+        public string GenerateToken(string roomName, string participantIdentity, string participantName, string role = "student")
         {
-            if (string.IsNullOrEmpty(roomName))
-                throw ApiException.BadRequest("INVALID_ROOM", "Room name cannot be empty");
-
-            if (string.IsNullOrEmpty(participantIdentity))
-                throw ApiException.BadRequest("INVALID_IDENTITY", "Participant identity cannot be empty");
-
-            // Define participant permissions
-            var grants = new VideoGrants
+            if (string.IsNullOrEmpty(roomName) || string.IsNullOrEmpty(participantIdentity))
             {
-                RoomJoin = true,
-                Room = roomName,
-                CanPublish = canPublish,
-                CanPublishData = canPublishData,
-                CanSubscribe = canSubscribe
-            };
-
-            try 
-            {
-                // Create token with 30-minute validity
-                var tokenBuilder = new AccessToken(_configuration.ApiKey, _configuration.ApiSecret)
-                    .WithIdentity(participantIdentity)
-                    .WithGrants(grants)
-                    .WithTtl(TimeSpan.FromMinutes(30));
-
-                // Add display name if provided
-                if (!string.IsNullOrEmpty(participantName))
-                {
-                    tokenBuilder.WithName(participantName);
-                }
-
-                // Generate and return the token
-                return await Task.FromResult(tokenBuilder.ToJwt());
+                throw new ArgumentException("roomName and participantIdentity are required.");
             }
-            catch (Exception ex)
+
+            VideoGrants grants;
+
+            switch (role.ToLower())
             {
-                throw ApiException.InternalServerError(
-                    "LIVEKIT_TOKEN_ERROR",
-                    $"Failed to generate LiveKit token: {ex.Message}");
+                case "instructor":
+                    // Instructors have full permissions: video, audio, data, and screen sharing
+                    grants = new VideoGrants
+                    {
+                        RoomJoin = true,
+                        Room = roomName,
+                        CanPublish = true,       // Can publish all sources
+                        CanPublishData = true,   // Critical: for sending control commands and whiteboard data
+                        CanSubscribe = true,
+                        CanUpdateOwnMetadata = true
+                    };
+                    break;
+
+                case "student":
+                default:
+                    // Students have limited permissions
+                    grants = new VideoGrants
+                    {
+                        RoomJoin = true,
+                        Room = roomName,
+                        CanPublish = true,  // Allow publish, but client will only allow audio
+                        CanPublishData = false, // Prevent sending data to avoid command spam
+                        CanSubscribe = true,    // Required to see/hear the instructor
+                        Hidden = true // Hide students from other students' participant list (optional)
+                    };
+                    break;
             }
+
+            var tokenBuilder = new AccessToken(_liveKitConfig.ApiKey, _liveKitConfig.ApiSecret)
+                .WithIdentity(participantIdentity)
+                .WithName(participantName)
+                .WithGrants(grants)
+                .WithTtl(TimeSpan.FromHours(4)); // Duration for one class session
+
+            return tokenBuilder.ToJwt();
         }
     }
 } 
