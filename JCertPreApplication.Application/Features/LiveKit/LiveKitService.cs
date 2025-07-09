@@ -71,11 +71,7 @@ namespace JCertPreApplication.Application.Features.LiveKit
             {
                 throw ApiException.InternalServerError(
                     "LIVEKIT_TOKEN_ERROR",
-                    "Failed to generate LiveKit token",
-                    new Dictionary<string, string[]>
-                    {
-                        { "error", new[] { ex.Message } }
-                    });
+                    $"Failed to generate LiveKit token: {ex.Message}");
             }
         }
     }
