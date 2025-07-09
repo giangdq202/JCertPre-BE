@@ -2,11 +2,9 @@ using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
-using JCertPreApplication.Domain.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Net.Http;
 
 namespace JCertPreApplication.Persistence.Services.Cloudinary
 {
@@ -22,18 +20,21 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
         {
             _logger = logger;
 
+            var config = cloudinaryConfig.Value;
+
+            // Validate required configuration
+            if (string.IsNullOrEmpty(config.CloudName) || 
+                string.IsNullOrEmpty(config.ApiKey) || 
+                string.IsNullOrEmpty(config.ApiSecret))
+            {
+                throw ApiException.InternalServerError(
+                    "CLOUDINARY_CONFIG_MISSING", 
+                    "CloudName, ApiKey, and ApiSecret are required for Cloudinary configuration."
+                );
+            }
+
             try
             {
-                var config = cloudinaryConfig.Value;
-
-                // Validate required configuration
-                if (string.IsNullOrEmpty(config.CloudName) || 
-                    string.IsNullOrEmpty(config.ApiKey) || 
-                    string.IsNullOrEmpty(config.ApiSecret))
-                {
-                    throw new ArgumentException("CloudName, ApiKey, and ApiSecret are required for Cloudinary configuration.");
-                }
-
                 // Initialize Cloudinary instance with custom HttpClient
                 var account = new Account(config.CloudName, config.ApiKey, config.ApiSecret);
                 var httpClient = new HttpClient
@@ -48,101 +49,96 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to initialize Cloudinary service");
-                throw new InvalidOperationException("Failed to initialize Cloudinary service. Please check your Cloudinary configuration.", ex);
+                throw ApiException.InternalServerError(
+                    "CLOUDINARY_INIT_FAILED", 
+                    "Failed to initialize Cloudinary service. Please check your Cloudinary configuration."
+                );
             }
         }
 
         public async Task<ImageUploadResult> UploadImageAsync(IFormFile file)
         {
+            // Validate input
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogWarning("Image upload failed: file is null or empty");
+                throw ApiException.BadRequest("FILE_REQUIRED", "Không có tệp được cung cấp.");
+            }
+
+            // Validate file type
+            if (!IsImageFile(file))
+            {
+                _logger.LogWarning("Image upload failed: invalid file type {ContentType}", file.ContentType);
+                throw ApiException.BadRequest("INVALID_FILE_TYPE", "Tệp không phải là hình ảnh hợp lệ.");
+            }
+
+            var uploadParams = new ImageUploadParams();
+            var stream = file.OpenReadStream();
+            uploadParams.File = new FileDescription(file.FileName, stream);
+            uploadParams.Folder = "images"; // Organize uploads in folders
+            uploadParams.UseFilename = true;
+            uploadParams.UniqueFilename = true;
+
             try
             {
-                if (file == null || file.Length == 0)
-                {
-                    _logger.LogWarning("Image upload failed: file is null or empty");
-                    return new ImageUploadResult 
-                    { 
-                        Error = new Error { Message = "Không có tệp được cung cấp." } 
-                    };
-                }
-
-                // Validate file type
-                if (!IsImageFile(file))
-                {
-                    _logger.LogWarning("Image upload failed: invalid file type {ContentType}", file.ContentType);
-                    return new ImageUploadResult 
-                    { 
-                        Error = new Error { Message = "Tệp không phải là hình ảnh hợp lệ." } 
-                    };
-                }
-
-                var uploadParams = new ImageUploadParams();
-                var stream = file.OpenReadStream();
-                uploadParams.File = new FileDescription(file.FileName, stream);
-                uploadParams.Folder = "images"; // Organize uploads in folders
-                uploadParams.UseFilename = true;
-                uploadParams.UniqueFilename = true;
-
                 var result = await _cloudinary.UploadAsync(uploadParams);
                 
                 // Ensure stream is disposed after upload
                 await stream.DisposeAsync();
                 
+                // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary image upload failed: {ErrorMessage}", result.Error.Message);
-                }
-                else
-                {
-                    _logger.LogDebug("Image uploaded successfully: {PublicId}", result.PublicId);
+                    throw ApiException.BadRequest("CLOUDINARY_UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
 
+                _logger.LogDebug("Image uploaded successfully: {PublicId}", result.PublicId);
                 return result;
+            }
+            catch (ApiException)
+            {
+                await stream.DisposeAsync();
+                throw; // Re-throw ApiException as-is
             }
             catch (Exception ex)
             {
+                await stream.DisposeAsync();
                 _logger.LogError(ex, "Unexpected error during image upload");
-                return new ImageUploadResult 
-                { 
-                    Error = new Error { Message = "Đã xảy ra lỗi trong quá trình tải lên hình ảnh." } 
-                };
+                throw ApiException.InternalServerError("IMAGE_UPLOAD_ERROR", "Đã xảy ra lỗi trong quá trình tải lên hình ảnh.");
             }
         }
 
         public async Task<VideoUploadResult> UploadVideoAsync(IFormFile file)
         {
+            // Validate input
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogWarning("Video upload failed: file is null or empty");
+                throw ApiException.BadRequest("FILE_REQUIRED", "Không có tệp được cung cấp.");
+            }
+
+            // Validate file type
+            if (!IsVideoFile(file))
+            {
+                _logger.LogWarning("Video upload failed: invalid file type {ContentType}", file.ContentType);
+                throw ApiException.BadRequest("INVALID_FILE_TYPE", "Tệp không phải là video hợp lệ.");
+            }
+
+            _logger.LogInformation("Starting video upload: {FileName}, Size: {Size}MB", file.FileName, file.Length / (1024 * 1024));
+
+            var uploadParams = new VideoUploadParams();
+            var stream = file.OpenReadStream();
+            uploadParams.File = new FileDescription(file.FileName, stream);
+            uploadParams.Folder = "videos"; // Organize uploads in folders
+            uploadParams.UseFilename = true;
+            uploadParams.UniqueFilename = true;
+
+            // Use custom cancellation token with extended timeout
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(UPLOAD_TIMEOUT_SECONDS));
+            
             try
             {
-                if (file == null || file.Length == 0)
-                {
-                    _logger.LogWarning("Video upload failed: file is null or empty");
-                    return new VideoUploadResult 
-                    { 
-                        Error = new Error { Message = "Không có tệp được cung cấp." } 
-                    };
-                }
-
-                // Validate file type
-                if (!IsVideoFile(file))
-                {
-                    _logger.LogWarning("Video upload failed: invalid file type {ContentType}", file.ContentType);
-                    return new VideoUploadResult 
-                    { 
-                        Error = new Error { Message = "Tệp không phải là video hợp lệ." } 
-                    };
-                }
-
-                _logger.LogInformation("Starting video upload: {FileName}, Size: {Size}MB", file.FileName, file.Length / (1024 * 1024));
-
-                var uploadParams = new VideoUploadParams();
-                var stream = file.OpenReadStream();
-                uploadParams.File = new FileDescription(file.FileName, stream);
-                uploadParams.Folder = "videos"; // Organize uploads in folders
-                uploadParams.UseFilename = true;
-                uploadParams.UniqueFilename = true;
-
-                // Use custom cancellation token with extended timeout
-                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(UPLOAD_TIMEOUT_SECONDS));
-                
                 // Use UploadLarge for video files with custom chunk size and concurrent uploads
                 var result = await _cloudinary.UploadLargeAsync<VideoUploadResult>(
                     uploadParams,
@@ -154,204 +150,199 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Ensure stream is disposed after upload
                 await stream.DisposeAsync();
                 
+                // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary video upload failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("CLOUDINARY_UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
-                else
-                {
-                    _logger.LogInformation("Video uploaded successfully: {PublicId}, Duration: {Duration}s, Size: {Size}MB", 
-                        result.PublicId, 
-                        result.Duration,
-                        result.Bytes / (1024 * 1024));
-                }
+
+                _logger.LogInformation("Video uploaded successfully: {PublicId}, Duration: {Duration}s, Size: {Size}MB", 
+                    result.PublicId, 
+                    result.Duration,
+                    result.Bytes / (1024 * 1024));
 
                 return result;
             }
             catch (TaskCanceledException)
             {
+                await stream.DisposeAsync();
                 _logger.LogError("Video upload timed out after {Timeout} seconds", UPLOAD_TIMEOUT_SECONDS);
-                return new VideoUploadResult 
-                { 
-                    Error = new Error { Message = $"Tải lên video đã hết thời gian chờ sau {UPLOAD_TIMEOUT_SECONDS} giây." } 
-                };
+                throw ApiException.BadRequest("UPLOAD_TIMEOUT", $"Tải lên video đã hết thời gian chờ sau {UPLOAD_TIMEOUT_SECONDS} giây.");
+            }
+            catch (ApiException)
+            {
+                await stream.DisposeAsync();
+                throw; // Re-throw ApiException as-is
             }
             catch (Exception ex)
             {
+                await stream.DisposeAsync();
                 _logger.LogError(ex, "Unexpected error during video upload");
-                return new VideoUploadResult 
-                { 
-                    Error = new Error { Message = "Đã xảy ra lỗi trong quá trình tải lên video." } 
-                };
+                throw ApiException.InternalServerError("VIDEO_UPLOAD_ERROR", "Đã xảy ra lỗi trong quá trình tải lên video.");
             }
         }
 
         public async Task<RawUploadResult> UploadRawFileAsync(IFormFile file)
         {
+            // Validate input
+            if (file == null || file.Length == 0)
+            {
+                _logger.LogWarning("Raw file upload failed: file is null or empty");
+                throw ApiException.BadRequest("FILE_REQUIRED", "Không có tệp được cung cấp.");
+            }
+
+            var uploadParams = new RawUploadParams();
+            var stream = file.OpenReadStream();
+            uploadParams.File = new FileDescription(file.FileName, stream);
+            uploadParams.Folder = "documents"; // Organize uploads in folders
+            uploadParams.UseFilename = true;
+            uploadParams.UniqueFilename = true;
+
             try
             {
-                if (file == null || file.Length == 0)
-                {
-                    _logger.LogWarning("Raw file upload failed: file is null or empty");
-                    return new RawUploadResult 
-                    { 
-                        Error = new Error { Message = "Không có tệp được cung cấp." } 
-                    };
-                }
-
-                var uploadParams = new RawUploadParams();
-                var stream = file.OpenReadStream();
-                uploadParams.File = new FileDescription(file.FileName, stream);
-                uploadParams.Folder = "documents"; // Organize uploads in folders
-                uploadParams.UseFilename = true;
-                uploadParams.UniqueFilename = true;
-
                 var result = await _cloudinary.UploadAsync(uploadParams);
                 
                 // Ensure stream is disposed after upload
                 await stream.DisposeAsync();
                 
+                // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary raw file upload failed: {ErrorMessage}", result.Error.Message);
-                }
-                else
-                {
-                    _logger.LogDebug("Raw file uploaded successfully: {PublicId}", result.PublicId);
+                    throw ApiException.BadRequest("CLOUDINARY_UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
 
+                _logger.LogDebug("Raw file uploaded successfully: {PublicId}", result.PublicId);
                 return result;
+            }
+            catch (ApiException)
+            {
+                await stream.DisposeAsync();
+                throw; // Re-throw ApiException as-is
             }
             catch (Exception ex)
             {
+                await stream.DisposeAsync();
                 _logger.LogError(ex, "Unexpected error during raw file upload");
-                return new RawUploadResult 
-                { 
-                    Error = new Error { Message = "Đã xảy ra lỗi trong quá trình tải lên tệp." } 
-                };
+                throw ApiException.InternalServerError("RAW_FILE_UPLOAD_ERROR", "Đã xảy ra lỗi trong quá trình tải lên tệp.");
             }
         }
 
         public async Task<DeletionResult> DeleteImageAsync(string publicId)
         {
+            // Validate input
+            if (string.IsNullOrEmpty(publicId))
+            {
+                _logger.LogWarning("Image deletion failed: publicId is null or empty");
+                throw ApiException.BadRequest("PUBLIC_ID_REQUIRED", "Public ID không được cung cấp.");
+            }
+
+            var deletionParams = new DeletionParams(publicId)
+            {
+                ResourceType = ResourceType.Image
+            };
+
             try
             {
-                if (string.IsNullOrEmpty(publicId))
-                {
-                    _logger.LogWarning("Image deletion failed: publicId is null or empty");
-                    return new DeletionResult 
-                    { 
-                        Error = new Error { Message = "Public ID không được cung cấp." } 
-                    };
-                }
-
-                var deletionParams = new DeletionParams(publicId)
-                {
-                    ResourceType = ResourceType.Image
-                };
-
                 var result = await _cloudinary.DestroyAsync(deletionParams);
                 
+                // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary image deletion failed: {ErrorMessage}", result.Error.Message);
-                }
-                else
-                {
-                    _logger.LogDebug("Image deleted successfully: {PublicId}", publicId);
+                    throw ApiException.BadRequest("CLOUDINARY_DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
+                _logger.LogDebug("Image deleted successfully: {PublicId}", publicId);
                 return result;
+            }
+            catch (ApiException)
+            {
+                throw; // Re-throw ApiException as-is
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during image deletion for publicId: {PublicId}", publicId);
-                return new DeletionResult 
-                { 
-                    Error = new Error { Message = "Đã xảy ra lỗi trong quá trình xóa hình ảnh." } 
-                };
+                throw ApiException.InternalServerError("IMAGE_DELETE_ERROR", "Đã xảy ra lỗi trong quá trình xóa hình ảnh.");
             }
         }
 
         public async Task<DeletionResult> DeleteVideoAsync(string publicId)
         {
+            // Validate input
+            if (string.IsNullOrEmpty(publicId))
+            {
+                _logger.LogWarning("Video deletion failed: publicId is null or empty");
+                throw ApiException.BadRequest("PUBLIC_ID_REQUIRED", "Public ID không được cung cấp.");
+            }
+
+            var deletionParams = new DeletionParams(publicId)
+            {
+                ResourceType = ResourceType.Video
+            };
+
             try
             {
-                if (string.IsNullOrEmpty(publicId))
-                {
-                    _logger.LogWarning("Video deletion failed: publicId is null or empty");
-                    return new DeletionResult 
-                    { 
-                        Error = new Error { Message = "Public ID không được cung cấp." } 
-                    };
-                }
-
-                var deletionParams = new DeletionParams(publicId)
-                {
-                    ResourceType = ResourceType.Video
-                };
-
                 var result = await _cloudinary.DestroyAsync(deletionParams);
                 
+                // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary video deletion failed: {ErrorMessage}", result.Error.Message);
-                }
-                else
-                {
-                    _logger.LogDebug("Video deleted successfully: {PublicId}", publicId);
+                    throw ApiException.BadRequest("CLOUDINARY_DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
+                _logger.LogDebug("Video deleted successfully: {PublicId}", publicId);
                 return result;
+            }
+            catch (ApiException)
+            {
+                throw; // Re-throw ApiException as-is
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during video deletion for publicId: {PublicId}", publicId);
-                return new DeletionResult 
-                { 
-                    Error = new Error { Message = "Đã xảy ra lỗi trong quá trình xóa video." } 
-                };
+                throw ApiException.InternalServerError("VIDEO_DELETE_ERROR", "Đã xảy ra lỗi trong quá trình xóa video.");
             }
         }
 
         public async Task<DeletionResult> DeleteRawFileAsync(string publicId)
         {
+            // Validate input
+            if (string.IsNullOrEmpty(publicId))
+            {
+                _logger.LogWarning("Raw file deletion failed: publicId is null or empty");
+                throw ApiException.BadRequest("PUBLIC_ID_REQUIRED", "Public ID không được cung cấp.");
+            }
+
+            var deletionParams = new DeletionParams(publicId)
+            {
+                ResourceType = ResourceType.Raw
+            };
+
             try
             {
-                if (string.IsNullOrEmpty(publicId))
-                {
-                    _logger.LogWarning("Raw file deletion failed: publicId is null or empty");
-                    return new DeletionResult 
-                    { 
-                        Error = new Error { Message = "Public ID không được cung cấp." } 
-                    };
-                }
-
-                var deletionParams = new DeletionParams(publicId)
-                {
-                    ResourceType = ResourceType.Raw
-                };
-
                 var result = await _cloudinary.DestroyAsync(deletionParams);
                 
+                // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
                     _logger.LogError("Cloudinary raw file deletion failed: {ErrorMessage}", result.Error.Message);
-                }
-                else
-                {
-                    _logger.LogDebug("Raw file deleted successfully: {PublicId}", publicId);
+                    throw ApiException.BadRequest("CLOUDINARY_DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
+                _logger.LogDebug("Raw file deleted successfully: {PublicId}", publicId);
                 return result;
+            }
+            catch (ApiException)
+            {
+                throw; // Re-throw ApiException as-is
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during raw file deletion for publicId: {PublicId}", publicId);
-                return new DeletionResult 
-                { 
-                    Error = new Error { Message = "Đã xảy ra lỗi trong quá trình xóa tệp." } 
-                };
+                throw ApiException.InternalServerError("RAW_FILE_DELETE_ERROR", "Đã xảy ra lỗi trong quá trình xóa tệp.");
             }
         }
 

@@ -29,21 +29,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpPost("upload-image")]
         public async Task<IActionResult> UploadImage(IFormFile imageFile)
         {
-            if (imageFile == null || imageFile.Length == 0)
-            {
-                return BadRequest(new { error = "Vui lòng chọn một tệp hình ảnh để tải lên." });
-            }
-
             var result = await _cloudinaryService.UploadImageAsync(imageFile);
-
-            if (result.Error != null)
-            {
-                return BadRequest(new 
-                { 
-                    error = "Upload failed",
-                    message = result.Error.Message
-                });
-            }
 
             return Ok(new
             {
@@ -67,21 +53,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpPost("upload-video")]
         public async Task<IActionResult> UploadVideo(IFormFile videoFile)
         {
-            if (videoFile == null || videoFile.Length == 0)
-            {
-                return BadRequest(new { error = "Vui lòng chọn một tệp video để tải lên." });
-            }
-
             var result = await _cloudinaryService.UploadVideoAsync(videoFile);
-
-            if (result.Error != null)
-            {
-                return BadRequest(new 
-                { 
-                    error = "Upload failed",
-                    message = result.Error.Message
-                });
-            }
 
             return Ok(new
             {
@@ -106,21 +78,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpPost("upload-document")]
         public async Task<IActionResult> UploadRawFile(IFormFile rawFile)
         {
-            if (rawFile == null || rawFile.Length == 0)
-            {
-                return BadRequest(new { error = "Vui lòng chọn một tệp để tải lên." });
-            }
-
             var result = await _cloudinaryService.UploadRawFileAsync(rawFile);
-
-            if (result.Error != null)
-            {
-                return BadRequest(new 
-                { 
-                    error = "Upload failed",
-                    message = result.Error.Message
-                });
-            }
 
             return Ok(new
             {
@@ -141,21 +99,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpDelete("delete-image/{publicId}")]
         public async Task<IActionResult> DeleteImage(string publicId)
         {
-            if (string.IsNullOrEmpty(publicId))
-            {
-                return BadRequest(new { error = "Public ID là bắt buộc." });
-            }
-
             var result = await _cloudinaryService.DeleteImageAsync(publicId);
-
-            if (result.Error != null)
-            {
-                return BadRequest(new 
-                { 
-                    error = "Delete failed",
-                    message = result.Error.Message
-                });
-            }
 
             return Ok(new
             {
@@ -173,21 +117,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpDelete("delete-video/{publicId}")]
         public async Task<IActionResult> DeleteVideo(string publicId)
         {
-            if (string.IsNullOrEmpty(publicId))
-            {
-                return BadRequest(new { error = "Public ID là bắt buộc." });
-            }
-
             var result = await _cloudinaryService.DeleteVideoAsync(publicId);
-
-            if (result.Error != null)
-            {
-                return BadRequest(new 
-                { 
-                    error = "Delete failed",
-                    message = result.Error.Message
-                });
-            }
 
             return Ok(new
             {
@@ -205,21 +135,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpDelete("delete-document/{publicId}")]
         public async Task<IActionResult> DeleteRawFile(string publicId)
         {
-            if (string.IsNullOrEmpty(publicId))
-            {
-                return BadRequest(new { error = "Public ID là bắt buộc." });
-            }
-
             var result = await _cloudinaryService.DeleteRawFileAsync(publicId);
-
-            if (result.Error != null)
-            {
-                return BadRequest(new 
-                { 
-                    error = "Delete failed",
-                    message = result.Error.Message
-                });
-            }
 
             return Ok(new
             {
