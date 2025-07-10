@@ -8,19 +8,16 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Test> builder)
         {
-            // Configure primary key
             builder.ToTable("test");
             builder.HasKey(t => t.testId);
 
-            // Configure required properties and constraints
             builder.Property(t => t.title).IsRequired().HasMaxLength(100);
             builder.Property(t => t.description).IsRequired();
             builder.Property(t => t.testType).IsRequired().HasMaxLength(50);
             builder.Property(t => t.durationMinutes).IsRequired();
-            builder.Property(t => t.lessonId); // Nullable foreign key, so no IsRequired() here
+            builder.Property(t => t.lessonId);
             builder.Property(t => t.createdByUserId).IsRequired();
 
-            // Configure navigation properties
             builder.HasOne(t => t.Lesson)
                    .WithMany(q => q.Tests)
                    .IsRequired(false)
@@ -30,16 +27,17 @@ namespace JCertPreApplication.Persistence.Configurations
                    .WithMany(q => q.CreatedTests)
                    .HasForeignKey(t => t.createdByUserId).OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasMany(t => t.Questions)
-               .WithMany(q => q.Tests) // Đồng bộ với QuestionConfiguration
-               .UsingEntity(j => j.ToTable("question_test"));
+            // Add new one-to-many for TestQuestion
+            builder.HasMany(t => t.TestQuestions)
+                   .WithOne(tq => tq.Test)
+                   .HasForeignKey(tq => tq.testId);
 
             builder.HasMany(t => t.TestAttempts)
                    .WithOne(q => q.Test)
                    .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(t => t.StudyPlanItems)
                    .WithOne(q => q.Test)
-                   .IsRequired(false) // Nullable foreign key
+                   .IsRequired(false)
                    .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
         }
     }

@@ -140,7 +140,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
-                if (question.Tests.Any() || question.AttemptAnswers.Any())
+                if (question.TestQuestions.Count > 0 || question.AttemptAnswers.Count > 0)
                     throw ApiException.BadRequest("QUESTION_IN_USE", "Cannot delete question that is used in tests or has student attempts.");
 
                 await _questionRepository.DeleteAsync(question);
