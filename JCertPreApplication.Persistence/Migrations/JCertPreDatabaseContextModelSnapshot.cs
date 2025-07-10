@@ -762,6 +762,30 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("test_attempt", (string)null);
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestQuestion", b =>
+                {
+                    b.Property<Guid>("testQuestionId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("isActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<Guid>("questionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("testId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("testQuestionId");
+
+                    b.HasIndex("questionId");
+
+                    b.HasIndex("testId");
+
+                    b.ToTable("test_question", (string)null);
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
                 {
                     b.Property<Guid>("userId")
@@ -812,21 +836,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasIndex("roleId");
 
                     b.ToTable("user", (string)null);
-                });
-
-            modelBuilder.Entity("QuestionTest", b =>
-                {
-                    b.Property<Guid>("QuestionsquestionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TeststestId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("QuestionsquestionId", "TeststestId");
-
-                    b.HasIndex("TeststestId");
-
-                    b.ToTable("question_test", (string)null);
                 });
 
             modelBuilder.Entity("ConversationUser", b =>
@@ -1146,6 +1155,25 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestQuestion", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
+                        .WithMany("TestQuestions")
+                        .HasForeignKey("questionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCertPreApplication.Domain.Entities.Test", "Test")
+                        .WithMany("TestQuestions")
+                        .HasForeignKey("testId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Question");
+
+                    b.Navigation("Test");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Role", "Role")
@@ -1155,21 +1183,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Role");
-                });
-
-            modelBuilder.Entity("QuestionTest", b =>
-                {
-                    b.HasOne("JCertPreApplication.Domain.Entities.Question", null)
-                        .WithMany()
-                        .HasForeignKey("QuestionsquestionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("JCertPreApplication.Domain.Entities.Test", null)
-                        .WithMany()
-                        .HasForeignKey("TeststestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Choice", b =>
@@ -1211,6 +1224,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Choices");
 
                     b.Navigation("QuestionAttachments");
+
+                    b.Navigation("TestQuestions");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Role", b =>
@@ -1233,6 +1248,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("StudyPlanItems");
 
                     b.Navigation("TestAttempts");
+
+                    b.Navigation("TestQuestions");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestAttempt", b =>

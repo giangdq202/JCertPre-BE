@@ -1,11 +1,9 @@
-namespace JCertPreApplication.Application.Dtos.Choice
+using System;
+
+public class ChoiceReadDto
 {
-    public class ChoiceReadDto
-    {
-        public Guid Id { get; set; }
-        public Guid QuestionId { get; set; }
-        public required string Content { get; set; }
-        public bool IsCorrect { get; set; }
-        public string? Explanation { get; set; }
-    }
-} 
+    public Guid Id { get; set; }
+    public string Content { get; set; } = null!;
+    public bool IsCorrect { get; set; }
+    public Guid QuestionId { get; set; }
+}

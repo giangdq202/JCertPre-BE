@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JCertPreApplication.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate1 : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -490,30 +490,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "question_test",
-                columns: table => new
-                {
-                    QuestionsquestionId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TeststestId = table.Column<Guid>(type: "uuid", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_question_test", x => new { x.QuestionsquestionId, x.TeststestId });
-                    table.ForeignKey(
-                        name: "FK_question_test_Questions_QuestionsquestionId",
-                        column: x => x.QuestionsquestionId,
-                        principalTable: "Questions",
-                        principalColumn: "questionId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_question_test_test_TeststestId",
-                        column: x => x.TeststestId,
-                        principalTable: "test",
-                        principalColumn: "testId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "study_plan_item",
                 columns: table => new
                 {
@@ -573,6 +549,32 @@ namespace JCertPreApplication.Persistence.Migrations
                         column: x => x.userId,
                         principalTable: "user",
                         principalColumn: "userId");
+                });
+
+            migrationBuilder.CreateTable(
+                name: "test_question",
+                columns: table => new
+                {
+                    testQuestionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    testId = table.Column<Guid>(type: "uuid", nullable: false),
+                    questionId = table.Column<Guid>(type: "uuid", nullable: false),
+                    isActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_test_question", x => x.testQuestionId);
+                    table.ForeignKey(
+                        name: "FK_test_question_Questions_questionId",
+                        column: x => x.questionId,
+                        principalTable: "Questions",
+                        principalColumn: "questionId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_test_question_test_testId",
+                        column: x => x.testId,
+                        principalTable: "test",
+                        principalColumn: "testId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -702,11 +704,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 column: "questionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_question_test_TeststestId",
-                table: "question_test",
-                column: "TeststestId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Questions_SubContentId",
                 table: "Questions",
                 column: "SubContentId");
@@ -767,6 +764,16 @@ namespace JCertPreApplication.Persistence.Migrations
                 column: "userId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_test_question_questionId",
+                table: "test_question",
+                column: "questionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_test_question_testId",
+                table: "test_question",
+                column: "testId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_user_roleId",
                 table: "user",
                 column: "roleId");
@@ -809,9 +816,6 @@ namespace JCertPreApplication.Persistence.Migrations
                 name: "question_attachment");
 
             migrationBuilder.DropTable(
-                name: "question_test");
-
-            migrationBuilder.DropTable(
                 name: "report");
 
             migrationBuilder.DropTable(
@@ -819,6 +823,9 @@ namespace JCertPreApplication.Persistence.Migrations
 
             migrationBuilder.DropTable(
                 name: "study_plan_item");
+
+            migrationBuilder.DropTable(
+                name: "test_question");
 
             migrationBuilder.DropTable(
                 name: "choice");

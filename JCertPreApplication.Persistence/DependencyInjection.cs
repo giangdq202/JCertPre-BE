@@ -56,6 +56,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ICourseInstructorRepository, CourseInstructorRepository>();
             services.AddScoped<ITestRepository, TestRepository>();
             services.AddScoped<ISubContentRepository, SubContentRepository>();
+            services.AddScoped<ITestQuestionRepository, TestQuestionRepository>();
             // Infrastructure Services
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IFirebaseService, FirebaseService>();

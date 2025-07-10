@@ -35,6 +35,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<SubContent> SubContents { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<TestAttempt> TestAttempts { get; set; }
+        public DbSet<TestQuestion> TestQuestions { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<CourseInstructor> CourseInstructors { get; set; }
 
@@ -64,6 +65,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new SubContentConfiguration());
             modelBuilder.ApplyConfiguration(new TestConfiguration());
             modelBuilder.ApplyConfiguration(new TestAttemptConfiguration());
+            modelBuilder.ApplyConfiguration(new TestQuestionConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new CourseInstructorConfiguration());
         }

@@ -9,6 +9,10 @@ namespace JCertPreApplication.Domain.Enums
 {
     public enum SubContentName
     {
+        // tat ca cac phan
+        [Description("Tất cả phần")]
+        All,
+
         //chu han
         [Description("Đọc chữ Hán")]
         DocChuHan,

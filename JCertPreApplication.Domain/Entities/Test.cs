@@ -12,7 +12,7 @@
 
         public virtual Lesson Lesson { get; set; } = null!;
         public virtual User CreatedByUser { get; set; } = null!;
-        public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
+        public virtual ICollection<TestQuestion> TestQuestions { get; set; } = new List<TestQuestion>();
         public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
         public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();
     }
