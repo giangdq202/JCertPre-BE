@@ -167,7 +167,7 @@ namespace JCertPreApplication.Application.Tests.Features.Auth
             Assert.False(string.IsNullOrWhiteSpace(accessToken));
             Assert.False(string.IsNullOrWhiteSpace(refreshToken));
             Assert.NotNull(userDto);
-            Assert.Equal(registerModel.Email, userDto.email);
+            Assert.Equal(registerModel.Email, userDto.Email);
 
             _userRepositoryMock.Verify(repo => repo.InsertAsync(It.IsAny<User>()), Times.Once);
             _tokenCacheRepositoryMock.Verify(tc => tc.AddRefreshTokenAsync(It.IsAny<Guid>(), It.IsAny<string>()), Times.Once);

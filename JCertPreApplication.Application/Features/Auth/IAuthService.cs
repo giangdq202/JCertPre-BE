@@ -16,7 +16,7 @@ namespace JCertPreApplication.Application.Features.Auth
         /// <param name="password">User password</param>
         /// <returns>Tuple containing access token, refresh token, and user information</returns>
         /// <exception cref="ApiException">Thrown when credentials are invalid or account is inactive</exception>
-        Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password);
+        Task<(string AccessToken, string RefreshToken, AuthUserDto User)> LoginAsync(string email, string password);
         
         /// <summary>
         /// Registers a new user account
@@ -24,7 +24,7 @@ namespace JCertPreApplication.Application.Features.Auth
         /// <param name="model">Registration data containing user information</param>
         /// <returns>Tuple containing access token, refresh token, and user information</returns>
         /// <exception cref="ApiException">Thrown when email already exists or validation fails</exception>
-        Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model);
+        Task<(string AccessToken, string RefreshToken, AuthUserDto User)> RegisterAsync(RegisterModel model);
         
         /// <summary>
         /// Refreshes expired access token using valid refresh token with token rotation security
@@ -33,7 +33,7 @@ namespace JCertPreApplication.Application.Features.Auth
         /// <param name="refreshToken">Valid refresh token (will be rotated)</param>
         /// <returns>Tuple containing new access token, new refresh token, and user information</returns>
         /// <exception cref="ApiException">Thrown when tokens are invalid, expired, or don't belong to same user</exception>
-        Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string accessToken, string refreshToken);
+        Task<(string AccessToken, string RefreshToken, AuthUserDto User)> RefreshTokenAsync(string accessToken, string refreshToken);
         
         /// <summary>
         /// Authenticates user using Firebase token (social login)
@@ -41,7 +41,7 @@ namespace JCertPreApplication.Application.Features.Auth
         /// <param name="firebaseToken">Valid Firebase authentication token</param>
         /// <returns>Tuple containing access token, refresh token, and user information</returns>
         /// <exception cref="ApiException">Thrown when Firebase token is invalid or authentication fails</exception>
-        Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken);
+        Task<(string AccessToken, string RefreshToken, AuthUserDto User)> FirebaseLoginAsync(string firebaseToken);
         
         /// <summary>
         /// Logs out user by revoking both access and refresh tokens
