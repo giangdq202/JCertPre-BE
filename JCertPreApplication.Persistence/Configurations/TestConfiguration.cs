@@ -1,6 +1,7 @@
 ﻿using JCertPreApplication.Domain.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using JCertPreApplication.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace JCertPreApplication.Persistence.Configurations
 {
@@ -11,34 +12,61 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.ToTable("test");
             builder.HasKey(t => t.testId);
 
-            builder.Property(t => t.title).IsRequired().HasMaxLength(100);
-            builder.Property(t => t.description).IsRequired();
-            builder.Property(t => t.testType).IsRequired().HasMaxLength(50);
-            builder.Property(t => t.durationMinutes).IsRequired();
-            builder.Property(t => t.lessonId);
-            builder.Property(t => t.createdByUserId).IsRequired();
+            builder.Property(t => t.title)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(t => t.description)
+                .IsRequired();
+
+            builder.Property(t => t.testType)
+                .IsRequired()
+                .HasConversion<string>(); 
+
+            builder.Property(t => t.durationMinutes)
+                .IsRequired();
+
+            builder.Property(t => t.lessonId)
+                .IsRequired(false);
+
+            builder.Property(t => t.createdByUserId)
+                .IsRequired();
+
+            builder.Property(t => t.availableFrom)
+                .IsRequired(false);
+
+            builder.Property(t => t.availableTo)
+                .IsRequired(false);
+
+            builder.Property(t => t.maxAttempts)
+                .IsRequired();
 
             builder.HasOne(t => t.Lesson)
-                   .WithMany(q => q.Tests)
-                   .IsRequired(false)
-                   .HasForeignKey(t => t.lessonId).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(q => q.Tests)
+                .HasForeignKey(t => t.lessonId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(t => t.CreatedByUser)
-                   .WithMany(q => q.CreatedTests)
-                   .HasForeignKey(t => t.createdByUserId).OnDelete(DeleteBehavior.NoAction);
+                .WithMany(u => u.CreatedTests)
+                .HasForeignKey(t => t.createdByUserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.NoAction);
 
-            // Add new one-to-many for TestQuestion
             builder.HasMany(t => t.TestQuestions)
-                   .WithOne(tq => tq.Test)
-                   .HasForeignKey(tq => tq.testId);
+                .WithOne(tq => tq.Test)
+                .HasForeignKey(tq => tq.testId);
 
             builder.HasMany(t => t.TestAttempts)
-                   .WithOne(q => q.Test)
-                   .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
+                .WithOne(ta => ta.Test)
+                .HasForeignKey(ta => ta.testId)
+                .OnDelete(DeleteBehavior.NoAction);
+
             builder.HasMany(t => t.StudyPlanItems)
-                   .WithOne(q => q.Test)
-                   .IsRequired(false)
-                   .HasForeignKey(ta => ta.testId).OnDelete(DeleteBehavior.NoAction);
+                .WithOne(spi => spi.Test)
+                .HasForeignKey(spi => spi.testId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -58,14 +58,28 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ITestRepository, TestRepository>();
             services.AddScoped<ISubContentRepository, SubContentRepository>();
             services.AddScoped<ITestQuestionRepository, TestQuestionRepository>();
+            services.AddScoped<ITestAttemptRepository, TestAttemptRepository>();
+            services.AddScoped<IAttemptAnswerRepository, AttemptAnswerRepository>();
             // Infrastructure Services
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddSingleton<IPasswordService, PasswordService>();
 
+            services.AddBackgroundServices();
+
             Console.WriteLine("✅ Database connection configured successfully");
             Console.WriteLine("✅ Redis cache configured successfully");
             Console.WriteLine("✅ Cloudinary service configured successfully");
+            return services;
+        }
+        private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
+        {
+            services.AddSingleton<TestAttemptAutoSubmitService>();
+            services.AddSingleton<ITestAttemptAutoSubmitController>(provider =>
+                provider.GetRequiredService<TestAttemptAutoSubmitService>());
+            services.AddHostedService<TestAttemptAutoSubmitService>(provider =>
+                provider.GetRequiredService<TestAttemptAutoSubmitService>());
+
             return services;
         }
     }

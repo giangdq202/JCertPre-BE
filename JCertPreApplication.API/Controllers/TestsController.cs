@@ -116,7 +116,10 @@ namespace JCertPreApplication.API.Controllers
                 TestType = test.testType,
                 DurationMinutes = test.durationMinutes,
                 LessonId = test.lessonId,
-                CreatedByUserId = test.createdByUserId
+                CreatedByUserId = test.createdByUserId,
+                AvailableFrom = test.availableFrom,
+                AvailableTo = test.availableTo,
+                MaxAttempts = test.maxAttempts
             };
         }
     }
