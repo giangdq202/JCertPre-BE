@@ -4,6 +4,7 @@ using JCertPreApplication.Application.Features.Cache;
 using JCertPreApplication.Application.Features.Choices;
 using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Application.Features.Course;
+using JCertPreApplication.Application.Features.Enrollment;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.Lessons;
 using JCertPreApplication.Application.Features.LiveKit;
@@ -25,6 +26,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<IConversationService, ConversationService>();
             services.AddScoped<ICourseService, CourseService>();
+            services.AddScoped<IEnrollmentService, EnrollmentService>();
             services.AddScoped<IInstructorProfileService, InstructorProfileService>();
             services.AddScoped<IStudentProfileService, StudentProfileService>();
             services.AddScoped<IStudyPlanService, StudyPlanService>();
