@@ -32,9 +32,9 @@ namespace JCertPreApplication.Application.Features.Auth
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password)
+        public async Task<(string AccessToken, string RefreshToken, AuthUserDto User)> LoginAsync(string email, string password)
         {
-            var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
+            var user = await _userRepository.GetByEmailWithRoleAsync(email);
             
             if (user == null || !_passwordService.VerifyPassword(password, user.passwordHash))
             {
@@ -54,10 +54,10 @@ namespace JCertPreApplication.Application.Features.Auth
             return (accessToken, refreshToken, userDto);
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model)
+        public async Task<(string AccessToken, string RefreshToken, AuthUserDto User)> RegisterAsync(RegisterModel model)
         {
             // Check if email already exists
-            var existingUserByEmail = await _userRepository.GetFirstOrDefaultAsync(u => u.email == model.Email);
+            var existingUserByEmail = await _userRepository.GetByEmailWithRoleAsync(model.Email);
             if (existingUserByEmail != null)
             {
                 throw ApiException.BadRequest("EMAIL_ALREADY_EXISTS", $"User with email '{model.Email}' already exists.");
@@ -98,7 +98,7 @@ namespace JCertPreApplication.Application.Features.Auth
             return (accessToken, refreshToken, userDto);
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RefreshTokenAsync(string accessToken, string refreshToken)
+        public async Task<(string AccessToken, string RefreshToken, AuthUserDto User)> RefreshTokenAsync(string accessToken, string refreshToken)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             
@@ -204,7 +204,7 @@ namespace JCertPreApplication.Application.Features.Auth
             }
         }
 
-        public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> FirebaseLoginAsync(string firebaseToken)
+        public async Task<(string AccessToken, string RefreshToken, AuthUserDto User)> FirebaseLoginAsync(string firebaseToken)
         {
             try
             {
@@ -217,7 +217,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 }
 
                 // Check if user exists in database
-                var existingUser = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
+                var existingUser = await _userRepository.GetByEmailWithRoleAsync(email);
 
                 User user;
                 if (existingUser == null)
@@ -292,7 +292,7 @@ namespace JCertPreApplication.Application.Features.Auth
         /// </summary>
         /// <param name="user">The authenticated user entity</param>
         /// <returns>Tuple containing access token, refresh token, and user DTO</returns>
-        private (string AccessToken, string RefreshToken, AppUserDto UserDto) GenerateTokensAndUserDto(User user)
+        private (string AccessToken, string RefreshToken, AuthUserDto UserDto) GenerateTokensAndUserDto(User user)
         {
             var defaultRole = user.Role?.roleName ?? "STUDENT";
             var jti = Guid.NewGuid().ToString(); // JWT ID for token revocation
@@ -321,12 +321,15 @@ namespace JCertPreApplication.Application.Features.Auth
 
             var refreshTokenString = GenerateRefreshTokenAsJwt(user.userId);
 
-            var userDto = new AppUserDto
+            var userDto = new AuthUserDto
             {
                 Id = user.userId,
-                fullName = user.fullName,
-                phone = user.phone,
-                email = user.email
+                FullName = user.fullName,
+                Email = user.email,
+                Phone = user.phone,
+                AvatarUrl = user.avatarUrl,
+                Credit = user.credit,
+                RoleName = defaultRole
             };
 
             return (accessTokenString, refreshTokenString, userDto);

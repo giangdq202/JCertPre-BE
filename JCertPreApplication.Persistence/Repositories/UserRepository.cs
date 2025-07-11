@@ -28,6 +28,13 @@ namespace JCertPreApplication.Persistence.Repositories
             return await _dbSet.FirstOrDefaultAsync(u => u.email == email);
         }
 
+        public async Task<User?> GetByEmailWithRoleAsync(string email)
+        {
+            return await _dbSet
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.email == email);
+        }
+
         public async Task<User?> GetWithRolesAsync(Guid userId, CancellationToken cancellationToken = default)
         {
             return await _dbSet.Include(u => u.Role)
