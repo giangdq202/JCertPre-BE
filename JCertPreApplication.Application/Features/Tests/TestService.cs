@@ -85,7 +85,6 @@ namespace JCertPreApplication.Application.Features.Tests
                 if (lesson == null)
                     throw ApiException.NotFound("Lesson", lessonId);
 
-                // Check if a test already exists for this lesson
                 var existingTest = await _testRepository.GetFirstOrDefaultAsync(t => t.lessonId == lessonId);
                 if (existingTest != null)
                     throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
@@ -98,7 +97,10 @@ namespace JCertPreApplication.Application.Features.Tests
                     testType = dto.TestType,
                     durationMinutes = dto.DurationMinutes,
                     lessonId = lessonId,
-                    createdByUserId = userId
+                    createdByUserId = userId,
+                    availableFrom = dto.AvailableFrom,
+                    availableTo = dto.AvailableTo,
+                    maxAttempts = dto.MaxAttempts
                 };
 
                 await _testRepository.InsertAsync(test);
@@ -131,10 +133,16 @@ namespace JCertPreApplication.Application.Features.Tests
                     test.title = dto.Title;
                 if (!string.IsNullOrEmpty(dto.Description))
                     test.description = dto.Description;
-                if (!string.IsNullOrEmpty(dto.TestType))
-                    test.testType = dto.TestType;
+                if (dto.TestType.HasValue)
+                    test.testType = dto.TestType.Value;
                 if (dto.DurationMinutes.HasValue)
                     test.durationMinutes = dto.DurationMinutes.Value;
+                if (dto.AvailableFrom.HasValue)
+                    test.availableFrom = dto.AvailableFrom.Value;
+                if (dto.AvailableTo.HasValue)
+                    test.availableTo = dto.AvailableTo.Value;
+                if (dto.MaxAttempts.HasValue)
+                    test.maxAttempts = dto.MaxAttempts.Value;
 
                 await _testRepository.UpdateAsync(test);
                 await _testRepository.SaveChangesAsync();

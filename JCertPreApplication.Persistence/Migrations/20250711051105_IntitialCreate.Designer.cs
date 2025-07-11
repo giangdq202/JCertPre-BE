@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    [Migration("20250710061623_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250711051105_IntitialCreate")]
+    partial class IntitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -691,6 +691,12 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime?>("availableFrom")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("availableTo")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("createdByUserId")
                         .HasColumnType("uuid");
 
@@ -704,10 +710,12 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<Guid?>("lessonId")
                         .HasColumnType("uuid");
 
+                    b.Property<int>("maxAttempts")
+                        .HasColumnType("integer");
+
                     b.Property<string>("testType")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                        .HasColumnType("text");
 
                     b.Property<string>("title")
                         .IsRequired()
@@ -729,28 +737,35 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<int>("attemptNumber")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("endTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("isPass")
+                    b.Property<bool?>("isPass")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("languageKnowledgeScore")
+                    b.Property<int?>("languageKnowledgeScore")
                         .HasColumnType("integer");
 
-                    b.Property<int>("listeningScore")
+                    b.Property<int?>("listeningScore")
                         .HasColumnType("integer");
 
-                    b.Property<int>("readingScore")
+                    b.Property<int?>("readingScore")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("startTime")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<Guid>("testId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("totalScore")
+                    b.Property<int?>("totalScore")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("userId")
