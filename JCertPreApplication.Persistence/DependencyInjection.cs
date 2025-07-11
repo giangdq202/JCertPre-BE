@@ -46,6 +46,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IMessageRepository, MessageRepository>();
             services.AddScoped<ITokenCacheRepository, TokenCacheRepository>();
             services.AddScoped<ICourseRepository, CourseRepository>();
+            services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
             services.AddScoped<IInstructorProfileRepository, InstructorProfileRepository>();
             services.AddScoped<IStudentProfileRepository, StudentProfileRepository>();
             services.AddScoped<IStudyPlanRepository, StudyPlanRepository>();
