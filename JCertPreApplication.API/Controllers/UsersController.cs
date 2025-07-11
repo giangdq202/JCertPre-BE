@@ -1,164 +1,102 @@
+using JCertPreApplication.API.Common;
 using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Features.Users;
-using JCertPreApplication.API.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Handles user management operations including retrieval, update, and deletion.
+    /// </summary>
+    [Route("api/users")]
     [ApiController]
-    [Route("api/[controller]")]
+    [Tags("User Management")]
+    [Produces("application/json")]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
 
         public UsersController(IUserService userService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
         /// <summary>
-        /// Get all users with pagination and filtering
+        /// Retrieves all users with pagination and filtering capabilities.
         /// </summary>
-        /// <param name="parameters">Query parameters for pagination and filtering</param>
-        /// <returns>Paginated list of users</returns>
+        /// <param name="parameters">Query parameters for pagination and filtering.</param>
+        /// <returns>Paginated list of users with their basic information.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAllUsers([FromQuery] UserQueryParameters parameters)
         {
-            try
-            {
-                var result = await _userService.GetAllUsersAsync(parameters);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiErrorResponse
-                {
-                    Message = "An error occurred while retrieving users",
-                    Details = ex.Message
-                });
-            }
+            var result = await _userService.GetAllUsersAsync(parameters);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Get user by ID
+        /// Retrieves a specific user by their unique identifier.
         /// </summary>
-        /// <param name="userId">User ID</param>
-        /// <returns>User details</returns>
+        /// <param name="userId">The unique identifier of the user.</param>
+        /// <returns>User details including profile information.</returns>
         [HttpGet("{userId:guid}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
-            try
-            {
-                var user = await _userService.GetUserByIdAsync(userId);
-                if (user == null)
-                {
-                    return NotFound(new ApiErrorResponse
-                    {
-                        Message = $"User with ID {userId} not found"
-                    });
-                }
-
-                return Ok(user);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiErrorResponse
-                {
-                    Message = "An error occurred while retrieving the user",
-                    Details = ex.Message
-                });
-            }
-        }
-
-        /// <summary>
-        /// Update user information
-        /// </summary>
-        /// <param name="userId">User ID</param>
-        /// <param name="updateUserDto">Updated user information</param>
-        /// <returns>Updated user details</returns>
-        [HttpPut("{userId:guid}")]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserDto updateUserDto)
-        {
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-
-                var updatedUser = await _userService.UpdateUserAsync(userId, updateUserDto);
-                return Ok(updatedUser);
-            }
-            catch (ApplicationException ex) when (ex.Message.Contains("not found"))
+            var user = await _userService.GetUserByIdAsync(userId);
+            if (user == null)
             {
                 return NotFound(new ApiErrorResponse
                 {
-                    Message = ex.Message
+                    Message = $"User with ID {userId} not found"
                 });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiErrorResponse
-                {
-                    Message = "An error occurred while updating the user",
-                    Details = ex.Message
-                });
-            }
+
+            return Ok(user);
         }
 
         /// <summary>
-        /// Delete user (soft delete)
+        /// Updates user profile information.
         /// </summary>
-        /// <param name="userId">User ID</param>
-        /// <returns>Success status</returns>
+        /// <param name="userId">The unique identifier of the user to update.</param>
+        /// <param name="updateUserDto">The updated user information.</param>
+        /// <returns>Updated user profile with current information.</returns>
+        [HttpPut("{userId:guid}")]
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserDto updateUserDto)
+        {
+            var updatedUser = await _userService.UpdateUserAsync(userId, updateUserDto);
+            return Ok(updatedUser);
+        }
+
+        /// <summary>
+        /// Deactivates a user account (soft delete).
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user to deactivate.</param>
+        /// <returns>Confirmation of successful deactivation.</returns>
         [HttpDelete("{userId:guid}")]
         public async Task<IActionResult> DeleteUser(Guid userId)
         {
-            try
+            var result = await _userService.DeleteUserAsync(userId);
+            if (!result)
             {
-                var result = await _userService.DeleteUserAsync(userId);
-                if (!result)
+                return NotFound(new ApiErrorResponse
                 {
-                    return NotFound(new ApiErrorResponse
-                    {
-                        Message = $"User with ID {userId} not found"
-                    });
-                }
-
-                return NoContent();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiErrorResponse
-                {
-                    Message = "An error occurred while deleting the user",
-                    Details = ex.Message
+                    Message = $"User with ID {userId} not found"
                 });
             }
+
+            return NoContent();
         }
 
         /// <summary>
-        /// Check if user exists
+        /// Verifies if a user exists in the system.
         /// </summary>
-        /// <param name="userId">User ID</param>
-        /// <returns>Boolean indicating if user exists</returns>
+        /// <param name="userId">The unique identifier of the user to check.</param>
+        /// <returns>HTTP 200 if user exists, HTTP 404 if not found.</returns>
         [HttpHead("{userId:guid}")]
         public async Task<IActionResult> UserExists(Guid userId)
         {
-            try
-            {
-                var exists = await _userService.UserExistsAsync(userId);
-                return exists ? Ok() : NotFound();
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new ApiErrorResponse
-                {
-                    Message = "An error occurred while checking user existence",
-                    Details = ex.Message
-                });
-            }
+            var exists = await _userService.UserExistsAsync(userId);
+            return exists ? Ok() : NotFound();
         }
     }
 } 
