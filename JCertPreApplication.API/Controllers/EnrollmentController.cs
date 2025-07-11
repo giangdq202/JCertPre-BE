@@ -22,25 +22,48 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Enroll current user in a course
+        /// Enroll a user in a course (Admin function)
         /// </summary>
-        /// <param name="request">Enrollment request containing course ID</param>
+        /// <param name="request">Enrollment request containing user ID and course ID</param>
         /// <returns>Enrollment details</returns>
         [HttpPost("enroll")]
         public async Task<ActionResult<EnrollmentResponseDto>> EnrollInCourse([FromBody] EnrollmentRequestDto request)
         {
             try
             {
-                var userId = GetCurrentUserId();
-                var result = await _enrollmentService.EnrollUserAsync(userId, request.CourseId);
+                var result = await _enrollmentService.EnrollUserAsync(request.UserId, request.CourseId);
                 
-                _logger.LogInformation("User {UserId} successfully enrolled in course {CourseId}", userId, request.CourseId);
+                _logger.LogInformation("User {UserId} successfully enrolled in course {CourseId}", request.UserId, request.CourseId);
                 
                 return Ok(result);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error enrolling user in course {CourseId}", request.CourseId);
+                _logger.LogError(ex, "Error enrolling user {UserId} in course {CourseId}", request.UserId, request.CourseId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Enroll current user in a course (Self enrollment)
+        /// </summary>
+        /// <param name="courseId">Course ID to enroll in</param>
+        /// <returns>Enrollment details</returns>
+        [HttpPost("enroll-self/{courseId}")]
+        public async Task<ActionResult<EnrollmentResponseDto>> EnrollSelfInCourse(Guid courseId)
+        {
+            try
+            {
+                var userId = GetCurrentUserId();
+                var result = await _enrollmentService.EnrollUserAsync(userId, courseId);
+                
+                _logger.LogInformation("User {UserId} successfully enrolled in course {CourseId}", userId, courseId);
+                
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error enrolling user {UserId} in course {CourseId}", GetCurrentUserId(), courseId);
                 throw;
             }
         }

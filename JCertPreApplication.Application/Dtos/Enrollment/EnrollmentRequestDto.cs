@@ -6,5 +6,8 @@ namespace JCertPreApplication.Application.Dtos.Enrollment
     {
         [Required]
         public Guid CourseId { get; set; }
+        
+        [Required]
+        public Guid UserId { get; set; }
     }
 } 
