@@ -13,6 +13,7 @@ using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
 using JCertPreApplication.Application.Features.Tests;
+using JCertPreApplication.Application.Features.Users;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JCertPreApplication.Application
@@ -38,6 +39,10 @@ namespace JCertPreApplication.Application
             services.AddScoped<ILiveKitService, LiveKitService>();
             services.AddScoped<ISubContentService, SubContentService>();
             services.AddScoped<ITestQuestionService, TestQuestionService>();
+            services.AddScoped<IUserService, UserService>();
+
+            // Add AutoMapper
+            services.AddAutoMapper(typeof(DependencyInjection).Assembly);
 
             return services;
         }

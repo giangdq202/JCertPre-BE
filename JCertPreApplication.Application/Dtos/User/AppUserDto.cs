@@ -1,4 +1,6 @@
-﻿namespace JCertPreApplication.Application.Dtos.User
+﻿using JCertPreApplication.Domain.Enums;
+
+namespace JCertPreApplication.Application.Dtos.User
 {
     /// <summary>
     /// 👤 User information data transfer object.
@@ -32,5 +34,40 @@
         /// </summary>
         /// <example>+84-90-123-4567</example>
         public string? phone { get; set; }
+        
+        /// <summary>
+        /// User's avatar URL (optional).
+        /// </summary>
+        public string? avatarUrl { get; set; }
+        
+        /// <summary>
+        /// User's credit amount.
+        /// </summary>
+        public int credit { get; set; }
+        
+        /// <summary>
+        /// User account creation date.
+        /// </summary>
+        public DateTime createdAt { get; set; }
+        
+        /// <summary>
+        /// User's last login date.
+        /// </summary>
+        public DateTime lastLogin { get; set; }
+        
+        /// <summary>
+        /// User account status.
+        /// </summary>
+        public UserStatus status { get; set; }
+        
+        /// <summary>
+        /// User's role ID.
+        /// </summary>
+        public Guid roleId { get; set; }
+        
+        /// <summary>
+        /// User's role name.
+        /// </summary>
+        public string? roleName { get; set; }
     }
 }
