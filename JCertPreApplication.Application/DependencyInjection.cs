@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Features.AttemptAnswers;
 using JCertPreApplication.Application.Features.Auth;
 using JCertPreApplication.Application.Features.Cache;
 using JCertPreApplication.Application.Features.Choices;
@@ -12,6 +13,7 @@ using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
+using JCertPreApplication.Application.Features.TestAttempts;
 using JCertPreApplication.Application.Features.Tests;
 using JCertPreApplication.Application.Features.Users;
 using Microsoft.Extensions.DependencyInjection;
@@ -40,6 +42,8 @@ namespace JCertPreApplication.Application
             services.AddScoped<ISubContentService, SubContentService>();
             services.AddScoped<ITestQuestionService, TestQuestionService>();
             services.AddScoped<IUserService, UserService>();
+            services.AddScoped<ITestAttemptService, TestAttemptService>();
+            services.AddScoped<IAttemptAnswerService, AttemptAnswerService>();
 
             // Add AutoMapper
             services.AddAutoMapper(typeof(DependencyInjection).Assembly);

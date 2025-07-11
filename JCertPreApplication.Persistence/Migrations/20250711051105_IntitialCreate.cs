@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace JCertPreApplication.Persistence.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class IntitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -430,10 +430,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     testId = table.Column<Guid>(type: "uuid", nullable: false),
                     title = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     description = table.Column<string>(type: "text", nullable: false),
-                    testType = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    testType = table.Column<string>(type: "text", nullable: false),
                     durationMinutes = table.Column<int>(type: "integer", nullable: false),
                     lessonId = table.Column<Guid>(type: "uuid", nullable: true),
-                    createdByUserId = table.Column<Guid>(type: "uuid", nullable: false)
+                    createdByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    availableFrom = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    availableTo = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    maxAttempts = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -530,11 +533,13 @@ namespace JCertPreApplication.Persistence.Migrations
                     testId = table.Column<Guid>(type: "uuid", nullable: false),
                     startTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     endTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    totalScore = table.Column<int>(type: "integer", nullable: false),
-                    languageKnowledgeScore = table.Column<int>(type: "integer", nullable: false),
-                    readingScore = table.Column<int>(type: "integer", nullable: false),
-                    listeningScore = table.Column<int>(type: "integer", nullable: false),
-                    isPass = table.Column<bool>(type: "boolean", nullable: false)
+                    attemptNumber = table.Column<int>(type: "integer", nullable: false),
+                    status = table.Column<string>(type: "text", nullable: false),
+                    totalScore = table.Column<int>(type: "integer", nullable: true),
+                    languageKnowledgeScore = table.Column<int>(type: "integer", nullable: true),
+                    readingScore = table.Column<int>(type: "integer", nullable: true),
+                    listeningScore = table.Column<int>(type: "integer", nullable: true),
+                    isPass = table.Column<bool>(type: "boolean", nullable: true)
                 },
                 constraints: table =>
                 {
