@@ -1,154 +1,114 @@
 using JCertPreApplication.Application.Dtos.Enrollment;
 using JCertPreApplication.Application.Features.Enrollment;
-using JCertPreApplication.API.Common;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Handles course enrollment operations, including user enrollment, enrollment status checks, and enrollment management.
+    /// </summary>
+    [Route("api/enrollment")]
     [ApiController]
-    [Route("api/[controller]")]
-    // [Authorize]
+    [Tags("Enrollment")]
+    [Produces("application/json")]
     public class EnrollmentController : ControllerBase
     {
         private readonly IEnrollmentService _enrollmentService;
-        private readonly ILogger<EnrollmentController> _logger;
 
-        public EnrollmentController(IEnrollmentService enrollmentService, ILogger<EnrollmentController> logger)
+        public EnrollmentController(IEnrollmentService enrollmentService)
         {
-            _enrollmentService = enrollmentService;
-            _logger = logger;
+            _enrollmentService = enrollmentService ?? throw new ArgumentNullException(nameof(enrollmentService));
         }
 
         /// <summary>
-        /// Enroll a user in a course (Admin function)
+        /// Enrolls a user in a course using provided user ID and course ID.
         /// </summary>
-        /// <param name="request">Enrollment request containing user ID and course ID</param>
-        /// <returns>Enrollment details</returns>
+        /// <param name="request">Enrollment request containing user ID and course ID.</param>
+        /// <returns>Enrollment details including transaction information.</returns>
         [HttpPost("enroll")]
-        public async Task<ActionResult<EnrollmentResponseDto>> EnrollInCourse([FromBody] EnrollmentRequestDto request)
+        public async Task<IActionResult> EnrollInCourse([FromBody] EnrollmentRequestDto request)
         {
-            try
-            {
-                var result = await _enrollmentService.EnrollUserAsync(request.UserId, request.CourseId);
-                
-                _logger.LogInformation("User {UserId} successfully enrolled in course {CourseId}", request.UserId, request.CourseId);
-                
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error enrolling user {UserId} in course {CourseId}", request.UserId, request.CourseId);
-                throw;
-            }
+            var result = await _enrollmentService.EnrollUserAsync(request.UserId, request.CourseId);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Enroll current user in a course (Self enrollment)
+        /// Enrolls the current authenticated user in a course.
         /// </summary>
-        /// <param name="courseId">Course ID to enroll in</param>
-        /// <returns>Enrollment details</returns>
-        [HttpPost("enroll-self/{courseId}")]
-        public async Task<ActionResult<EnrollmentResponseDto>> EnrollSelfInCourse(Guid courseId)
+        /// <param name="request">Self enrollment request containing course ID.</param>
+        /// <returns>Enrollment details including transaction information.</returns>
+        [HttpPost("enroll-self")]
+        public async Task<IActionResult> EnrollSelfInCourse([FromBody] SelfEnrollmentRequestDto request)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-                var result = await _enrollmentService.EnrollUserAsync(userId, courseId);
-                
-                _logger.LogInformation("User {UserId} successfully enrolled in course {CourseId}", userId, courseId);
-                
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error enrolling user {UserId} in course {CourseId}", GetCurrentUserId(), courseId);
-                throw;
-            }
+            var userId = GetCurrentUserId();
+            var result = await _enrollmentService.EnrollUserAsync(userId, request.CourseId);
+            return Ok(result);
         }
 
         /// <summary>
-        /// Check if current user is enrolled in a specific course
+        /// Checks if the current user is enrolled in a specific course.
         /// </summary>
-        /// <param name="courseId">Course ID to check</param>
-        /// <returns>True if enrolled, false otherwise</returns>
+        /// <param name="courseId">The course ID to check enrollment status for.</param>
+        /// <returns>The enrollment status result.</returns>
         [HttpGet("check/{courseId}")]
-        public async Task<ActionResult<bool>> CheckEnrollmentStatus(Guid courseId)
+        public async Task<IActionResult> CheckEnrollmentStatus(Guid courseId)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-                var isEnrolled = await _enrollmentService.IsUserEnrolledAsync(userId, courseId);
-                
-                return Ok(isEnrolled);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error checking enrollment status for course {CourseId}", courseId);
-                throw;
-            }
+            var userId = GetCurrentUserId();
+            var isEnrolled = await _enrollmentService.IsUserEnrolledAsync(userId, courseId);
+            return Ok(new { 
+                isEnrolled = isEnrolled,
+                message = isEnrolled ? "User is enrolled in this course" : "User is not enrolled in this course"
+            });
         }
 
         /// <summary>
-        /// Get all enrollments for current user
+        /// Retrieves all enrollments for the current authenticated user.
         /// </summary>
-        /// <returns>List of user enrollments</returns>
+        /// <returns>List of user enrollments with course details.</returns>
         [HttpGet("my-enrollments")]
-        public async Task<ActionResult<IEnumerable<EnrollmentResponseDto>>> GetMyEnrollments()
+        public async Task<IActionResult> GetMyEnrollments()
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-                var enrollments = await _enrollmentService.GetUserEnrollmentsAsync(userId);
-                
-                return Ok(enrollments);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error getting enrollments for user");
-                throw;
-            }
+            var userId = GetCurrentUserId();
+            var enrollments = await _enrollmentService.GetUserEnrollmentsAsync(userId);
+            return Ok(enrollments);
         }
 
         /// <summary>
-        /// Unenroll current user from a course
+        /// Unenrolls the current user from a course.
         /// </summary>
-        /// <param name="courseId">Course ID to unenroll from</param>
-        /// <returns>Success status</returns>
+        /// <param name="courseId">The course ID to unenroll from.</param>
+        /// <returns>The unenrollment result.</returns>
         [HttpDelete("unenroll/{courseId}")]
-        public async Task<ActionResult<bool>> UnenrollFromCourse(Guid courseId)
+        public async Task<IActionResult> UnenrollFromCourse(Guid courseId)
         {
-            try
+            var userId = GetCurrentUserId();
+            var result = await _enrollmentService.UnenrollUserAsync(userId, courseId);
+            
+            if (result)
             {
-                var userId = GetCurrentUserId();
-                var result = await _enrollmentService.UnenrollUserAsync(userId, courseId);
-                
-                if (result)
-                {
-                    _logger.LogInformation("User {UserId} successfully unenrolled from course {CourseId}", userId, courseId);
-                    return Ok(new { success = true, message = "Successfully unenrolled from course" });
-                }
-                else
-                {
-                    return NotFound(new { success = false, message = "Enrollment not found" });
-                }
+                return Ok(new { success = true, message = "Successfully unenrolled from course" });
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError(ex, "Error unenrolling user from course {CourseId}", courseId);
-                throw;
+                return NotFound(new { success = false, message = "Enrollment not found" });
             }
         }
 
         private Guid GetCurrentUserId()
         {
+            // For development environment, return a mock user ID
+            // TODO: In production, uncomment the authentication logic below
+            return Guid.Parse("11111111-1111-1111-1111-111111111111");
+            
+            /*
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
                 throw new UnauthorizedAccessException("Invalid user ID in token");
             }
             return userId;
+            */
         }
     }
 } 
