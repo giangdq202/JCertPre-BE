@@ -55,13 +55,14 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Updates user profile information.
+        /// Updates user profile information including avatar upload.
         /// </summary>
         /// <param name="userId">The unique identifier of the user to update.</param>
         /// <param name="updateUserDto">The updated user information.</param>
         /// <returns>Updated user profile with current information.</returns>
         [HttpPut("{userId:guid}")]
-        public async Task<IActionResult> UpdateUser(Guid userId, [FromBody] UpdateUserDto updateUserDto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateUser(Guid userId, [FromForm] UpdateUserDto updateUserDto)
         {
             var updatedUser = await _userService.UpdateUserAsync(userId, updateUserDto);
             return Ok(updatedUser);
@@ -85,6 +86,21 @@ namespace JCertPreApplication.API.Controllers
             }
 
             return NoContent();
+        }
+
+        /// <summary>
+        /// Updates user avatar by uploading a new image file.
+        /// </summary>
+        /// <param name="userId">The unique identifier of the user to update.</param>
+        /// <param name="avatarFile">The new avatar image file.</param>
+        /// <returns>Updated user profile with new avatar URL.</returns>
+        [HttpPut("{userId:guid}/avatar")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateUserAvatar(Guid userId, IFormFile avatarFile)
+        {
+            var updateDto = new UpdateUserDto { AvatarFile = avatarFile };
+            var updatedUser = await _userService.UpdateUserAsync(userId, updateDto);
+            return Ok(updatedUser);
         }
 
         /// <summary>

@@ -13,11 +13,13 @@ namespace JCertPreApplication.Application.Features.Users
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper)
+        public UserService(IUserRepository userRepository, IMapper mapper, ICloudinaryService cloudinaryService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<Pagination<AppUserDto>> GetAllUsersAsync(UserQueryParameters parameters)
@@ -96,9 +98,32 @@ namespace JCertPreApplication.Application.Features.Users
                 user.phone = updateUserDto.Phone;
             }
 
-            if (!string.IsNullOrWhiteSpace(updateUserDto.AvatarUrl))
+            // Handle avatar file upload
+            if (updateUserDto.AvatarFile != null)
             {
-                user.avatarUrl = updateUserDto.AvatarUrl;
+                // Delete old avatar if exists
+                if (!string.IsNullOrWhiteSpace(user.avatarUrl))
+                {
+                    try
+                    {
+                        // Extract public ID from existing avatar URL
+                        var oldPublicId = ExtractPublicIdFromUrl(user.avatarUrl);
+                        if (!string.IsNullOrWhiteSpace(oldPublicId))
+                        {
+                            await _cloudinaryService.DeleteImageAsync(oldPublicId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log warning but don't fail the update if old image deletion fails
+                        // This could happen if the image was already deleted or doesn't exist
+                        System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {ex.Message}");
+                    }
+                }
+
+                // Upload new avatar
+                var uploadResult = await _cloudinaryService.UploadImageAsync(updateUserDto.AvatarFile);
+                user.avatarUrl = uploadResult.SecureUrl.ToString();
             }
 
             await _userRepository.UpdateAsync(user);
@@ -133,6 +158,43 @@ namespace JCertPreApplication.Application.Features.Users
         {
             var user = await _userRepository.GetByIdAsync(userId);
             return user != null;
+        }
+
+        private static string? ExtractPublicIdFromUrl(string cloudinaryUrl)
+        {
+            if (string.IsNullOrWhiteSpace(cloudinaryUrl))
+                return null;
+
+            try
+            {
+                // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{public_id}.{format}
+                // Example: https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg
+                
+                var uri = new Uri(cloudinaryUrl);
+                var pathSegments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                
+                // Find the upload segment
+                var uploadIndex = Array.IndexOf(pathSegments, "upload");
+                if (uploadIndex == -1 || uploadIndex >= pathSegments.Length - 1)
+                    return null;
+
+                // Get everything after upload/ as the public ID (may include folders and version)
+                var publicIdParts = pathSegments.Skip(uploadIndex + 1).ToArray();
+                var publicIdWithExtension = string.Join("/", publicIdParts);
+                
+                // Remove file extension
+                var lastDotIndex = publicIdWithExtension.LastIndexOf('.');
+                if (lastDotIndex > 0)
+                {
+                    return publicIdWithExtension.Substring(0, lastDotIndex);
+                }
+                
+                return publicIdWithExtension;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 } 

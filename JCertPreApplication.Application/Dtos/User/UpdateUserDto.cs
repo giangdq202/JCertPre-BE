@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Dtos.User
 {
@@ -10,7 +11,6 @@ namespace JCertPreApplication.Application.Dtos.User
         [Phone(ErrorMessage = "Invalid phone number format")]
         public string? Phone { get; set; }
 
-        [Url(ErrorMessage = "Invalid URL format")]
-        public string? AvatarUrl { get; set; }
+        public IFormFile? AvatarFile { get; set; }
     }
 } 
