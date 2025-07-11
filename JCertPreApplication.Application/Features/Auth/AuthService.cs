@@ -34,7 +34,7 @@ namespace JCertPreApplication.Application.Features.Auth
 
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> LoginAsync(string email, string password)
         {
-            var user = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
+            var user = await _userRepository.GetByEmailWithRoleAsync(email);
             
             if (user == null || !_passwordService.VerifyPassword(password, user.passwordHash))
             {
@@ -57,7 +57,7 @@ namespace JCertPreApplication.Application.Features.Auth
         public async Task<(string AccessToken, string RefreshToken, AppUserDto User)> RegisterAsync(RegisterModel model)
         {
             // Check if email already exists
-            var existingUserByEmail = await _userRepository.GetFirstOrDefaultAsync(u => u.email == model.Email);
+            var existingUserByEmail = await _userRepository.GetByEmailWithRoleAsync(model.Email);
             if (existingUserByEmail != null)
             {
                 throw ApiException.BadRequest("EMAIL_ALREADY_EXISTS", $"User with email '{model.Email}' already exists.");
@@ -217,7 +217,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 }
 
                 // Check if user exists in database
-                var existingUser = await _userRepository.GetFirstOrDefaultAsync(u => u.email == email);
+                var existingUser = await _userRepository.GetByEmailWithRoleAsync(email);
 
                 User user;
                 if (existingUser == null)
@@ -326,7 +326,14 @@ namespace JCertPreApplication.Application.Features.Auth
                 Id = user.userId,
                 fullName = user.fullName,
                 phone = user.phone,
-                email = user.email
+                email = user.email,
+                avatarUrl = user.avatarUrl,
+                credit = user.credit,
+                createdAt = user.createdAt,
+                lastLogin = user.lastLogin,
+                status = user.status,
+                roleId = user.roleId,
+                roleName = defaultRole
             };
 
             return (accessTokenString, refreshTokenString, userDto);
