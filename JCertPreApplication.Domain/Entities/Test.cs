@@ -14,6 +14,7 @@ namespace JCertPreApplication.Domain.Entities
         public DateTime? availableFrom { get; set; } // New
         public DateTime? availableTo { get; set; }   // New
         public int maxAttempts { get; set; }        // New
+        public TestStatus status { get; set; } // <-- Added
 
         public virtual Lesson Lesson { get; set; } = null!;
         public virtual User CreatedByUser { get; set; } = null!;

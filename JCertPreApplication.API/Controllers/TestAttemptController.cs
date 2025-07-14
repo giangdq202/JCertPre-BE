@@ -70,4 +70,22 @@ public class TestAttemptController : ControllerBase
             throw;
         }
     }
+
+    /// <summary>
+    /// Update the status of a test attempt.
+    /// </summary>
+    [HttpPut("update-status/{attemptId}")]
+    public async Task<IActionResult> UpdateStatus(Guid attemptId, [FromBody] TestAttemptStatus status)
+    {
+        try
+        {
+            var result = await _service.UpdateStatusAsync(attemptId, status);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to update status for test attempt {AttemptId}", attemptId);
+            throw;
+        }
+    }
 }

@@ -52,7 +52,9 @@ public class TestAttemptService : ITestAttemptService
                 throw ApiException.BadRequest("TEST_NOT_AVAILABLE", "Test is not yet available.");
             if (test.availableTo.HasValue && now > test.availableTo.Value)
                 throw ApiException.BadRequest("TEST_EXPIRED", "Test is no longer available.");
-
+            if (test.status == TestStatus.Close)
+                throw ApiException.BadRequest("TEST_CLOSED", "Test is closed.");
+          
             // Check max attempts
             var userAttempts = await _testAttemptRepository.GetAllAsync(a => a.testId == dto.TestId && a.userId == dto.UserId);
             if (userAttempts.Count >= test.maxAttempts)
@@ -86,9 +88,9 @@ public class TestAttemptService : ITestAttemptService
             await _testAttemptRepository.InsertAsync(attempt);
             await _testAttemptRepository.SaveChangesAsync();
 
-            // Start monitoring AFTER successful creation
-            _autoSubmitController.StartMonitoring();
-            _logger.LogInformation("Started test attempt {AttemptId} for user {UserId} and activated auto-submit monitoring",
+            // Register attempt for auto-submission monitoring
+            _autoSubmitController.AddAttempt(attempt.attemptId, attempt.endTime);
+            _logger.LogInformation("Started test attempt {AttemptId} for user {UserId} and registered for auto-submit monitoring",
                 attempt.attemptId, attempt.userId);
 
             return MapToDto(attempt);
@@ -113,6 +115,10 @@ public class TestAttemptService : ITestAttemptService
             var attempt = await _testAttemptRepository.GetByIdAsync(dto.AttemptId);
             if (attempt == null)
                 throw ApiException.NotFound("TestAttempt", dto.AttemptId);
+
+            // Prevent submission if status is Suspended
+            if (attempt.status == TestAttemptStatus.Suspended)
+                throw ApiException.BadRequest("ATTEMPT_SUSPENDED", "Cannot submit a suspended test attempt.");
 
             var test = await _testRepository.GetByIdAsync(attempt.testId);
             if (test == null)
@@ -175,6 +181,32 @@ public class TestAttemptService : ITestAttemptService
         catch (Exception ex)
         {
             throw ApiException.InternalServerError("GET_ATTEMPTS_ERROR", ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Update the status of a test attempt.
+    /// </summary>
+    public async Task<TestAttemptDto> UpdateStatusAsync(Guid attemptId, TestAttemptStatus status)
+    {
+        try
+        {
+            var attempt = await _testAttemptRepository.GetByIdAsync(attemptId);
+            if (attempt == null)
+                throw ApiException.NotFound("TestAttempt", attemptId);
+
+            attempt.status = status;
+            await _testAttemptRepository.UpdateAsync(attempt);
+            await _testAttemptRepository.SaveChangesAsync();
+
+            _logger.LogInformation("Updated status for test attempt {AttemptId} to {Status}", attemptId, status);
+
+            return MapToDto(attempt);
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("UPDATE_ATTEMPT_STATUS_ERROR", ex.Message);
         }
     }
 

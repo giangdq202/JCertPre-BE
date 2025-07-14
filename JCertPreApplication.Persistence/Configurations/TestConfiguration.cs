@@ -21,7 +21,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.Property(t => t.testType)
                 .IsRequired()
-                .HasConversion<string>(); 
+                .HasConversion<string>();
 
             builder.Property(t => t.durationMinutes)
                 .IsRequired();
@@ -41,6 +41,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.maxAttempts)
                 .IsRequired();
 
+            builder.Property(t => t.status)
+                .IsRequired()
+                .HasConversion<string>(); // <-- Added
+
+            // Relationships...
             builder.HasOne(t => t.Lesson)
                 .WithMany(q => q.Tests)
                 .HasForeignKey(t => t.lessonId)

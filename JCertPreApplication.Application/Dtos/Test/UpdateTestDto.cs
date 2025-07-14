@@ -12,5 +12,6 @@ namespace JCertPreApplication.Application.Dtos.Test
         public DateTime? AvailableFrom { get; set; }
         public DateTime? AvailableTo { get; set; }
         public int? MaxAttempts { get; set; }
+        public TestStatus? Status { get; set; } // <-- Added
     }
 }
