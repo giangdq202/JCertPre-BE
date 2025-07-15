@@ -8,7 +8,7 @@ namespace JCertPreApplication.Persistence.Configurations
 {
     public void Configure(EntityTypeBuilder<Question> builder)
     {
-        builder.ToTable("Questions");
+        builder.ToTable("questions");
         builder.HasKey(q => q.questionId);
 
         builder.Property(q => q.SubContentId)
@@ -24,7 +24,12 @@ namespace JCertPreApplication.Persistence.Configurations
         builder.Property(q => q.explanation)
             .IsRequired();
 
-        builder.Property(q => q.points)
+        builder.Property(q => q.difficulty)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(10);
+
+            builder.Property(q => q.points)
             .IsRequired();
 
         builder.HasOne(q => q.SubContent)

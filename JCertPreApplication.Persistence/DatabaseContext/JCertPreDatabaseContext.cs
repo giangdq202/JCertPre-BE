@@ -19,9 +19,11 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<Choice> Choices { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
+        public DbSet<ExamPassThreshold> ExamPassThresholds { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<InstructorProfile> InstructorProfiles { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
+        public DbSet<LessonProgress> LessonProgresses { get; set; }
         public DbSet<Livestream> Livestreams { get; set; }
         public DbSet<Message> Messages { get; set; }
         public DbSet<Payment> Payments { get; set; }
@@ -50,9 +52,11 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new ChoiceConfiguration());
             modelBuilder.ApplyConfiguration(new DocumentConfiguration());
             modelBuilder.ApplyConfiguration(new EnrollmentConfiguration());
+            modelBuilder.ApplyConfiguration(new ExamPassThresholdConfiguration());
             modelBuilder.ApplyConfiguration(new FeedbackConfiguration());
             modelBuilder.ApplyConfiguration(new InstructorProfileConfiguration());
             modelBuilder.ApplyConfiguration(new LessonConfiguration());
+            modelBuilder.ApplyConfiguration(new LessonProgressConfiguration());
             modelBuilder.ApplyConfiguration(new LivestreamConfiguration());
             modelBuilder.ApplyConfiguration(new MessageConfiguration());
             modelBuilder.ApplyConfiguration(new PaymentConfiguration());

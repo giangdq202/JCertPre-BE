@@ -49,8 +49,14 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<Guid>("choiceId")
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("isCorrect")
+                        .HasColumnType("boolean");
+
                     b.Property<Guid>("questionId")
                         .HasColumnType("uuid");
+
+                    b.Property<int>("score")
+                        .HasColumnType("integer");
 
                     b.HasKey("answerId");
 
@@ -233,6 +239,62 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("enrollment", (string)null);
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.ExamPassThreshold", b =>
+                {
+                    b.Property<Guid>("ExamPassThresholdId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("LanguageKnowledgeMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("LanguageKnowledgeMin")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("LastUpdatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("LevelName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<int>("ListeningMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ListeningMin")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReadingMax")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ReadingMin")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("TotalMaxScore")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalPassingScore")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("ExamPassThresholdId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("exam_pass_threshold", (string)null);
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Feedback", b =>
                 {
                     b.Property<Guid>("feedbackId")
@@ -318,6 +380,32 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.ToTable("lesson", (string)null);
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.LessonProgress", b =>
+                {
+                    b.Property<Guid>("progressId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("isCompleted")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<Guid>("lessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("userId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("progressId");
+
+                    b.HasIndex("lessonId");
+
+                    b.HasIndex("userId");
+
+                    b.ToTable("lesson_progress", (string)null);
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Livestream", b =>
                 {
                     b.Property<Guid>("livestreamId")
@@ -387,32 +475,25 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("PaymentType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<decimal>("amount")
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("createdAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("currency")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
                     b.Property<string>("description")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
-
-                    b.Property<string>("paymentMethod")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("status")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("transactionId")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
@@ -435,6 +516,11 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<Guid>("SubContentId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("difficulty")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
                     b.Property<string>("explanation")
                         .IsRequired()
                         .HasColumnType("text");
@@ -455,7 +541,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("SubContentId");
 
-                    b.ToTable("Questions", (string)null);
+                    b.ToTable("questions", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.QuestionAttachment", b =>
@@ -679,7 +765,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("SubContentId");
 
-                    b.ToTable("SubContents", (string)null);
+                    b.ToTable("sub_contents", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
@@ -959,6 +1045,17 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.ExamPassThreshold", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
+                        .WithMany("ExamPassThresholds")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Feedback", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
@@ -998,6 +1095,25 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Course");
+                });
+
+            modelBuilder.Entity("JCertPreApplication.Domain.Entities.LessonProgress", b =>
+                {
+                    b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
+                        .WithMany("LessonProgresses")
+                        .HasForeignKey("lessonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
+                        .WithMany("LessonProgresses")
+                        .HasForeignKey("userId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Lesson");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Livestream", b =>
@@ -1233,6 +1349,8 @@ namespace JCertPreApplication.Persistence.Migrations
                 {
                     b.Navigation("Documents");
 
+                    b.Navigation("LessonProgresses");
+
                     b.Navigation("Tests");
                 });
 
@@ -1282,6 +1400,8 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Navigation("Enrollments");
 
+                    b.Navigation("ExamPassThresholds");
+
                     b.Navigation("Feedbacks");
 
                     b.Navigation("InstructorCourses");
@@ -1290,6 +1410,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("InstructorReports");
+
+                    b.Navigation("LessonProgresses");
 
                     b.Navigation("Messages");
 

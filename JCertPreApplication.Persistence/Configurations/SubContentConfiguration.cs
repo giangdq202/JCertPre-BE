@@ -9,7 +9,7 @@ namespace JCertPreApplication.Persistence.Configurations
 {
     public void Configure(EntityTypeBuilder<SubContent> builder)
     {
-        builder.ToTable("SubContents");
+        builder.ToTable("sub_contents");
         builder.HasKey(sc => sc.SubContentId);
 
         builder.Property(sc => sc.SubContentName)

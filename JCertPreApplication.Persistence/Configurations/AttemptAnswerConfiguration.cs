@@ -8,26 +8,33 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<AttemptAnswer> builder)
         {
-            // Configure primary key
             builder.ToTable("attempt_answer");
             builder.HasKey(aa => aa.answerId);
 
-            // Configure required properties
             builder.Property(aa => aa.attemptId).IsRequired();
             builder.Property(aa => aa.questionId).IsRequired();
             builder.Property(aa => aa.choiceId).IsRequired();
 
-            // Configure foreign key relationships
+            builder.Property(aa => aa.isCorrect)
+                   .IsRequired();
+
+            builder.Property(aa => aa.score)
+                   .IsRequired();
+
             builder.HasOne(aa => aa.TestAttempt)
                    .WithMany(ta => ta.AttemptAnswers)
                    .HasForeignKey(aa => aa.attemptId)
-                    .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.NoAction);
+
             builder.HasOne(aa => aa.Question)
                    .WithMany(q => q.AttemptAnswers)
-                   .HasForeignKey(aa => aa.questionId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(aa => aa.questionId)
+                   .OnDelete(DeleteBehavior.NoAction);
+
             builder.HasOne(aa => aa.Choice)
                    .WithMany(c => c.AttemptAnswers)
-                   .HasForeignKey(aa => aa.choiceId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(aa => aa.choiceId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
