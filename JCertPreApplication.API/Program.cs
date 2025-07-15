@@ -38,15 +38,31 @@ static void LoadEnvironmentVariables()
         root = Directory.GetParent(root)!.FullName;
     }
     
-    var dotenvPath = Path.Combine(root, ".env");
-    if (File.Exists(dotenvPath))
+    // Load .env first to get ASPNETCORE_ENVIRONMENT
+    var defaultEnvPath = Path.Combine(root, ".env");
+    if (File.Exists(defaultEnvPath))
     {
-        DotNetEnv.Env.Load(dotenvPath);
-        Console.WriteLine("Environment variables loaded");
+        DotNetEnv.Env.Load(defaultEnvPath);
+    }
+    
+    // Get environment from .env file
+    var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+    if (environment?.Equals("Production", StringComparison.OrdinalIgnoreCase) == true)
+    {
+        var productionEnvPath = Path.Combine(root, ".env.production");
+        if (File.Exists(productionEnvPath))
+        {
+            DotNetEnv.Env.Load(productionEnvPath);
+            Console.WriteLine("Production environment variables loaded from .env.production");
+        }
+        else
+        {
+            Console.WriteLine("WARNING: .env.production file not found, using .env variables");
+        }
     }
     else
     {
-        Console.WriteLine("WARNING: .env file not found. Please copy env.example to .env");
+        Console.WriteLine("Development environment variables loaded from .env");
     }
 }
 
