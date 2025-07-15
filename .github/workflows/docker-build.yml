@@ -1,0 +1,54 @@
+name: Docker Build Test
+
+on:
+  pull_request:
+    branches: [ "dev" ]
+
+env:
+  DOCKER_IMAGE_NAME: jcertpre-be
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Create test env file
+      run: |
+        cp env.example .env
+    
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} .
+    
+    - name: Check image size
+      run: |
+        echo "Docker image details:"
+        docker images ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} --format "{{.Size}}"
+        echo "Layer details:"
+        docker history ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} --human --format "{{.Size}}\t{{.CreatedBy}}"
+    
+    - name: Test if container can start
+      run: |
+        docker run -d \
+          --name test-container \
+          --env-file .env \
+          ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }}
+        
+        # Wait a few seconds and check if container is running
+        sleep 5s
+        if [ "$(docker ps -q -f name=test-container)" ]; then
+          echo "Container started successfully"
+        else
+          echo "Container failed to start"
+          docker logs test-container
+          exit 1
+        fi
+    
+    - name: Clean up
+      if: always()
+      run: |
+        docker stop test-container || true
+        docker rm test-container || true
+        docker rmi ${{ env.DOCKER_IMAGE_NAME }}:${{ github.sha }} || true 

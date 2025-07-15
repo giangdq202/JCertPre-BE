@@ -12,10 +12,16 @@ SetupConfiguration(builder);
 // Setup services
 SetupServices(builder);
 
+// Add health checks
+builder.Services.AddHealthChecks();
+
 var app = builder.Build();
 
 // Configure pipeline
 ConfigurePipeline(app);
+
+// Map health check endpoint
+app.MapHealthChecks("/health");
 
 app.Run();
 
