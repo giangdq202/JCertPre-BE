@@ -75,6 +75,17 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasMany(u => u.CreatedTests)
                    .WithOne(t => t.CreatedByUser)
                    .HasForeignKey(t => t.createdByUserId).OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasMany(u => u.LessonProgresses)
+                   .WithOne(lp => lp.User)
+                   .HasForeignKey(lp => lp.userId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(u => u.ExamPassThresholds)
+                   .WithOne(ept => ept.User)
+                   .HasForeignKey(ept => ept.UserId)
+                   .OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

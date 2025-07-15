@@ -1,4 +1,6 @@
-﻿namespace JCertPreApplication.Domain.Entities
+﻿using JCertPreApplication.Domain.Enums;
+
+namespace JCertPreApplication.Domain.Entities
 {
     public class Question
     {
@@ -7,6 +9,8 @@
         public string questionText { get; set; } = null!;
         public string questionType { get; set; } = null!;
         public string explanation { get; set; } = null!;
+        public QuestionDifficulty difficulty { get; set; }
+
         public int points { get; set; }
 
         public virtual SubContent SubContent { get; set; } = null!;

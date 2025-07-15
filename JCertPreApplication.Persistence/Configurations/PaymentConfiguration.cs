@@ -16,6 +16,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(p => p.userId).IsRequired();
             builder.Property(p => p.amount).IsRequired().HasColumnType("decimal(18,2)");
             builder.Property(p => p.currency).IsRequired().HasMaxLength(50);
+            builder.Property(p => p.PaymentType).IsRequired().HasConversion<string>();
             builder.Property(p => p.paymentMethod).IsRequired().HasMaxLength(50);
             builder.Property(p => p.transactionId).IsRequired().HasMaxLength(100);
             builder.Property(p => p.status).IsRequired().HasConversion<string>();

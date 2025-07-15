@@ -12,5 +12,6 @@
         public virtual Course Course { get; set; } = null!;
         public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
         public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
+        public virtual ICollection<LessonProgress> LessonProgresses { get; set; } = new List<LessonProgress>();
     }
 }
