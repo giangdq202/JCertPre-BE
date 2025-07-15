@@ -391,10 +391,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     paymentId = table.Column<Guid>(type: "uuid", nullable: false),
                     userId = table.Column<Guid>(type: "uuid", nullable: false),
                     amount = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    currency = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
                     PaymentType = table.Column<string>(type: "text", nullable: false),
-                    paymentMethod = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
-                    transactionId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    transactionId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: true),
                     status = table.Column<string>(type: "text", nullable: false),
                     createdAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
