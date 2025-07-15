@@ -120,6 +120,9 @@ static void ConfigurePipeline(WebApplication app)
     // Global Exception Handling - MUST be first in a pipeline
     app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
     
+    // Always enable Swagger. 
+    // WARNING: Exposing Swagger UI in production can be a security risk. 
+    // It's recommended to secure the endpoint if the API is public.
     app.UseSwagger();
     app.UseSwaggerUI();
 
