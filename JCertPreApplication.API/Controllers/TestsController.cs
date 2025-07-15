@@ -119,7 +119,8 @@ namespace JCertPreApplication.API.Controllers
                 CreatedByUserId = test.createdByUserId,
                 AvailableFrom = test.availableFrom,
                 AvailableTo = test.availableTo,
-                MaxAttempts = test.maxAttempts
+                MaxAttempts = test.maxAttempts,
+                Status = test.status // <-- Added
             };
         }
     }

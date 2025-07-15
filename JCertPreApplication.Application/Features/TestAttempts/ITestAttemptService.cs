@@ -18,5 +18,10 @@ namespace JCertPreApplication.Application.Features.TestAttempts
         /// Get all test attempts by user id.
         /// </summary>
         Task<List<TestAttemptDto>> GetAllByUserIdAsync(Guid userId);
+
+        /// <summary>
+        /// Update the status of a test attempt.
+        /// </summary>
+        Task<TestAttemptDto> UpdateStatusAsync(Guid attemptId, TestAttemptStatus status);
     }
 }

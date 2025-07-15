@@ -100,7 +100,8 @@ namespace JCertPreApplication.Application.Features.Tests
                     createdByUserId = userId,
                     availableFrom = dto.AvailableFrom,
                     availableTo = dto.AvailableTo,
-                    maxAttempts = dto.MaxAttempts
+                    maxAttempts = dto.MaxAttempts,
+                    status = dto.Status // <-- Added
                 };
 
                 await _testRepository.InsertAsync(test);
@@ -143,6 +144,8 @@ namespace JCertPreApplication.Application.Features.Tests
                     test.availableTo = dto.AvailableTo.Value;
                 if (dto.MaxAttempts.HasValue)
                     test.maxAttempts = dto.MaxAttempts.Value;
+                if (dto.Status.HasValue)
+                    test.status = dto.Status.Value;
 
                 await _testRepository.UpdateAsync(test);
                 await _testRepository.SaveChangesAsync();
