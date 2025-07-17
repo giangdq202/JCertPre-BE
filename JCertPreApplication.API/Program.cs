@@ -120,14 +120,14 @@ static void ConfigurePipeline(WebApplication app)
     // Global Exception Handling - MUST be first in a pipeline
     app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
     
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+    // Always enable Swagger. 
+    // WARNING: Exposing Swagger UI in production can be a security risk. 
+    // It's recommended to secure the endpoint if the API is public.
+    app.UseSwagger();
+    app.UseSwaggerUI();
 
     app.UseCors("AllowSpecificOrigins");
-    app.UseHttpsRedirection();
+    // app.UseHttpsRedirection(); // Disabled for HTTP-only deployment with reverse proxy
     app.UseAuthentication();
     
     // Token revocation check - must be after authentication but before authorization
