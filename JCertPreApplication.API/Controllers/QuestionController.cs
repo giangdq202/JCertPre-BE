@@ -50,16 +50,12 @@ public class QuestionController : ControllerBase
     /// Create a new question.
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Create(
-        [FromBody] CreateQuestionDto dto,
-        [FromQuery] ContentName contentName,
-        [FromQuery] CourseLevel level,
-        [FromQuery] SubContentName subContentName)
+    public async Task<IActionResult> Create([FromBody] CreateQuestionDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
 
-        var created = await _questionService.CreateAsync(dto, contentName, level, subContentName);
+        var created = await _questionService.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = created.questionId }, MapToQuestionDto(created));
     }
 
@@ -120,6 +116,7 @@ public class QuestionController : ControllerBase
             Content = question.questionText,
             Explanation = question.explanation,
             Points = question.points,
+            Difficulty = question.difficulty, // Add this line
             Choices = question.Choices?.Select(c => new ChoiceReadDto
             {
                 Id = c.choiceId,

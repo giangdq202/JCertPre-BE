@@ -1,3 +1,4 @@
+using JCertPreApplication.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace JCertPreApplication.Application.Dtos.Question
@@ -12,5 +13,14 @@ namespace JCertPreApplication.Application.Dtos.Question
 
         [Range(1, 100, ErrorMessage = "Points must be between 1 and 100")]
         public int Points { get; set; } = 1;
+        public QuestionDifficulty Difficulty { get; set; }
+
+        // Add these for subcontent selection
+        [Required]
+        public ContentName ContentName { get; set; }
+        [Required]
+        public CourseLevel Level { get; set; }
+        [Required]
+        public SubContentName SubContentName { get; set; }
     }
-} 
+}
