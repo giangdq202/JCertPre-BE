@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Dtos.Question
 {
@@ -12,6 +13,7 @@ namespace JCertPreApplication.Application.Dtos.Question
         public string Content { get; set; } = null!;
         public string? Explanation { get; set; }
         public int Points { get; set; }
+        public QuestionDifficulty Difficulty { get; set; } // Add this line
         public ICollection<ChoiceReadDto>? Choices { get; set; }
         public ICollection<QuestionAttachmentDto>? QuestionAttachments { get; set; }
 

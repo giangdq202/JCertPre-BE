@@ -1,15 +1,18 @@
+using JCertPreApplication.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
 namespace JCertPreApplication.Application.Dtos.Question
 {
     public class UpdateQuestionDto
     {
-        [MinLength(10, ErrorMessage = "Question content must be at least 10 characters")]
         public string? Content { get; set; }
-
         public string? Explanation { get; set; }
-
-        [Range(1, 100, ErrorMessage = "Points must be between 1 and 100")]
         public int? Points { get; set; }
+        public QuestionDifficulty? Difficulty { get; set; }
+
+        // Optional: allow updating subcontent
+        public ContentName? ContentName { get; set; }
+        public CourseLevel? Level { get; set; }
+        public SubContentName? SubContentName { get; set; }
     }
-} 
+}

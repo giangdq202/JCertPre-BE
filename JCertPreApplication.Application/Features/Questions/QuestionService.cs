@@ -24,18 +24,20 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Retrieves all questions.
+        /// Retrieves all questions with their subcontent.
         /// </summary>
         public async Task<IEnumerable<Question>> GetAllAsync()
         {
             try
             {
+                // Fetch all questions including their SubContent navigation property
                 var questions = await _questionRepository.GetAllAsync("SubContent");
                 return questions;
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
             {
+                // Wrap any unexpected exception in a standardized API exception
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving questions: {ex.Message}");
             }
         }
@@ -48,6 +50,7 @@ namespace JCertPreApplication.Application.Features.Questions
         {
             try
             {
+                // Attempt to find the question by ID
                 var question = await _questionRepository.GetByIdAsync(id);
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
@@ -62,19 +65,21 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Creates a new question.
+        /// Creates a new question. Looks up SubContent by enums from DTO.
         /// </summary>
-        public async Task<Question> CreateAsync(CreateQuestionDto createDto, ContentName contentName, CourseLevel level, SubContentName subContentName)
+        public async Task<Question> CreateAsync(CreateQuestionDto createDto)
         {
             try
             {
-                // Find subcontent by enums
                 var subContent = await _subContentRepository.GetFirstOrDefaultAsync(
-                    s => s.ContentName == contentName && s.Level == level && s.SubContentName == subContentName
+                    s => s.ContentName == createDto.ContentName
+                      && s.Level == createDto.Level
+                      && s.SubContentName == createDto.SubContentName
                 );
                 if (subContent == null)
                     throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
 
+                // Create the Question entity
                 var question = new Question
                 {
                     questionId = Guid.NewGuid(),
@@ -82,15 +87,20 @@ namespace JCertPreApplication.Application.Features.Questions
                     explanation = createDto.Explanation ?? string.Empty,
                     questionType = "multiple-choice",
                     points = createDto.Points,
+                    difficulty = createDto.Difficulty,
                     SubContentId = subContent.SubContentId
                 };
 
+                // Insert and persist the new question
                 var created = await _questionRepository.InsertAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                created = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == created.questionId, "SubContent");
+                // Retrieve the created question with navigation properties
+                var result = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == created.questionId, "SubContent");
+                if (result == null)
+                    throw ApiException.InternalServerError("QUESTION_CREATION_ERROR", "Failed to retrieve the created question.");
 
-                return created;
+                return result;
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -100,27 +110,51 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Updates an existing question.
+        /// Updates an existing question. Optionally updates SubContent if all enums are provided.
+        /// Returns the updated question with SubContent navigation property loaded.
         /// </summary>
         public async Task<Question> UpdateAsync(Guid id, UpdateQuestionDto updateDto)
         {
             try
             {
+                // Find the question to update
                 var question = await _questionRepository.GetByIdAsync(id);
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
+                // Update fields if provided
                 if (updateDto.Content != null)
                     question.questionText = updateDto.Content;
                 if (updateDto.Explanation != null)
                     question.explanation = updateDto.Explanation;
                 if (updateDto.Points.HasValue)
                     question.points = updateDto.Points.Value;
+                if (updateDto.Difficulty.HasValue)
+                    question.difficulty = updateDto.Difficulty.Value;
 
+                // If all subcontent enums are provided, update SubContentId
+                if (updateDto.ContentName.HasValue && updateDto.Level.HasValue && updateDto.SubContentName.HasValue)
+                {
+                    var subContent = await _subContentRepository.GetFirstOrDefaultAsync(
+                        s => s.ContentName == updateDto.ContentName.Value
+                          && s.Level == updateDto.Level.Value
+                          && s.SubContentName == updateDto.SubContentName.Value
+                    );
+                    if (subContent == null)
+                        throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
+                    question.SubContentId = subContent.SubContentId;
+                }
+
+                // Persist the updated question
                 await _questionRepository.UpdateAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                return question;
+                // Retrieve the updated question with SubContent navigation property loaded
+                var updated = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == question.questionId, "SubContent");
+                if (updated == null)
+                    throw ApiException.InternalServerError("QUESTION_UPDATE_ERROR", "Failed to retrieve the updated question.");
+
+                return updated;
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -130,19 +164,22 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Deletes a question by its ID.
+        /// Deletes a question by its ID. Prevents deletion if the question is in use.
         /// </summary>
         public async Task DeleteAsync(Guid id)
         {
             try
             {
+                // Find the question to delete
                 var question = await _questionRepository.GetByIdAsync(id);
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
+                // Prevent deletion if the question is referenced in tests or attempts
                 if (question.TestQuestions.Count > 0 || question.AttemptAnswers.Count > 0)
                     throw ApiException.BadRequest("QUESTION_IN_USE", "Cannot delete question that is used in tests or has student attempts.");
 
+                // Delete and persist
                 await _questionRepository.DeleteAsync(question);
                 await _questionRepository.SaveChangesAsync();
             }
@@ -154,7 +191,8 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Retrieves paginated questions with details (choices, attachments), not including tag.
+        /// Retrieves paginated questions with details (choices, attachments, subcontent).
+        /// Supports filtering by search term, subcontent, and difficulty.
         /// </summary>
         public async Task<Pagination<Question>> GetPaginatedWithDetailsAsync(
             string? searchTerm,
@@ -162,13 +200,15 @@ namespace JCertPreApplication.Application.Features.Questions
             int pageSize,
             ContentName? contentName = null,
             CourseLevel? level = null,
-            SubContentName? subContentName = null)
+            SubContentName? subContentName = null,
+            QuestionDifficulty? difficulty = null)
         {
             try
             {
+                // Build predicate for filtering
                 Expression<Func<Question, bool>>? predicate = null;
 
-                if (!string.IsNullOrWhiteSpace(searchTerm) || contentName.HasValue || level.HasValue || subContentName.HasValue)
+                if (!string.IsNullOrWhiteSpace(searchTerm) || contentName.HasValue || level.HasValue || subContentName.HasValue || difficulty.HasValue)
                 {
                     predicate = q =>
                         (string.IsNullOrEmpty(searchTerm) ||
@@ -176,11 +216,14 @@ namespace JCertPreApplication.Application.Features.Questions
                             q.explanation.ToLower().Contains(searchTerm.ToLower()))
                         && (!contentName.HasValue || q.SubContent.ContentName == contentName.Value)
                         && (!level.HasValue || q.SubContent.Level == level.Value)
-                        && (!subContentName.HasValue || q.SubContent.SubContentName == subContentName.Value);
+                        && (!subContentName.HasValue || q.SubContent.SubContentName == subContentName.Value)
+                        && (!difficulty.HasValue || q.difficulty == difficulty.Value);
                 }
 
+                // Include related entities for rich API responses
                 string includeProperties = "Choices,QuestionAttachments,SubContent";
 
+                // Fetch paginated questions
                 var paginatedQuestions = await _questionRepository.GetPaginationAsync(
                     predicate,
                     includeProperties,
