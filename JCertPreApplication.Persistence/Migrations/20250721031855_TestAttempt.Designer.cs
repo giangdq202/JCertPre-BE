@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250721031855_TestAttempt")]
+    partial class TestAttempt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -774,9 +777,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ExamPassThresholdId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("availableFrom")
                         .HasColumnType("timestamp with time zone");
 
@@ -814,8 +814,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasKey("testId");
 
-                    b.HasIndex("ExamPassThresholdId");
-
                     b.HasIndex("createdByUserId");
 
                     b.HasIndex("lessonId");
@@ -838,6 +836,15 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<bool?>("isPass")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("languageKnowledgeScore")
+                        .HasColumnType("text");
+
+                    b.Property<string>("listeningScore")
+                        .HasColumnType("text");
+
+                    b.Property<string>("readingScore")
+                        .HasColumnType("text");
+
                     b.Property<DateTime>("startTime")
                         .HasColumnType("timestamp with time zone");
 
@@ -847,6 +854,9 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Property<Guid>("testId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("totalScore")
+                        .HasColumnType("text");
 
                     b.Property<Guid>("userId")
                         .HasColumnType("uuid");
@@ -882,42 +892,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasIndex("testId");
 
                     b.ToTable("test_question", (string)null);
-                });
-
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestScoreSummary", b =>
-                {
-                    b.Property<Guid>("TestScoreSummaryId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("GrammarScore")
-                        .HasColumnType("text");
-
-                    b.Property<string>("KanjiScore")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ListeningScore")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ReadingScore")
-                        .HasColumnType("text");
-
-                    b.Property<Guid?>("TestAttemptId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TestId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("VocabularyScore")
-                        .HasColumnType("text");
-
-                    b.HasKey("TestScoreSummaryId");
-
-                    b.HasIndex("TestAttemptId");
-
-                    b.HasIndex("TestId");
-
-                    b.ToTable("test_score_summary", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
@@ -1284,11 +1258,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
                 {
-                    b.HasOne("JCertPreApplication.Domain.Entities.ExamPassThreshold", "ExamPassThreshold")
-                        .WithMany("Tests")
-                        .HasForeignKey("ExamPassThresholdId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "CreatedByUser")
                         .WithMany("CreatedTests")
                         .HasForeignKey("createdByUserId")
@@ -1301,8 +1270,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedByUser");
-
-                    b.Navigation("ExamPassThreshold");
 
                     b.Navigation("Lesson");
                 });
@@ -1345,24 +1312,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Test");
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestScoreSummary", b =>
-                {
-                    b.HasOne("JCertPreApplication.Domain.Entities.TestAttempt", "TestAttempt")
-                        .WithMany("TestScoreSummaries")
-                        .HasForeignKey("TestAttemptId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.HasOne("JCertPreApplication.Domain.Entities.Test", "Test")
-                        .WithMany("TestScoreSummaries")
-                        .HasForeignKey("TestId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Test");
-
-                    b.Navigation("TestAttempt");
-                });
-
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Role", "Role")
@@ -1397,11 +1346,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Livestreams");
 
                     b.Navigation("StudyPlanItems");
-                });
-
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.ExamPassThreshold", b =>
-                {
-                    b.Navigation("Tests");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Lesson", b =>
@@ -1446,15 +1390,11 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("TestAttempts");
 
                     b.Navigation("TestQuestions");
-
-                    b.Navigation("TestScoreSummaries");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestAttempt", b =>
                 {
                     b.Navigation("AttemptAnswers");
-
-                    b.Navigation("TestScoreSummaries");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>

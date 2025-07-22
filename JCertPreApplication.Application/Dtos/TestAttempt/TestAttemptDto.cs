@@ -9,9 +9,5 @@ public class TestAttemptDto
     public TestAttemptStatus Status { get; set; }
     public DateTime StartTime { get; set; }
     public DateTime EndTime { get; set; }
-    public int? TotalScore { get; set; }
-    public int? LanguageKnowledgeScore { get; set; }
-    public int? ReadingScore { get; set; }
-    public int? ListeningScore { get; set; }
     public bool? IsPass { get; set; }
 }

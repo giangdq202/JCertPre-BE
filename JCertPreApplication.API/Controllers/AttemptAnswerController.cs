@@ -24,22 +24,12 @@ public class AttemptAnswerController : ControllerBase
     }
 
     /// <summary>
-    /// Update choiceId for a specific answer.
+    /// Add or update one or multiple attempt answers.
     /// </summary>
-    [HttpPut("update-choice")]
-    public async Task<IActionResult> UpdateChoice([FromBody] UpdateAttemptAnswerDto dto)
+    [HttpPost("add-or-update")]
+    public async Task<IActionResult> AddOrUpdateAnswers([FromBody] List<CreateAttemptAnswerDto> dtos)
     {
-        var result = await _service.UpdateChoiceAsync(dto);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Add a new attempt answer.
-    /// </summary>
-    [HttpPost("add")]
-    public async Task<IActionResult> AddAnswer([FromBody] CreateAttemptAnswerDto dto)
-    {
-        var result = await _service.AddAnswerAsync(dto);
+        var result = await _service.AddOrUpdateAnswersAsync(dtos);
         return Ok(result);
     }
 }

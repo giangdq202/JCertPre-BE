@@ -8,13 +8,9 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<ExamPassThreshold> builder)
         {
-            // Configure table name
             builder.ToTable("exam_pass_threshold");
-
-            // Configure primary key
             builder.HasKey(ept => ept.ExamPassThresholdId);
 
-            // Configure required properties and constraints
             builder.Property(ept => ept.ExamPassThresholdId)
                    .IsRequired();
 
@@ -59,15 +55,16 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(ept => ept.CreatedAt)
                    .IsRequired();
 
-            // Configure foreign key relationship with User
             builder.HasOne(ept => ept.User)
                    .WithMany(u => u.ExamPassThresholds)
                    .HasForeignKey(ept => ept.UserId)
                    .OnDelete(DeleteBehavior.NoAction);
 
-            
-
-           
+            builder.HasMany(ept => ept.Tests)
+                   .WithOne(t => t.ExamPassThreshold)
+                   .HasForeignKey(t => t.ExamPassThresholdId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }
