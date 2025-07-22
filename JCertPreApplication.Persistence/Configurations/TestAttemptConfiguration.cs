@@ -31,18 +31,6 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasConversion<string>()
                 .IsRequired();
 
-            builder.Property(ta => ta.totalScore)
-                .IsRequired(false);
-
-            builder.Property(ta => ta.languageKnowledgeScore)
-                .IsRequired(false);
-
-            builder.Property(ta => ta.readingScore)
-                .IsRequired(false);
-
-            builder.Property(ta => ta.listeningScore)
-                .IsRequired(false);
-
             builder.Property(ta => ta.isPass)
                 .IsRequired(false);
 
@@ -60,6 +48,12 @@ namespace JCertPreApplication.Persistence.Configurations
                 .WithOne(aa => aa.TestAttempt)
                 .HasForeignKey(aa => aa.attemptId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasMany(ta => ta.TestScoreSummaries)
+                .WithOne(tss => tss.TestAttempt)
+                .HasForeignKey(tss => tss.TestAttemptId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

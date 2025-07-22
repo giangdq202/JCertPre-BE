@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace JCertPreApplication.Domain.Entities
 {
@@ -22,5 +23,6 @@ namespace JCertPreApplication.Domain.Entities
 
         // Navigation properties
         public virtual User User { get; set; } = null!;
+        public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
     }
 }

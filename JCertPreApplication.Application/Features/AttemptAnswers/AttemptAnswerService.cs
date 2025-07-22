@@ -2,6 +2,7 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.AttemptAnswer;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Features.AttemptAnswers
 {
@@ -9,75 +10,81 @@ namespace JCertPreApplication.Application.Features.AttemptAnswers
     {
         private readonly IAttemptAnswerRepository _repo;
         private readonly ITestAttemptRepository _testAttemptRepo;
+        private readonly IChoiceRepository _choiceRepo;
+        private readonly IQuestionRepository _questionRepo;
 
         public AttemptAnswerService(
             IAttemptAnswerRepository repo,
-            ITestAttemptRepository testAttemptRepo)
+            ITestAttemptRepository testAttemptRepo,
+            IChoiceRepository choiceRepo,
+            IQuestionRepository questionRepo)
         {
             _repo = repo;
             _testAttemptRepo = testAttemptRepo;
+            _choiceRepo = choiceRepo;
+            _questionRepo = questionRepo;
         }
 
         /// <summary>
-        /// Add a new attempt answer. Throws if out of time.
+        /// Add or update one or multiple attempt answers. If answer exists, update choice; otherwise, add new.
+        /// Throws if TestAttempt status is Suspended or Completed.
         /// </summary>
-        public async Task<AttemptAnswerDetailDto> AddAnswerAsync(CreateAttemptAnswerDto dto)
+        public async Task<List<AttemptAnswerDetailDto>> AddOrUpdateAnswersAsync(IEnumerable<CreateAttemptAnswerDto> dtos)
         {
+            var result = new List<AttemptAnswerDetailDto>();
             try
             {
-                var attempt = await _testAttemptRepo.GetByIdAsync(dto.AttemptId);
-                if (attempt == null)
-                    throw ApiException.NotFound("TestAttempt", dto.AttemptId);
-
-                if (DateTime.UtcNow > attempt.endTime)
-                    throw ApiException.BadRequest("ATTEMPT_OUT_OF_TIME", "Cannot add answer after test end time.");
-
-                // Prevent duplicate questionId for this attempt
-                var existing = await _repo.GetFirstOrDefaultAsync(a => a.attemptId == dto.AttemptId && a.questionId == dto.QuestionId);
-                if (existing != null)
-                    throw ApiException.BadRequest("DUPLICATE_QUESTION_ANSWER", "An answer for this question already exists in this attempt.");
-
-                var answer = new AttemptAnswer
+                foreach (var dto in dtos)
                 {
-                    answerId = Guid.NewGuid(),
-                    attemptId = dto.AttemptId,
-                    questionId = dto.QuestionId,
-                    choiceId = dto.ChoiceId
-                };
-                await _repo.InsertAsync(answer);
+                    var attempt = await _testAttemptRepo.GetByIdAsync(dto.AttemptId);
+                    if (attempt == null)
+                        throw ApiException.NotFound("TestAttempt", dto.AttemptId);
+
+                    // Check status before allowing add/update
+                    if (attempt.status == TestAttemptStatus.Suspended)
+                        throw ApiException.BadRequest("ATTEMPT_SUSPENDED", "Cannot add or update answer for a suspended test attempt.");
+                    if (attempt.status == TestAttemptStatus.Completed)
+                        throw ApiException.BadRequest("ATTEMPT_COMPLETED", "Cannot add or update answer for a completed test attempt.");
+
+                    if (DateTime.UtcNow > attempt.endTime)
+                        throw ApiException.BadRequest("ATTEMPT_OUT_OF_TIME", "Cannot add or update answer after test end time.");
+
+                    var choice = await _choiceRepo.GetByIdAsync(dto.ChoiceId);
+                    if (choice == null)
+                        throw ApiException.NotFound("Choice", dto.ChoiceId);
+                    var question = await _questionRepo.GetByIdAsync(dto.QuestionId);
+                    if (question == null)
+                        throw ApiException.NotFound("Question", dto.QuestionId);
+
+                    // Check if answer exists for this attempt and question
+                    var existing = await _repo.GetFirstOrDefaultAsync(a => a.attemptId == dto.AttemptId && a.questionId == dto.QuestionId);
+                    if (existing != null)
+                    {
+                        // Update choice, isCorrect, score
+                        existing.choiceId = dto.ChoiceId;
+                        existing.isCorrect = choice.isCorrect;
+                        existing.score = choice.isCorrect ? question.points : 0;
+                        await _repo.UpdateAsync(existing);
+                        result.Add(MapToDto(existing));
+                    }
+                    else
+                    {
+                        // Add new answer
+                        var answer = new AttemptAnswer
+                        {
+                            answerId = Guid.NewGuid(),
+                            attemptId = dto.AttemptId,
+                            questionId = dto.QuestionId,
+                            choiceId = dto.ChoiceId,
+                            isCorrect = choice.isCorrect,
+                            score = choice.isCorrect ? question.points : 0
+                        };
+                        await _repo.InsertAsync(answer);
+                        result.Add(MapToDto(answer));
+                    }
+                }
                 await _repo.SaveChangesAsync();
-                return MapToDto(answer);
-            }
-            catch (ApiException) { throw; }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("ATTEMPT_ANSWER_ERROR", ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Update the choiceId for a specific answer. Throws if out of time.
-        /// </summary>
-        public async Task<AttemptAnswerDetailDto> UpdateChoiceAsync(UpdateAttemptAnswerDto dto)
-        {
-            try
-            {
-                var answer = await _repo.GetByIdAsync(dto.AnswerId);
-                if (answer == null)
-                    throw ApiException.NotFound("AttemptAnswer", dto.AnswerId);
-
-                var attempt = await _testAttemptRepo.GetByIdAsync(answer.attemptId);
-                if (attempt == null)
-                    throw ApiException.NotFound("TestAttempt", answer.attemptId);
-
-                if (DateTime.UtcNow > attempt.endTime)
-                    throw ApiException.BadRequest("ATTEMPT_OUT_OF_TIME", "Cannot update answer after test end time.");
-
-                answer.choiceId = dto.ChoiceId;
-                await _repo.UpdateAsync(answer);
-                await _repo.SaveChangesAsync();
-
-                return MapToDto(answer);
+                return result;
             }
             catch (ApiException) { throw; }
             catch (Exception ex)

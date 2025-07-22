@@ -14,6 +14,7 @@ public class TestAttemptService : ITestAttemptService
     private readonly IChoiceRepository _choiceRepository;
     private readonly ITestAttemptAutoSubmitController _autoSubmitController;
     private readonly ILogger<TestAttemptService> _logger;
+    private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
 
     public TestAttemptService(
         ITestAttemptRepository testAttemptRepository,
@@ -23,7 +24,8 @@ public class TestAttemptService : ITestAttemptService
         IQuestionRepository questionRepository,
         IChoiceRepository choiceRepository,
         ITestAttemptAutoSubmitController autoSubmitController,
-        ILogger<TestAttemptService> logger)
+        ILogger<TestAttemptService> logger,
+        ITestScoreSummaryRepository testScoreSummaryRepository)
     {
         _testAttemptRepository = testAttemptRepository;
         _testRepository = testRepository;
@@ -33,6 +35,7 @@ public class TestAttemptService : ITestAttemptService
         _choiceRepository = choiceRepository;
         _autoSubmitController = autoSubmitController;
         _logger = logger;
+        _testScoreSummaryRepository = testScoreSummaryRepository;
     }
 
     /// <summary>
@@ -78,11 +81,7 @@ public class TestAttemptService : ITestAttemptService
                 endTime = now.AddMinutes(test.durationMinutes),
                 attemptNumber = userAttempts.Count + 1,
                 status = TestAttemptStatus.InProgress,
-                totalScore = null,
-                languageKnowledgeScore = test.testType == TestType.CustomManual ? null : 0,
-                readingScore = test.testType == TestType.CustomManual ? null : 0,
-                listeningScore = test.testType == TestType.CustomManual ? null : 0,
-                isPass = test.testType == TestType.CustomManual ? null : false
+                isPass = null
             };
 
             await _testAttemptRepository.InsertAsync(attempt);
@@ -124,32 +123,8 @@ public class TestAttemptService : ITestAttemptService
             if (test == null)
                 throw ApiException.NotFound("Test", attempt.testId);
 
-            // Calculate score for customManual
-            int totalScore = 0;
-            if (test.testType == TestType.CustomManual)
-            {
-                // Get all answers for this attempt
-                var answers = await _attemptAnswerRepository.GetAllAsync(a => a.attemptId == attempt.attemptId);
-
-                foreach (var answer in answers)
-                {
-                    // Get the question and choice for this answer using repositories
-                    var question = await _questionRepository.GetByIdAsync(answer.questionId);
-                    var choice = await _choiceRepository.GetByIdAsync(answer.choiceId);
-
-                    // If the choice is correct, add the question's points
-                    if (choice != null && choice.isCorrect && question != null)
-                    {
-                        totalScore += question.points;
-                    }
-                }
-
-                attempt.totalScore = totalScore;
-                attempt.languageKnowledgeScore = null;
-                attempt.readingScore = null;
-                attempt.listeningScore = null;
-                attempt.isPass = null;
-            }
+            // Calculate and save score summary for this attempt
+            await CalculateAndSaveTestScoreSummaryAsync(attempt, test);
 
             attempt.status = TestAttemptStatus.Completed;
             await _testAttemptRepository.UpdateAsync(attempt);
@@ -165,6 +140,63 @@ public class TestAttemptService : ITestAttemptService
         {
             throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Calculates and saves the TestScoreSummary for a test attempt.
+    /// </summary>
+    private async Task CalculateAndSaveTestScoreSummaryAsync(TestAttempt attempt, Test test)
+    {
+        // Get all answers for this attempt
+        var answers = await _attemptAnswerRepository.GetAllAsync(a => a.attemptId == attempt.attemptId);
+
+        // Get the test's max score summary (should exist, TestAttemptId == null)
+        var maxScoreSummary = test.TestScoreSummaries.FirstOrDefault(s => s.TestAttemptId == null);
+        if (maxScoreSummary == null)
+            throw ApiException.InternalServerError("TEST_SCORE_SUMMARY_NOT_FOUND", "Max score summary for test not found.");
+
+        // Helper to get user score for a section
+        int GetUserScore(Func<Question, bool> predicate)
+        {
+            return answers
+                .Where(a => a.Question != null && predicate(a.Question))
+                .Sum(a => a.score);
+        }
+
+        // Helper to get max score for a section from the maxScoreSummary (parse int, fallback to 0)
+        int GetMaxScore(string? maxScoreField)
+        {
+            if (string.IsNullOrEmpty(maxScoreField)) return 0;
+            var parts = maxScoreField.Split('/');
+            return int.TryParse(parts.Last(), out var val) ? val : 0;
+        }
+
+        // draft
+        var userKanji = GetUserScore(q => q.questionType == "kanji");
+        var maxKanji = GetMaxScore(maxScoreSummary.KanjiScore);
+        var userVocabulary = GetUserScore(q => q.questionType == "vocabulary");
+        var maxVocabulary = GetMaxScore(maxScoreSummary.VocabularyScore);
+        var userGrammar = GetUserScore(q => q.questionType == "grammar");
+        var maxGrammar = GetMaxScore(maxScoreSummary.GrammarScore);
+        var userReading = GetUserScore(q => q.questionType == "reading");
+        var maxReading = GetMaxScore(maxScoreSummary.ReadingScore);
+        var userListening = GetUserScore(q => q.questionType == "listening");
+        var maxListening = GetMaxScore(maxScoreSummary.ListeningScore);
+
+        // Save as "user/max" string
+        var summary = new TestScoreSummary
+        {
+            TestScoreSummaryId = Guid.NewGuid(),
+            TestId = attempt.testId,
+            TestAttemptId = attempt.attemptId,
+            KanjiScore = $"{userKanji}/{maxKanji}",
+            VocabularyScore = $"{userVocabulary}/{maxVocabulary}",
+            GrammarScore = $"{userGrammar}/{maxGrammar}",
+            ReadingScore = $"{userReading}/{maxReading}",
+            ListeningScore = $"{userListening}/{maxListening}"
+        };
+
+        await _testScoreSummaryRepository.InsertAsync(summary);
     }
 
     /// <summary>
@@ -222,10 +254,6 @@ public class TestAttemptService : ITestAttemptService
             Status = attempt.status,
             StartTime = attempt.startTime,
             EndTime = attempt.endTime,
-            TotalScore = attempt.totalScore,
-            LanguageKnowledgeScore = attempt.languageKnowledgeScore,
-            ReadingScore = attempt.readingScore,
-            ListeningScore = attempt.listeningScore,
             IsPass = attempt.isPass
         };
     }
