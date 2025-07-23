@@ -5,6 +5,7 @@ using JCertPreApplication.Application.Features.Cache;
 using JCertPreApplication.Application.Features.Choices;
 using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Application.Features.Course;
+using JCertPreApplication.Application.Features.Documents;
 using JCertPreApplication.Application.Features.Enrollment;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.Lessons;
@@ -44,6 +45,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITestAttemptService, TestAttemptService>();
             services.AddScoped<IAttemptAnswerService, AttemptAnswerService>();
+            services.AddScoped<IDocumentService, DocumentService>();
 
             // Add AutoMapper
             services.AddAutoMapper(typeof(DependencyInjection).Assembly);
