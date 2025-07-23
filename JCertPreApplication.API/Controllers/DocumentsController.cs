@@ -1,0 +1,92 @@
+using JCertPreApplication.Application.Dtos.Document;
+using JCertPreApplication.Application.Features.Documents;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace JCertPreApplication.API.Controllers
+{
+    [Route("api/documents")]
+    [ApiController]
+    [Tags("Documents")]
+    [Produces("application/json")]
+    public class DocumentsController : ControllerBase
+    {
+        private readonly IDocumentService _documentService;
+
+        public DocumentsController(IDocumentService documentService)
+        {
+            _documentService = documentService;
+        }
+
+        /// <summary>
+        /// Upload a new document for a lesson
+        /// </summary>
+        /// <param name="createDocumentDto">The document data to upload</param>
+        /// <returns>The uploaded document information</returns>
+        [HttpPost("upload")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<DocumentDto>> UploadDocument([FromForm] CreateDocumentDto createDocumentDto)
+        {
+            var result = await _documentService.UploadDocumentAsync(createDocumentDto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get a document by its ID
+        /// </summary>
+        /// <param name="id">The document ID</param>
+        /// <returns>The document information</returns>
+        [HttpGet("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<DocumentDto>> GetDocumentById(Guid id)
+        {
+            var result = await _documentService.GetDocumentByIdAsync(id);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Get all documents for a specific lesson
+        /// </summary>
+        /// <param name="lessonId">The lesson ID</param>
+        /// <returns>List of documents for the lesson</returns>
+        [HttpGet("lesson/{lessonId}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<ICollection<DocumentDto>>> GetDocumentsByLessonId(Guid lessonId)
+        {
+            var result = await _documentService.GetDocumentsByLessonIdAsync(lessonId);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Update a document
+        /// </summary>
+        /// <param name="id">The document ID</param>
+        /// <param name="updateRequest">The update request containing new data</param>
+        /// <returns>The updated document information</returns>
+        [HttpPut("{id}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<DocumentDto>> UpdateDocument(Guid id, [FromForm] UpdateDocumentDto updateRequest)
+        {
+            var result = await _documentService.UpdateDocumentAsync(id, updateRequest);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Delete a document
+        /// </summary>
+        /// <param name="id">The document ID</param>
+        /// <returns>Success status</returns>
+        [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> DeleteDocument(Guid id)
+        {
+            await _documentService.DeleteDocumentAsync(id);
+            return NoContent();
+        }
+    }
+} 
