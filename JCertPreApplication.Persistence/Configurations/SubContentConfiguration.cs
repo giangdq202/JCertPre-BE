@@ -26,6 +26,17 @@ namespace JCertPreApplication.Persistence.Configurations
             .IsRequired()
             .HasConversion<string>()
             .HasMaxLength(50);
+
+        // Configure relationships
+        builder.HasMany(sc => sc.Questions)
+            .WithOne(q => q.SubContent)
+            .HasForeignKey(q => q.SubContentId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(sc => sc.TestTemplateConfigs)
+            .WithOne(tc => tc.SubContent)
+            .HasForeignKey(tc => tc.subContentId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
 }

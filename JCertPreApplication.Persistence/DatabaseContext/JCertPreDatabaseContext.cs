@@ -19,7 +19,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<Choice> Choices { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
-        public DbSet<ExamPassThreshold> ExamPassThresholds { get; set; }
         public DbSet<Feedback> Feedbacks { get; set; }
         public DbSet<InstructorProfile> InstructorProfiles { get; set; }
         public DbSet<Lesson> Lessons { get; set; }
@@ -39,6 +38,8 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<TestAttempt> TestAttempts { get; set; }
         public DbSet<TestQuestion> TestQuestions { get; set; }
         public DbSet<TestScoreSummary> TestScoreSummaries { get; set; }
+        public DbSet<TestTemplate> TestTemplates { get; set; }
+        public DbSet<TestTemplateConfig> TestTemplateConfigs { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<CourseInstructor> CourseInstructors { get; set; }
 
@@ -53,7 +54,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new ChoiceConfiguration());
             modelBuilder.ApplyConfiguration(new DocumentConfiguration());
             modelBuilder.ApplyConfiguration(new EnrollmentConfiguration());
-            modelBuilder.ApplyConfiguration(new ExamPassThresholdConfiguration());
             modelBuilder.ApplyConfiguration(new FeedbackConfiguration());
             modelBuilder.ApplyConfiguration(new InstructorProfileConfiguration());
             modelBuilder.ApplyConfiguration(new LessonConfiguration());
@@ -72,6 +72,8 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new TestAttemptConfiguration());
             modelBuilder.ApplyConfiguration(new TestQuestionConfiguration());
             modelBuilder.ApplyConfiguration(new TestScoreSummaryConfiguration());
+            modelBuilder.ApplyConfiguration(new TestTemplateConfiguration());
+            modelBuilder.ApplyConfiguration(new TestTemplateConfigConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());
             modelBuilder.ApplyConfiguration(new CourseInstructorConfiguration());
         }

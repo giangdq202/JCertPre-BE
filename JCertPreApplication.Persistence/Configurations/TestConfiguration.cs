@@ -45,14 +45,8 @@ namespace JCertPreApplication.Persistence.Configurations
                 .IsRequired()
                 .HasConversion<string>();
 
-            builder.Property(t => t.ExamPassThresholdId)
-                .IsRequired(false); // Nullable FK
-
-            builder.HasOne(t => t.ExamPassThreshold)
-                .WithMany(ept => ept.Tests)
-                .HasForeignKey(t => t.ExamPassThresholdId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.SetNull); // If threshold deleted, set FK to null
+            builder.Property(t => t.testTemplateId)
+                .IsRequired(false);
 
             builder.HasOne(t => t.Lesson)
                 .WithMany(q => q.Tests)
@@ -65,6 +59,12 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasForeignKey(t => t.createdByUserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(t => t.TestTemplate)
+                .WithMany(tt => tt.Tests)
+                .HasForeignKey(t => t.testTemplateId)
+                .IsRequired(false)
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(t => t.TestQuestions)
                 .WithOne(tq => tq.Test)

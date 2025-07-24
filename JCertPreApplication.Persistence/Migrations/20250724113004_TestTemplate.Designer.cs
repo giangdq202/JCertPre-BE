@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250724113004_TestTemplate")]
+    partial class TestTemplate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -744,9 +747,6 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("testTemplateId")
-                        .HasColumnType("uuid");
-
                     b.Property<string>("testType")
                         .IsRequired()
                         .HasColumnType("text");
@@ -761,8 +761,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasIndex("createdByUserId");
 
                     b.HasIndex("lessonId");
-
-                    b.HasIndex("testTemplateId");
 
                     b.ToTable("test", (string)null);
                 });
@@ -1320,16 +1318,9 @@ namespace JCertPreApplication.Persistence.Migrations
                         .HasForeignKey("lessonId")
                         .OnDelete(DeleteBehavior.NoAction);
 
-                    b.HasOne("JCertPreApplication.Domain.Entities.TestTemplate", "TestTemplate")
-                        .WithMany("Tests")
-                        .HasForeignKey("testTemplateId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.Navigation("CreatedByUser");
 
                     b.Navigation("Lesson");
-
-                    b.Navigation("TestTemplate");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestAttempt", b =>
@@ -1512,8 +1503,6 @@ namespace JCertPreApplication.Persistence.Migrations
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestTemplate", b =>
                 {
                     b.Navigation("TestTemplateConfigs");
-
-                    b.Navigation("Tests");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>

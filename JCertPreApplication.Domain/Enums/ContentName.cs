@@ -11,14 +11,14 @@ namespace JCertPreApplication.Domain.Enums
     {
         
         [Description("chữ hán")]
-        ChuHan,
+        Kanji,
         [Description("từ vựng")]
-        TuVung,
+        Vocabulary,
         [Description("ngữ pháp")]
-        NguPhap,
+        Grammar,
         [Description("đọc hiểu")]
-        DocHieu,
+        Reading,
         [Description("nghe hiểu")]
-        NgheHieu
+        Listening
     }
 }

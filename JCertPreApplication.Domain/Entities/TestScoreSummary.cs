@@ -20,6 +20,7 @@ namespace JCertPreApplication.Domain.Entities
         public string? GrammarScore { get; set; }
         public string? ReadingScore { get; set; }
         public string? ListeningScore { get; set; }
+        public string? TotalScore { get; set; } 
 
         // Navigation properties
         public virtual Test Test { get; set; } = null!;
