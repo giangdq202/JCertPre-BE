@@ -11,7 +11,6 @@ namespace JCertPreApplication.Domain.Entities
         public DateTime endTime { get; set; }
         public int attemptNumber { get; set; }
         public TestAttemptStatus status { get; set; }
-
         public bool? isPass { get; set; }
 
         public virtual User User { get; set; } = null!;

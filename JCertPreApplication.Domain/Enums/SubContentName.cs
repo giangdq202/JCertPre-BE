@@ -9,46 +9,42 @@ namespace JCertPreApplication.Domain.Enums
 {
     public enum SubContentName
     {
-        // tat ca cac phan
-        [Description("Tất cả phần")]
-        All,
-
         //chu han
         [Description("Đọc chữ Hán")]
-        DocChuHan,
+        Mondai1,
         [Description("Nhớ chữ Hán")]
-        NhoChuHan,
+        Mondai2,
 
         //tu vung
         [Description("Chọn từ phù hợp với câu")]
-        ChonTuPhuHopVoiCau,
+        Mondai3,
         [Description("Tìm câu có cách diễn đạt giống")]
-        TimCauCoCachDienDatGiong,
+        Mondai4,
 
         //ngu phap
         [Description("Chọn ngữ pháp phù hợp với câu")]
-        ChonNguPhapPhuHopVoiCau,
+        Mondai5,
         [Description("Sắp xếp câu")]
-        SapXepCau,
+        Mondai6,
         [Description("Tìm đáp án đúng để hoàn thành đoạn văn")]
-        TimDapAnDungDeHoanThanhDoanVan,
+        Mondai7,
 
         // doc hieu
         [Description("Đoạn văn ngắn")]
-        DoanVanNgan,
+        Mondai8,
         [Description("Trung văn")]
-        TrungVan,
+        Mondai9,
         [Description("Tìm kiếm thông tin")]
-        TimKiemThongTin,
+        Mondai10,
 
         // nghe hieu
         [Description("Hiểu đề bài")]
-        HieuDeBai,
+        Mondai11,
         [Description("Hiểu điểm chính")]
-        HieuDiemChinh,
+        Mondai12,
         [Description("Diễn đạt bằng lời nói")]
-        DienDatBangLoiNoi,
+        Mondai13,
         [Description("Phản hồi tức thời")]
-        PhanHoiTucThoi
+        Mondai14
     }
 }
