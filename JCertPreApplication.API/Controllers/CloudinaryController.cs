@@ -89,17 +89,31 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Retrieve all resources from Cloudinary with summary stats.
+        /// Retrieve a paginated list of resources from Cloudinary with cursor-based pagination.
         /// </summary>
+        /// <param name="maxResults">Maximum number of items per page (1-500). Default: 100</param>
+        /// <param name="nextCursor">Cursor for the next page from previous response. Null for first page.</param>
         [HttpGet("resources")]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetResourcesPage([FromQuery] int maxResults = 100, [FromQuery] string? nextCursor = null)
         {
-            var dto = await _service.GetAllResourcesAsync();
+            var pageDto = await _service.GetResourcesPageAsync(maxResults, nextCursor);
+            
             return Ok(new
             {
-                total   = dto.TotalResources,
-                sizeMB  = Math.Round(dto.TotalBytes / 1024.0 / 1024.0, 2),
-                items   = dto.Resources
+                resources = pageDto.Resources,
+                nextCursor = pageDto.NextCursor,
+                maxResults = pageDto.MaxResults,
+                actualResults = pageDto.ActualResults,
+                hasNextPage = pageDto.HasNextPage,
+                retrievedAt = pageDto.RetrievedAt,
+                processingTimeMs = pageDto.ProcessingTimeMs,
+                pagination = new
+                {
+                    maxResults = pageDto.MaxResults,
+                    actualResults = pageDto.ActualResults,
+                    hasNextPage = pageDto.HasNextPage,
+                    nextCursor = pageDto.NextCursor
+                }
             });
         }
 
