@@ -1,138 +1,203 @@
-using Microsoft.AspNetCore.Mvc;
-using CloudinaryDotNet.Actions;
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Cloudinary;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Handles Cloudinary file operations including upload, delete, and resource management.
+    /// </summary>
     [Route("api/cloudinary")]
     [ApiController]
+    [Tags("Cloudinary")]
+    [Produces("application/json")]
     public class CloudinaryController : ControllerBase
     {
-        private readonly ICloudinaryService _service;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public CloudinaryController(ICloudinaryService service)
+        public CloudinaryController(ICloudinaryService cloudinaryService)
         {
-            _service = service ?? throw new ArgumentNullException(nameof(service));
+            _cloudinaryService = cloudinaryService ?? throw new ArgumentNullException(nameof(cloudinaryService));
         }
 
         /// <summary>
-        /// Upload an image file to Cloudinary.
+        /// Uploads an image file to Cloudinary.
         /// </summary>
-        [HttpPost("upload-image")]
-        public async Task<IActionResult> UploadImage([FromForm] IFormFile file)
+        /// <param name="file">The image file to upload (JPEG, PNG, GIF, BMP, WebP, SVG).</param>
+        /// <returns>Upload result with public ID and URL.</returns>
+        [HttpPost("upload/image")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
         {
-            var result = await _service.UploadImageAsync(file);
+            var result = await _cloudinaryService.UploadImageAsync(file);
             return Ok(new
             {
-                result.PublicId,
-                url    = result.SecureUrl,
-                bytes  = result.Bytes,
-                format = result.Format
+                success = true,
+                message = "Image uploaded successfully",
+                data = new
+                {
+                    publicId = result.PublicId,
+                    url = result.SecureUrl?.ToString() ?? result.Url?.ToString(),
+                    width = result.Width,
+                    height = result.Height,
+                    format = result.Format,
+                    bytes = result.Bytes,
+                    createdAt = result.CreatedAt
+                }
             });
         }
 
         /// <summary>
-        /// Upload a video file to Cloudinary.
+        /// Uploads a video file to Cloudinary using chunked upload for large files.
         /// </summary>
-        [HttpPost("upload-video")]
-        public async Task<IActionResult> UploadVideo([FromForm] IFormFile file)
+        /// <param name="file">The video file to upload (MP4, AVI, MOV, WMV, FLV, WebM, MKV, 3GP).</param>
+        /// <returns>Upload result with public ID and URL.</returns>
+        [HttpPost("upload/video")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadVideo(IFormFile file)
         {
-            var result = await _service.UploadVideoAsync(file);
+            var result = await _cloudinaryService.UploadVideoAsync(file);
             return Ok(new
             {
-                result.PublicId,
-                url      = result.SecureUrl,
-                bytes    = result.Bytes,
-                duration = result.Duration,
-                format   = result.Format
+                success = true,
+                message = "Video uploaded successfully",
+                data = new
+                {
+                    publicId = result.PublicId,
+                    url = result.SecureUrl?.ToString() ?? result.Url?.ToString(),
+                    width = result.Width,
+                    height = result.Height,
+                    format = result.Format,
+                    duration = result.Duration,
+                    bytes = result.Bytes,
+                    createdAt = result.CreatedAt
+                }
             });
         }
 
         /// <summary>
-        /// Upload a raw/document file to Cloudinary.
+        /// Uploads a raw file (documents, archives, etc.) to Cloudinary.
         /// </summary>
-        [HttpPost("upload-raw")]
-        public async Task<IActionResult> UploadRaw([FromForm] IFormFile file)
+        /// <param name="file">The raw file to upload.</param>
+        /// <returns>Upload result with public ID and URL.</returns>
+        [HttpPost("upload/file")]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UploadRawFile(IFormFile file)
         {
-            var result = await _service.UploadRawFileAsync(file);
+            var result = await _cloudinaryService.UploadRawFileAsync(file);
             return Ok(new
             {
-                result.PublicId,
-                url    = result.SecureUrl,
-                bytes  = result.Bytes,
-                format = result.Format
+                success = true,
+                message = "File uploaded successfully",
+                data = new
+                {
+                    publicId = result.PublicId,
+                    url = result.SecureUrl?.ToString() ?? result.Url?.ToString(),
+                    format = result.Format,
+                    bytes = result.Bytes,
+                    createdAt = result.CreatedAt
+                }
             });
         }
 
         /// <summary>
-        /// Delete a resource (image, video, raw) from Cloudinary.
+        /// Deletes an image from Cloudinary by public ID.
         /// </summary>
-        [HttpDelete("delete")]
-        public async Task<IActionResult> Delete([FromBody] DeleteRequest dto)
+        /// <param name="publicId">The public ID of the image to delete.</param>
+        /// <returns>Deletion result.</returns>
+        [HttpDelete("delete/image/{publicId}")]
+        public async Task<IActionResult> DeleteImage(string publicId)
         {
-            if (dto is null || string.IsNullOrWhiteSpace(dto.Type) || string.IsNullOrWhiteSpace(dto.PublicId))
-                return BadRequest(new { error = "Type and PublicId are required." });
-
-            DeletionResult result = dto.Type.ToLowerInvariant() switch
-            {
-                "image" => await _service.DeleteImageAsync(dto.PublicId),
-                "video" => await _service.DeleteVideoAsync(dto.PublicId),
-                "raw"   => await _service.DeleteRawFileAsync(dto.PublicId),
-                _       => throw new ArgumentException($"Unsupported type '{dto.Type}'.")
-            };
-
+            var result = await _cloudinaryService.DeleteImageAsync(publicId);
             return Ok(new
             {
-                dto.PublicId,
-                result = result.Result
+                success = true,
+                message = "Image deleted successfully",
+                data = new
+                {
+                    publicId = publicId,
+                    result = result.Result
+                }
             });
         }
 
         /// <summary>
-        /// Retrieve a paginated list of resources from Cloudinary with cursor-based pagination.
+        /// Deletes a video from Cloudinary by public ID.
         /// </summary>
-        /// <param name="maxResults">Maximum number of items per page (1-500). Default: 100</param>
-        /// <param name="nextCursor">Cursor for the next page from previous response. Null for first page.</param>
-        /// <param name="resourceType">Filter by resource type: "image" (default), "video", or "raw"</param>
+        /// <param name="publicId">The public ID of the video to delete.</param>
+        /// <returns>Deletion result.</returns>
+        [HttpDelete("delete/video/{publicId}")]
+        public async Task<IActionResult> DeleteVideo(string publicId)
+        {
+            var result = await _cloudinaryService.DeleteVideoAsync(publicId);
+            return Ok(new
+            {
+                success = true,
+                message = "Video deleted successfully",
+                data = new
+                {
+                    publicId = publicId,
+                    result = result.Result
+                }
+            });
+        }
+
+        /// <summary>
+        /// Deletes a raw file from Cloudinary by public ID.
+        /// </summary>
+        /// <param name="publicId">The public ID of the file to delete.</param>
+        /// <returns>Deletion result.</returns>
+        [HttpDelete("delete/file/{publicId}")]
+        public async Task<IActionResult> DeleteRawFile(string publicId)
+        {
+            var result = await _cloudinaryService.DeleteRawFileAsync(publicId);
+            return Ok(new
+            {
+                success = true,
+                message = "File deleted successfully",
+                data = new
+                {
+                    publicId = publicId,
+                    result = result.Result
+                }
+            });
+        }
+
+        /// <summary>
+        /// Gets a paginated list of resources from Cloudinary.
+        /// </summary>
+        /// <param name="maxResults">Maximum number of results per page (1-500). Default: 100.</param>
+        /// <param name="nextCursor">Cursor for the next page. Use null for the first page.</param>
+        /// <param name="resourceType">Type of resources to retrieve: "image", "video", or "raw". Default: "image".</param>
+        /// <returns>Paginated list of resources with cursor for next page.</returns>
         [HttpGet("resources")]
-        public async Task<IActionResult> GetResourcesPage([FromQuery] int maxResults = 100, [FromQuery] string? nextCursor = null, [FromQuery] string resourceType = "image")
+        public async Task<IActionResult> GetResources(
+            [FromQuery] int maxResults = 100,
+            [FromQuery] string? nextCursor = null,
+            [FromQuery] string resourceType = "image")
         {
-            var pageDto = await _service.GetResourcesPageAsync(maxResults, nextCursor, resourceType);
-            
+            var result = await _cloudinaryService.GetResourcesPageAsync(maxResults, nextCursor, resourceType);
             return Ok(new
             {
-                resources = pageDto.Resources,
-                nextCursor = pageDto.NextCursor,
-                maxResults = pageDto.MaxResults,
-                resourceType = pageDto.ResourceType,
-                actualResults = pageDto.ActualResults,
-                hasNextPage = pageDto.HasNextPage,
-                retrievedAt = pageDto.RetrievedAt,
-                processingTimeMs = pageDto.ProcessingTimeMs
+                success = true,
+                message = "Resources retrieved successfully",
+                data = result
             });
         }
 
         /// <summary>
-        /// Health check for CloudinaryService.
+        /// Test endpoint to check if Cloudinary service is working.
         /// </summary>
+        /// <returns>Service status.</returns>
         [HttpGet("health")]
-        public IActionResult Health()
-            => Ok(new { service = "CloudinaryService", status = "OK" });
+        public IActionResult HealthCheck()
+        {
+            return Ok(new
+            {
+                success = true,
+                message = "Cloudinary service is healthy",
+                timestamp = DateTime.UtcNow
+            });
+        }
     }
-
-    /// <summary>
-    /// DTO for delete request body.
-    /// </summary>
-    public class DeleteRequest
-    {
-        /// <summary>
-        /// Resource type: "image", "video", or "raw".
-        /// </summary>
-        public string Type { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Public ID of the resource (e.g. "documents/note_ojmfmp.txt").
-        /// </summary>
-        public string PublicId { get; set; } = string.Empty;
-    }
-}
+} 
