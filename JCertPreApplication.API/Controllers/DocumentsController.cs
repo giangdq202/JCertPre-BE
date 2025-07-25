@@ -61,21 +61,6 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Update a document
-        /// </summary>
-        /// <param name="id">The document ID</param>
-        /// <param name="updateRequest">The update request containing new data</param>
-        /// <returns>The updated document information</returns>
-        [HttpPut("{id}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DocumentDto>> UpdateDocument(Guid id, [FromForm] UpdateDocumentDto updateRequest)
-        {
-            var result = await _documentService.UpdateDocumentAsync(id, updateRequest);
-            return Ok(result);
-        }
-
-        /// <summary>
         /// Delete a document
         /// </summary>
         /// <param name="id">The document ID</param>

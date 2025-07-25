@@ -8,7 +8,6 @@ namespace JCertPreApplication.Application.Features.Documents
         Task<DocumentDto> UploadDocumentAsync(CreateDocumentDto createDocumentDto);
         Task<DocumentDto> GetDocumentByIdAsync(Guid documentId);
         Task<ICollection<DocumentDto>> GetDocumentsByLessonIdAsync(Guid lessonId);
-        Task<DocumentDto> UpdateDocumentAsync(Guid documentId, UpdateDocumentDto updateRequest);
         Task<bool> DeleteDocumentAsync(Guid documentId);
     }
 } 
