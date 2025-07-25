@@ -103,19 +103,19 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Deletes an image from Cloudinary by public ID.
         /// </summary>
-        /// <param name="publicId">The public ID of the image to delete.</param>
+        /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
-        [HttpDelete("delete/image/{publicId}")]
-        public async Task<IActionResult> DeleteImage(string publicId)
+        [HttpDelete("delete/image")]
+        public async Task<IActionResult> DeleteImage([FromBody] DeleteResourceDto request)
         {
-            var result = await _cloudinaryService.DeleteImageAsync(publicId);
+            var result = await _cloudinaryService.DeleteImageAsync(request.PublicId);
             return Ok(new
             {
                 success = true,
                 message = "Image deleted successfully",
                 data = new
                 {
-                    publicId = publicId,
+                    publicId = request.PublicId,
                     result = result.Result
                 }
             });
@@ -124,19 +124,19 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Deletes a video from Cloudinary by public ID.
         /// </summary>
-        /// <param name="publicId">The public ID of the video to delete.</param>
+        /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
-        [HttpDelete("delete/video/{publicId}")]
-        public async Task<IActionResult> DeleteVideo(string publicId)
+        [HttpDelete("delete/video")]
+        public async Task<IActionResult> DeleteVideo([FromBody] DeleteResourceDto request)
         {
-            var result = await _cloudinaryService.DeleteVideoAsync(publicId);
+            var result = await _cloudinaryService.DeleteVideoAsync(request.PublicId);
             return Ok(new
             {
                 success = true,
                 message = "Video deleted successfully",
                 data = new
                 {
-                    publicId = publicId,
+                    publicId = request.PublicId,
                     result = result.Result
                 }
             });
@@ -145,19 +145,19 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Deletes a raw file from Cloudinary by public ID.
         /// </summary>
-        /// <param name="publicId">The public ID of the file to delete.</param>
+        /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
-        [HttpDelete("delete/file/{publicId}")]
-        public async Task<IActionResult> DeleteRawFile(string publicId)
+        [HttpDelete("delete/file")]
+        public async Task<IActionResult> DeleteRawFile([FromBody] DeleteResourceDto request)
         {
-            var result = await _cloudinaryService.DeleteRawFileAsync(publicId);
+            var result = await _cloudinaryService.DeleteRawFileAsync(request.PublicId);
             return Ok(new
             {
                 success = true,
                 message = "File deleted successfully",
                 data = new
                 {
-                    publicId = publicId,
+                    publicId = request.PublicId,
                     result = result.Result
                 }
             });
