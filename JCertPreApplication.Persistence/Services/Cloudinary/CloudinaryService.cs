@@ -348,7 +348,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
             }
         }
 
-        public async Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null)
+        public async Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image")
         {
             // Validate maxResults parameter
             if (maxResults < 1 || maxResults > 500)
@@ -357,80 +357,45 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 throw ApiException.BadRequest("INVALID_MAX_RESULTS", "maxResults phải nằm trong khoảng từ 1 đến 500.");
             }
 
-            _logger.LogInformation("Starting to retrieve paginated resources from Cloudinary. MaxResults: {MaxResults}, NextCursor: {NextCursor}", 
-                maxResults, nextCursor ?? "null");
+            // Map resourceType string to Cloudinary ResourceType enum
+            var resourceTypeEnum = resourceType.ToLowerInvariant() switch
+            {
+                "image" => ResourceType.Image,
+                "video" => ResourceType.Video,
+                "raw" => ResourceType.Raw,
+                _ => throw ApiException.BadRequest("INVALID_RESOURCE_TYPE", "resourceType phải là image, video hoặc raw.")
+            };
+
+            _logger.LogInformation("Retrieving resources: Type={ResourceType}, MaxResults={MaxResults}, NextCursor={NextCursor}",
+                resourceType, maxResults, nextCursor ?? "null");
 
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
                 var allDtos = new List<CloudinaryResourceDto>();
-                string? combinedNextCursor = null;
 
-                // Iterate through each resource type: Image, Video, Raw
-                var resourceTypes = new[] { ResourceType.Image, ResourceType.Video, ResourceType.Raw };
-
-                foreach (var resourceType in resourceTypes)
+                // Single resource type request
+                var result = await GetResourcesForType(resourceTypeEnum, maxResults, nextCursor);
+                
+                if (result.Resources != null && result.Resources.Any())
                 {
-                    _logger.LogDebug("Retrieving paginated resources of type: {ResourceType}", resourceType);
-
-                    var listParams = new ListResourcesParams
+                    _logger.LogDebug("Found {Count} resources of type {ResourceType}", result.Resources.Count(), resourceType);
+                    
+                    // Convert Cloudinary Resources to DTOs (format handling is done in DTO converter)
+                    foreach (var resource in result.Resources)
                     {
-                        ResourceType = resourceType,
-                        MaxResults = Math.Min(maxResults, 500), // Ensure we don't exceed Cloudinary limits
-                        NextCursor = nextCursor,
-                        Tags = true,
-                        Context = true
-                    };
-
-                    ListResourcesResult result;
-                    try
-                    {
-                        result = await _cloudinary.ListResourcesAsync(listParams);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Error retrieving paginated resources of type {ResourceType}", resourceType);
-                        throw ApiException.InternalServerError(
-                            "CLOUDINARY_LIST_FAILED", 
-                            $"Failed to retrieve {resourceType} resources from Cloudinary: {ex.Message}"
-                        );
-                    }
-
-                    // Check for Cloudinary-specific errors
-                    if (result.Error != null)
-                    {
-                        _logger.LogError("Cloudinary paginated list failed for type {ResourceType}: {ErrorMessage}", resourceType, result.Error.Message);
-                        throw ApiException.BadRequest("CLOUDINARY_LIST_FAILED", $"Failed to list {resourceType} resources: {result.Error.Message}");
-                    }
-
-                    if (result.Resources != null && result.Resources.Any())
-                    {
-                        _logger.LogDebug("Found {Count} paginated resources of type {ResourceType}", result.Resources.Count(), resourceType);
-                        
-                        // Convert Cloudinary Resources to DTOs
-                        foreach (var resource in result.Resources)
+                        try
                         {
-                            try
-                            {
-                                var dto = CloudinaryResourceDto.FromCloudinaryResource(resource);
-                                allDtos.Add(dto);
-                            }
-                            catch (Exception ex)
-                            {
-                                _logger.LogWarning(ex, "Failed to convert paginated resource {PublicId} to DTO", resource.PublicId);
-                                // Continue with other resources
-                            }
+                            var dto = CloudinaryResourceDto.FromCloudinaryResource(resource);
+                            allDtos.Add(dto);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning(ex, "Failed to convert resource {PublicId} to DTO", resource.PublicId);
+                            // Continue with other resources
                         }
                     }
-
-                    // Capture the next cursor (same for all types; last non-null wins)
-                    if (!string.IsNullOrEmpty(result.NextCursor))
-                    {
-                        combinedNextCursor = result.NextCursor;
-                    }
-
-                    _logger.LogDebug("Completed retrieving paginated resources of type: {ResourceType}", resourceType);
                 }
 
                 stopwatch.Stop();
@@ -438,14 +403,15 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 var pageDto = new CloudinaryResourcesPageDto
                 {
                     Resources = allDtos.AsReadOnly(),
-                    NextCursor = combinedNextCursor,
+                    NextCursor = result.NextCursor,
                     MaxResults = maxResults,
+                    ResourceType = resourceType,
                     RetrievedAt = DateTime.UtcNow,
                     ProcessingTimeMs = stopwatch.ElapsedMilliseconds
                 };
 
-                _logger.LogInformation("Successfully retrieved {ActualResults} paginated resources from Cloudinary in {ProcessingTimeMs}ms. HasNextPage: {HasNextPage}", 
-                    pageDto.ActualResults, pageDto.ProcessingTimeMs, pageDto.HasNextPage);
+                _logger.LogInformation("Successfully retrieved {ActualResults} resources (Type: {ResourceType}) from Cloudinary in {ProcessingTimeMs}ms. HasNextPage: {HasNextPage}", 
+                    pageDto.ActualResults, resourceType, pageDto.ProcessingTimeMs, pageDto.HasNextPage);
 
                 return pageDto;
             }
@@ -459,6 +425,43 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 stopwatch.Stop();
                 _logger.LogError(ex, "Unexpected error while retrieving paginated resources from Cloudinary");
                 throw ApiException.InternalServerError("GET_PAGINATED_RESOURCES_ERROR", "Đã xảy ra lỗi trong quá trình lấy danh sách resources phân trang.");
+            }
+        }
+
+        /// <summary>
+        /// Helper method to get resources for a specific type
+        /// </summary>
+        private async Task<ListResourcesResult> GetResourcesForType(ResourceType resourceType, int maxResults, string? nextCursor)
+        {
+            var listParams = new ListResourcesParams
+            {
+                ResourceType = resourceType,
+                MaxResults = Math.Min(maxResults, 500), // Ensure we don't exceed Cloudinary limits
+                NextCursor = nextCursor,
+                Tags = true,
+                Context = true
+            };
+
+            try
+            {
+                var result = await _cloudinary.ListResourcesAsync(listParams);
+                
+                // Check for Cloudinary-specific errors
+                if (result.Error != null)
+                {
+                    _logger.LogError("Cloudinary list failed for type {ResourceType}: {ErrorMessage}", resourceType, result.Error.Message);
+                    throw ApiException.BadRequest("CLOUDINARY_LIST_FAILED", $"Failed to list {resourceType} resources: {result.Error.Message}");
+                }
+
+                return result;
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                _logger.LogError(ex, "Error retrieving resources of type {ResourceType}", resourceType);
+                throw ApiException.InternalServerError(
+                    "CLOUDINARY_LIST_FAILED", 
+                    $"Failed to retrieve {resourceType} resources from Cloudinary: {ex.Message}"
+                );
             }
         }
 

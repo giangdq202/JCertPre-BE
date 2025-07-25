@@ -21,6 +21,11 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
         public int MaxResults { get; init; }
 
         /// <summary>
+        /// Loại resource được lọc: "image", "video", hoặc "raw"
+        /// </summary>
+        public string ResourceType { get; init; } = string.Empty;
+
+        /// <summary>
         /// Số lượng resources thực tế trả về trong trang này
         /// </summary>
         public int ActualResults => Resources.Count;

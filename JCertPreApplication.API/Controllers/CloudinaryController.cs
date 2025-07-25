@@ -93,27 +93,22 @@ namespace JCertPreApplication.API.Controllers
         /// </summary>
         /// <param name="maxResults">Maximum number of items per page (1-500). Default: 100</param>
         /// <param name="nextCursor">Cursor for the next page from previous response. Null for first page.</param>
+        /// <param name="resourceType">Filter by resource type: "image" (default), "video", or "raw"</param>
         [HttpGet("resources")]
-        public async Task<IActionResult> GetResourcesPage([FromQuery] int maxResults = 100, [FromQuery] string? nextCursor = null)
+        public async Task<IActionResult> GetResourcesPage([FromQuery] int maxResults = 100, [FromQuery] string? nextCursor = null, [FromQuery] string resourceType = "image")
         {
-            var pageDto = await _service.GetResourcesPageAsync(maxResults, nextCursor);
+            var pageDto = await _service.GetResourcesPageAsync(maxResults, nextCursor, resourceType);
             
             return Ok(new
             {
                 resources = pageDto.Resources,
                 nextCursor = pageDto.NextCursor,
                 maxResults = pageDto.MaxResults,
+                resourceType = pageDto.ResourceType,
                 actualResults = pageDto.ActualResults,
                 hasNextPage = pageDto.HasNextPage,
                 retrievedAt = pageDto.RetrievedAt,
-                processingTimeMs = pageDto.ProcessingTimeMs,
-                pagination = new
-                {
-                    maxResults = pageDto.MaxResults,
-                    actualResults = pageDto.ActualResults,
-                    hasNextPage = pageDto.HasNextPage,
-                    nextCursor = pageDto.NextCursor
-                }
+                processingTimeMs = pageDto.ProcessingTimeMs
             });
         }
 

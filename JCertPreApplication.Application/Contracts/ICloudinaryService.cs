@@ -54,7 +54,8 @@ namespace JCertPreApplication.Application.Contracts
         /// </summary>
         /// <param name="maxResults">Số lượng tối đa items mỗi trang (1-500)</param>
         /// <param name="nextCursor">Cursor trả về từ trang trước; null cho trang đầu tiên</param>
+        /// <param name="resourceType">Loại resource cần lọc: "image" (mặc định), "video", hoặc "raw"</param>
         /// <returns>Một trang resources và cursor cho trang tiếp theo (nếu có)</returns>
-        Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null);
+        Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image");
     }
 } 

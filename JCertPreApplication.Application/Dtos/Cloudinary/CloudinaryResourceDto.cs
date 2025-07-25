@@ -69,12 +69,23 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
         /// <returns>CloudinaryResourceDto</returns>
         public static CloudinaryResourceDto FromCloudinaryResource(Resource resource)
         {
+            var resourceType = resource.ResourceType?.ToString() ?? string.Empty;
+            var format = resource.Format ?? string.Empty;
+            
+            // Enhanced format handling for raw files
+            if (resourceType.Equals("raw", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(format))
+            {
+                // Extract extension from publicId for raw files when format is empty
+                var ext = System.IO.Path.GetExtension(resource.PublicId)?.TrimStart('.').ToLowerInvariant();
+                format = ext ?? string.Empty;
+            }
+            
             return new CloudinaryResourceDto
             {
                 PublicId = resource.PublicId ?? string.Empty,
                 SecureUrl = resource.SecureUrl?.ToString() ?? string.Empty,
-                ResourceType = resource.ResourceType?.ToString() ?? string.Empty,
-                Format = resource.Format ?? string.Empty, // Đảm bảo format luôn có cho tất cả resource types
+                ResourceType = resourceType,
+                Format = format, // Enhanced format với xử lý đặc biệt cho raw files
                 Bytes = resource.Bytes,
                 Width = resource.Width,
                 Height = resource.Height,
