@@ -233,28 +233,7 @@ namespace JCertPreApplication.Application.Features.Users
             return ExtractCloudinaryPublicId(cloudinaryUrl);
         }
 
-        private static bool IsImageFile(IFormFile file)
-        {
-            var allowedImageTypes = new[]
-            {
-                "image/jpeg", "image/jpg", "image/png", "image/gif",
-                "image/bmp", "image/webp", "image/svg+xml"
-            };
-
-            return allowedImageTypes.Contains(file.ContentType?.ToLowerInvariant());
-        }
-
-        private static bool IsVideoFile(IFormFile file)
-        {
-            var allowedVideoTypes = new[]
-            {
-                "video/mp4", "video/avi", "video/mov", "video/wmv",
-                "video/flv", "video/webm", "video/mkv", "video/3gp"
-            };
-
-            return allowedVideoTypes.Contains(file.ContentType?.ToLowerInvariant());
-        }
-
+// Removed unused methods IsImageFile and IsVideoFile
         #endregion
     }
 
