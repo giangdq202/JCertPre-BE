@@ -4,7 +4,6 @@ using JCertPreApplication.Application.Dtos.Document;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Http;
-using System.Net;
 
 namespace JCertPreApplication.Application.Features.Documents
 {
@@ -15,25 +14,30 @@ namespace JCertPreApplication.Application.Features.Documents
         private readonly ICloudinaryService _cloudinaryService;
         private readonly IMapper _mapper;
         
-        // Phân loại file types
-        private readonly string[] _allowedImageTypes = { 
-            "image/jpeg", "image/jpg", "image/png", "image/gif", 
-            "image/bmp", "image/webp", "image/svg+xml"
+        // Image file types - only JPG, PNG, JPEG
+        private readonly string[] _imageFileTypes = {
+            "image/jpeg",
+            "image/jpg",
+            "image/png"
         };
-        
-        private readonly string[] _allowedVideoTypes = { 
-            "video/mp4", "video/avi", "video/mov", "video/wmv", 
-            "video/flv", "video/webm", "video/mkv", "video/3gp"
+
+        // Video file types - only MP4
+        private readonly string[] _videoFileTypes = {
+            "video/mp4"
         };
-        
-        private readonly string[] _allowedDocumentTypes = {
+
+        // Document file types - PDF, Excel, Word, PowerPoint
+        private readonly string[] _rawFileTypes = {
             "application/pdf",
+            // Word documents
             "application/msword",
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            // Excel documents
+            "application/vnd.ms-excel",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            // PowerPoint documents
             "application/vnd.ms-powerpoint",
-            "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "text/plain",
-            "application/rtf"
+            "application/vnd.openxmlformats-officedocument.presentationml.presentation"
         };
 
         public DocumentService(
@@ -48,9 +52,9 @@ namespace JCertPreApplication.Application.Features.Documents
             _mapper = mapper;
         }
 
-        public async Task<DocumentDto> UploadDocumentAsync(CreateDocumentDto createDocumentDto)
+        public async Task<DocumentDto> UploadImageDocumentAsync(CreateDocumentDto createDocumentDto)
         {
-            // Kiểm tra tính hợp lệ của lessonId
+            // Validate lesson exists
             var lesson = await _lessonRepository.GetByIdAsync(createDocumentDto.lessonId);
             if (lesson == null)
             {
@@ -58,42 +62,47 @@ namespace JCertPreApplication.Application.Features.Documents
             }
 
             var file = createDocumentDto.file;
-            // Kiểm tra file
+
+            // Validate file
             if (file == null || file.Length == 0)
             {
                 throw ApiException.BadRequest("INVALID_FILE", "File is required");
             }
 
-            // Kiểm tra loại file dựa trên content type
-            var fileType = GetFileType(file);
-            if (fileType == FileType.Unsupported)
+            // Validate file type for images
+            if (!_imageFileTypes.Contains(file.ContentType?.ToLowerInvariant()))
             {
-                throw ApiException.BadRequest("INVALID_FILE_TYPE", "Unsupported file type");
+                throw ApiException.BadRequest("INVALID_IMAGE_TYPE", "Only image files are allowed for this endpoint");
             }
 
-            // Kiểm tra kích thước file (ví dụ: tối đa 100MB)
-            const long maxFileSize = 100 * 1024 * 1024; // 100MB
+            // Validate file size (50MB max for images)
+            const long maxFileSize = 50 * 1024 * 1024;
             if (file.Length > maxFileSize)
             {
-                throw ApiException.BadRequest("FILE_TOO_LARGE", "File size exceeds maximum limit");
+                throw ApiException.BadRequest("FILE_TOO_LARGE", "Image file size exceeds maximum limit of 50MB");
             }
 
             try
             {
-                // Upload file theo loại tương ứng và lấy publicId
-                var (fileUrl, publicId) = await UploadFileByType(file, fileType);
+                // Upload image file
+                var uploadResult = await _cloudinaryService.UploadImageAsync(file);
 
-                // Tạo Document entity - lưu publicId vào documentName
+                if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
+                {
+                    throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload image to cloud storage");
+                }
+
+                // Create Document entity
                 var document = new Document
                 {
                     documentId = Guid.NewGuid(),
                     lessonId = createDocumentDto.lessonId,
-                    documentName = publicId, // Lưu publicId thay vì tên file gốc
-                    fileUrl = fileUrl,
+                    documentName = uploadResult.PublicId,
+                    fileUrl = uploadResult.SecureUrl.ToString(),
                     uploadedAt = DateTime.UtcNow
                 };
 
-                // Lưu vào database
+                // Save to database
                 await _documentRepository.InsertAsync(document);
                 await _documentRepository.SaveChangesAsync();
 
@@ -101,7 +110,131 @@ namespace JCertPreApplication.Application.Features.Documents
             }
             catch (Exception ex) when (!(ex is ApiException))
             {
-                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload document");
+                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload image document");
+            }
+        }
+
+        public async Task<DocumentDto> UploadVideoDocumentAsync(CreateDocumentDto createDocumentDto)
+        {
+            // Validate lesson exists
+            var lesson = await _lessonRepository.GetByIdAsync(createDocumentDto.lessonId);
+            if (lesson == null)
+            {
+                throw ApiException.NotFound("Lesson", createDocumentDto.lessonId);
+            }
+
+            var file = createDocumentDto.file;
+
+            // Validate file
+            if (file == null || file.Length == 0)
+            {
+                throw ApiException.BadRequest("INVALID_FILE", "File is required");
+            }
+
+            // Validate file type for videos
+            if (!_videoFileTypes.Contains(file.ContentType?.ToLowerInvariant()))
+            {
+                throw ApiException.BadRequest("INVALID_VIDEO_TYPE", "Only video files are allowed for this endpoint");
+            }
+
+            // Validate file size (500MB max for videos)
+            const long maxFileSize = 500 * 1024 * 1024;
+            if (file.Length > maxFileSize)
+            {
+                throw ApiException.BadRequest("FILE_TOO_LARGE", "Video file size exceeds maximum limit of 500MB");
+            }
+
+            try
+            {
+                // Upload video file
+                var uploadResult = await _cloudinaryService.UploadVideoAsync(file);
+
+                if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
+                {
+                    throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload video to cloud storage");
+                }
+
+                // Create Document entity
+                var document = new Document
+                {
+                    documentId = Guid.NewGuid(),
+                    lessonId = createDocumentDto.lessonId,
+                    documentName = uploadResult.PublicId,
+                    fileUrl = uploadResult.SecureUrl.ToString(),
+                    uploadedAt = DateTime.UtcNow
+                };
+
+                // Save to database
+                await _documentRepository.InsertAsync(document);
+                await _documentRepository.SaveChangesAsync();
+
+                return _mapper.Map<DocumentDto>(document);
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload video document");
+            }
+        }
+
+        public async Task<DocumentDto> UploadRawDocumentAsync(CreateDocumentDto createDocumentDto)
+        {
+            // Validate lesson exists
+            var lesson = await _lessonRepository.GetByIdAsync(createDocumentDto.lessonId);
+            if (lesson == null)
+            {
+                throw ApiException.NotFound("Lesson", createDocumentDto.lessonId);
+            }
+
+            var file = createDocumentDto.file;
+
+            // Validate file
+            if (file == null || file.Length == 0)
+            {
+                throw ApiException.BadRequest("INVALID_FILE", "File is required");
+            }
+
+            // Validate file type for raw documents
+            if (!_rawFileTypes.Contains(file.ContentType?.ToLowerInvariant()))
+            {
+                throw ApiException.BadRequest("INVALID_DOCUMENT_TYPE", "Only document files (PDF, Word, PowerPoint, etc.) are allowed for this endpoint");
+            }
+
+            // Validate file size (100MB max for documents)
+            const long maxFileSize = 100 * 1024 * 1024;
+            if (file.Length > maxFileSize)
+            {
+                throw ApiException.BadRequest("FILE_TOO_LARGE", "Document file size exceeds maximum limit of 100MB");
+            }
+
+            try
+            {
+                // Upload raw document file
+                var uploadResult = await _cloudinaryService.UploadRawFileAsync(file);
+
+                if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
+                {
+                    throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload document to cloud storage");
+                }
+
+                // Create Document entity
+                var document = new Document
+                {
+                    documentId = Guid.NewGuid(),
+                    lessonId = createDocumentDto.lessonId,
+                    documentName = uploadResult.PublicId,
+                    fileUrl = uploadResult.SecureUrl.ToString(),
+                    uploadedAt = DateTime.UtcNow
+                };
+
+                // Save to database
+                await _documentRepository.InsertAsync(document);
+                await _documentRepository.SaveChangesAsync();
+
+                return _mapper.Map<DocumentDto>(document);
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload raw document");
             }
         }
 
@@ -132,13 +265,13 @@ namespace JCertPreApplication.Application.Features.Documents
 
             try
             {
-                // Sử dụng documentName (chính là publicId) để xóa file
+                // Delete file from cloud storage using publicId
                 if (!string.IsNullOrEmpty(document.documentName))
                 {
-                    await DeleteFileByPublicId(document.documentName, document.fileUrl);
+                    await _cloudinaryService.DeleteRawFileAsync(document.documentName);
                 }
 
-                // Xóa document khỏi database
+                // Delete document from database
                 await _documentRepository.DeleteAsync(document);
                 await _documentRepository.SaveChangesAsync();
 
@@ -149,141 +282,5 @@ namespace JCertPreApplication.Application.Features.Documents
                 throw ApiException.InternalServerError("DELETE_FAILED", "Failed to delete document");
             }
         }
-
-        #region Private Helper Methods
-
-        private enum FileType
-        {
-            Image,
-            Video,
-            Document,
-            Unsupported
-        }
-
-        private FileType GetFileType(IFormFile file)
-        {
-            var contentType = file.ContentType?.ToLowerInvariant();
-            
-            if (string.IsNullOrEmpty(contentType))
-            {
-                return FileType.Unsupported;
-            }
-
-            if (_allowedImageTypes.Contains(contentType))
-            {
-                return FileType.Image;
-            }
-
-            if (_allowedVideoTypes.Contains(contentType))
-            {
-                return FileType.Video;
-            }
-
-            if (_allowedDocumentTypes.Contains(contentType))
-            {
-                return FileType.Document;
-            }
-
-            return FileType.Unsupported;
-        }
-
-        private async Task<(string fileUrl, string publicId)> UploadFileByType(IFormFile file, FileType fileType)
-        {
-            return fileType switch
-            {
-                FileType.Image => await UploadImageFile(file),
-                FileType.Video => await UploadVideoFile(file),
-                FileType.Document => await UploadDocumentFile(file),
-                _ => throw ApiException.BadRequest("UNSUPPORTED_FILE_TYPE", "File type is not supported")
-            };
-        }
-
-        private async Task<(string fileUrl, string publicId)> UploadImageFile(IFormFile file)
-        {
-            var uploadResult = await _cloudinaryService.UploadImageAsync(file);
-            
-            if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
-            {
-                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload image to cloud storage");
-            }
-
-            return (uploadResult.SecureUrl.ToString(), uploadResult.PublicId);
-        }
-
-        private async Task<(string fileUrl, string publicId)> UploadVideoFile(IFormFile file)
-        {
-            var uploadResult = await _cloudinaryService.UploadVideoAsync(file);
-            
-            if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
-            {
-                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload video to cloud storage");
-            }
-
-            return (uploadResult.SecureUrl.ToString(), uploadResult.PublicId);
-        }
-
-        private async Task<(string fileUrl, string publicId)> UploadDocumentFile(IFormFile file)
-        {
-            var uploadResult = await _cloudinaryService.UploadRawFileAsync(file);
-            
-            if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
-            {
-                throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload document to cloud storage");
-            }
-
-            return (uploadResult.SecureUrl.ToString(), uploadResult.PublicId);
-        }
-
-        private async Task DeleteFileByPublicId(string publicId, string fileUrl)
-        {
-            var fileType = GetFileTypeFromUrl(fileUrl);
-            
-            switch (fileType)
-            {
-                case FileType.Image:
-                    await _cloudinaryService.DeleteImageAsync(publicId);
-                    break;
-                case FileType.Video:
-                    await _cloudinaryService.DeleteVideoAsync(publicId);
-                    break;
-                case FileType.Document:
-                    await _cloudinaryService.DeleteRawFileAsync(publicId);
-                    break;
-                default:
-                    // Fallback to raw file deletion
-                    await _cloudinaryService.DeleteRawFileAsync(publicId);
-                    break;
-            }
-        }
-
-        private FileType GetFileTypeFromUrl(string url)
-        {
-            try
-            {
-                var uri = new Uri(url);
-                var path = uri.AbsolutePath.ToLowerInvariant();
-                
-                if (path.Contains("/image/"))
-                {
-                    return FileType.Image;
-                }
-                else if (path.Contains("/video/"))
-                {
-                    return FileType.Video;
-                }
-                else if (path.Contains("/raw/"))
-                {
-                    return FileType.Document;
-                }
-                
-                return FileType.Document; // Default fallback
-            }
-            catch
-            {
-                return FileType.Document; // Default fallback
-            }
-        }
-
-        #endregion
     }
-} 
+}

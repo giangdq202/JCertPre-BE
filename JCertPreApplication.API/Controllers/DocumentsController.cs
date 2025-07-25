@@ -5,10 +5,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
-    [Route("api/documents")]
     [ApiController]
-    [Tags("Documents")]
-    [Produces("application/json")]
+    [Route("api/[controller]")]
     public class DocumentsController : ControllerBase
     {
         private readonly IDocumentService _documentService;
@@ -19,17 +17,47 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Upload a new document for a lesson
+        /// Upload a new image document
         /// </summary>
         /// <param name="createDocumentDto">The document data to upload</param>
         /// <returns>The uploaded document information</returns>
-        [HttpPost("upload")]
+        [HttpPost("upload/image")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<DocumentDto>> UploadDocument([FromForm] CreateDocumentDto createDocumentDto)
+        public async Task<ActionResult<DocumentDto>> UploadImageDocument([FromForm] CreateDocumentDto createDocumentDto)
         {
-            var result = await _documentService.UploadDocumentAsync(createDocumentDto);
+            var result = await _documentService.UploadImageDocumentAsync(createDocumentDto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Upload a new video document
+        /// </summary>
+        /// <param name="createDocumentDto">The document data to upload</param>
+        /// <returns>The uploaded document information</returns>
+        [HttpPost("upload/video")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<DocumentDto>> UploadVideoDocument([FromForm] CreateDocumentDto createDocumentDto)
+        {
+            var result = await _documentService.UploadVideoDocumentAsync(createDocumentDto);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Upload a new raw document
+        /// </summary>
+        /// <param name="createDocumentDto">The document data to upload</param>
+        /// <returns>The uploaded document information</returns>
+        [HttpPost("upload/document")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<DocumentDto>> UploadRawDocument([FromForm] CreateDocumentDto createDocumentDto)
+        {
+            var result = await _documentService.UploadRawDocumentAsync(createDocumentDto);
             return Ok(result);
         }
 
@@ -74,4 +102,4 @@ namespace JCertPreApplication.API.Controllers
             return NoContent();
         }
     }
-} 
+}
