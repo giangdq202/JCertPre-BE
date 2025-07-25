@@ -20,6 +20,12 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(tc => tc.questionCount)
                 .IsRequired();
 
+            builder.Property(tc => tc.pointPerQuestion)
+                .IsRequired();
+
+            builder.Property(tc => tc.totalPoints)
+                .IsRequired();
+
             builder.Property(tc => tc.sequence)
                 .IsRequired();
 

@@ -205,7 +205,6 @@ namespace JCertPreApplication.Application.Features.Course
                 Status = course.status,
                 CreatedAt = course.createdAt,
                 LessonsCount = course.Lessons?.Count ?? 0,
-                LivestreamsCount = course.Livestreams?.Count ?? 0,
                 EnrollmentsCount = course.Enrollments?.Count ?? 0,
                 Instructors = course.CourseInstructors?
                     .Where(ci => ci.IsActive)

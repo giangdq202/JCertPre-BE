@@ -32,10 +32,6 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasMany(c => c.Lessons)
                    .WithOne()
                    .HasForeignKey(l => l.courseId).OnDelete(DeleteBehavior.NoAction);
-            
-            builder.HasMany(c => c.Livestreams)
-                   .WithOne()
-                   .HasForeignKey(ls => ls.courseId).OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(c => c.Feedbacks)
                    .WithOne()
@@ -46,8 +42,8 @@ namespace JCertPreApplication.Persistence.Configurations
                    .HasForeignKey(e => e.courseId).OnDelete(DeleteBehavior.NoAction);
             builder.HasMany(c => c.StudyPlanItems)
                 .WithOne(spi => spi.Course)
-                     .IsRequired(false) // Nullable foreign key
-                     .HasForeignKey(spi => spi.courseId).OnDelete(DeleteBehavior.NoAction);
+                .IsRequired(false) // Nullable foreign key
+                .HasForeignKey(spi => spi.courseId).OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

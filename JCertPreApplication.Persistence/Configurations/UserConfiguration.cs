@@ -103,6 +103,11 @@ namespace JCertPreApplication.Persistence.Configurations
                    .WithOne(tt => tt.CreatedByUser)
                    .HasForeignKey(tt => tt.userId)
                    .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasMany(u => u.CreditTransactions)
+                   .WithOne(ct => ct.User)
+                   .HasForeignKey(ct => ct.user_id)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
