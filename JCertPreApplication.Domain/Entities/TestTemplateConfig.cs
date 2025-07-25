@@ -8,6 +8,8 @@ namespace JCertPreApplication.Domain.Entities
         public Guid templateId { get; set; }
         public Guid subContentId { get; set; }
         public int questionCount { get; set; }
+        public int pointPerQuestion { get; set; }  
+        public int totalPoints { get; set; } 
         public int sequence { get; set; }
 
         // Navigation properties

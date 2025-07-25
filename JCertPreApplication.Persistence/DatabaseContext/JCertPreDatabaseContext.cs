@@ -16,6 +16,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<AttemptAnswer> AttemptAnswers { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<CreditTransaction> CreditTransactions { get; set; }
         public DbSet<Choice> Choices { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<Enrollment> Enrollments { get; set; }
@@ -51,6 +52,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new AttemptAnswerConfiguration());
             modelBuilder.ApplyConfiguration(new ConversationConfiguration());
             modelBuilder.ApplyConfiguration(new CourseConfiguration());
+            modelBuilder.ApplyConfiguration(new CreditTransactionConfiguration());
             modelBuilder.ApplyConfiguration(new ChoiceConfiguration());
             modelBuilder.ApplyConfiguration(new DocumentConfiguration());
             modelBuilder.ApplyConfiguration(new EnrollmentConfiguration());

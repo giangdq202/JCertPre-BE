@@ -20,7 +20,6 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Include(c => c.CourseInstructors)
                     .ThenInclude(ci => ci.Instructor)
                 .Include(c => c.Lessons)
-                .Include(c => c.Livestreams)
                 .Include(c => c.Enrollments)
                 .Include(c => c.Feedbacks)
                 .FirstOrDefaultAsync(c => c.courseId == courseId);

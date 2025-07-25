@@ -16,7 +16,6 @@ namespace JCertPreApplication.Domain.Entities
 
         // Navigation properties
         public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();
-        public virtual ICollection<Livestream> Livestreams { get; set; } = new List<Livestream>();
         public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();
         public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
         public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();

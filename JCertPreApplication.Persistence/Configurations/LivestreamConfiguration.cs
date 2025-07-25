@@ -1,6 +1,6 @@
 ﻿using JCertPreApplication.Domain.Entities;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace JCertPreApplication.Persistence.Configurations
 {
@@ -8,22 +8,17 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Livestream> builder)
         {
-            // Configure primary key
             builder.ToTable("livestream");
             builder.HasKey(ls => ls.livestreamId);
 
-            // Configure required properties
-            builder.Property(ls => ls.courseId).IsRequired();
-            builder.Property(ls => ls.title).IsRequired();
+            builder.Property(ls => ls.lessonId).IsRequired();
             builder.Property(ls => ls.startTime).IsRequired();
             builder.Property(ls => ls.endTime).IsRequired();
-            builder.Property(ls => ls.meetingUrl).IsRequired();
-            builder.Property(ls => ls.recordingUrl).IsRequired();
 
-            // Configure foreign key relationship
-            builder.HasOne(ls => ls.Course)
-                   .WithMany(c => c.Livestreams)
-                   .HasForeignKey(ls => ls.courseId).OnDelete(DeleteBehavior.NoAction);
+            builder.HasOne(ls => ls.Lesson)
+                .WithOne(l => l.Livestream)
+                .HasForeignKey<Livestream>(ls => ls.lessonId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

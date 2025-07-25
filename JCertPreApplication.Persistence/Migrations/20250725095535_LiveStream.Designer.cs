@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250725095535_LiveStream")]
+    partial class LiveStream
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -181,39 +184,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasIndex("InstructorId");
 
                     b.ToTable("course_instructor", (string)null);
-                });
-
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.CreditTransaction", b =>
-                {
-                    b.Property<Guid>("transaction_id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<int>("amount")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("balance_after")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("balance_before")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("created_at")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<Guid>("user_id")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("transaction_id");
-
-                    b.HasIndex("user_id");
-
-                    b.ToTable("credit_transactions", (string)null);
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Document", b =>
@@ -1108,17 +1078,6 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Instructor");
                 });
 
-            modelBuilder.Entity("JCertPreApplication.Domain.Entities.CreditTransaction", b =>
-                {
-                    b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
-                        .WithMany("CreditTransactions")
-                        .HasForeignKey("user_id")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Document", b =>
                 {
                     b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
@@ -1558,8 +1517,6 @@ namespace JCertPreApplication.Persistence.Migrations
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.User", b =>
                 {
                     b.Navigation("CreatedTests");
-
-                    b.Navigation("CreditTransactions");
 
                     b.Navigation("Enrollments");
 

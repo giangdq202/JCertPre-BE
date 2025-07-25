@@ -45,6 +45,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ITestAttemptService, TestAttemptService>();
             services.AddScoped<IAttemptAnswerService, AttemptAnswerService>();
+            services.AddScoped<ITestTemplateService, TestTemplateService>();
             services.AddScoped<IDocumentService, DocumentService>();
 
             // Add AutoMapper
