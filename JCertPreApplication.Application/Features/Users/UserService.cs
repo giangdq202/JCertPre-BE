@@ -6,6 +6,7 @@ using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using System.Linq.Expressions;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Features.Users
 {
@@ -104,25 +105,33 @@ namespace JCertPreApplication.Application.Features.Users
                 // Delete old avatar if exists
                 if (!string.IsNullOrWhiteSpace(user.avatarUrl))
                 {
-                    try
+                    if (IsCloudinaryUrl(user.avatarUrl))
                     {
-                        // Extract public ID from existing avatar URL
-                        var oldPublicId = ExtractPublicIdFromUrl(user.avatarUrl);
-                        if (!string.IsNullOrWhiteSpace(oldPublicId))
+                        try
                         {
-                            await _cloudinaryService.DeleteImageAsync(oldPublicId);
+                            // Extract public ID from existing avatar URL
+                            var oldPublicId = ExtractCloudinaryPublicId(user.avatarUrl);
+                            if (!string.IsNullOrWhiteSpace(oldPublicId))
+                            {
+                                await _cloudinaryService.DeleteImageAsync(oldPublicId);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log warning but don't fail the update if old image deletion fails
+                            // This could happen if the image was already deleted or doesn't exist
+                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old Cloudinary avatar: {ex.Message}");
                         }
                     }
-                    catch (Exception ex)
-                    {
-                        // Log warning but don't fail the update if old image deletion fails
-                        // This could happen if the image was already deleted or doesn't exist
-                        System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {ex.Message}");
-                    }
+                    // Clear the old URL regardless of source
+                    user.avatarUrl = null;
                 }
 
+                // Create a custom FormFile with userId as filename
+                var customFormFile = CreateCustomFormFile(updateUserDto.AvatarFile, userId.ToString());
+
                 // Upload new avatar
-                var uploadResult = await _cloudinaryService.UploadImageAsync(updateUserDto.AvatarFile);
+                var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
                 user.avatarUrl = uploadResult.SecureUrl.ToString();
             }
 
@@ -160,41 +169,99 @@ namespace JCertPreApplication.Application.Features.Users
             return user != null;
         }
 
-        private static string? ExtractPublicIdFromUrl(string cloudinaryUrl)
+        #region Private Helper Methods
+
+        private static bool IsCloudinaryUrl(string? url)
         {
-            if (string.IsNullOrWhiteSpace(cloudinaryUrl))
-                return null;
+            return !string.IsNullOrWhiteSpace(url)
+                   && url.Contains("res.cloudinary.com", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string? ExtractCloudinaryPublicId(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
 
             try
             {
-                // Cloudinary URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/{public_id}.{format}
-                // Example: https://res.cloudinary.com/demo/image/upload/v1234567890/sample.jpg
-                
-                var uri = new Uri(cloudinaryUrl);
-                var pathSegments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                
-                // Find the upload segment
-                var uploadIndex = Array.IndexOf(pathSegments, "upload");
-                if (uploadIndex == -1 || uploadIndex >= pathSegments.Length - 1)
+                var uri = new Uri(url);
+                var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                var uploadIdx = Array.IndexOf(segments, "upload");
+
+                if (uploadIdx == -1 || uploadIdx >= segments.Length - 1)
                     return null;
 
-                // Get everything after upload/ as the public ID (may include folders and version)
-                var publicIdParts = pathSegments.Skip(uploadIndex + 1).ToArray();
-                var publicIdWithExtension = string.Join("/", publicIdParts);
-                
-                // Remove file extension
-                var lastDotIndex = publicIdWithExtension.LastIndexOf('.');
-                if (lastDotIndex > 0)
+                // Get everything after upload/ as potential public ID
+                var publicIdParts = segments.Skip(uploadIdx + 1).ToArray();
+
+                // Skip version if present (starts with 'v' followed by numbers)
+                if (publicIdParts.Length > 0 && publicIdParts[0].StartsWith("v") &&
+                    publicIdParts[0].Length > 1 && publicIdParts[0].Skip(1).All(char.IsDigit))
                 {
-                    return publicIdWithExtension.Substring(0, lastDotIndex);
+                    publicIdParts = publicIdParts.Skip(1).ToArray();
+                }
+
+                if (publicIdParts.Length == 0) return null;
+
+                // Remove file extension from the last part
+                var lastPart = publicIdParts.Last();
+                var dotIndex = lastPart.LastIndexOf('.');
+                if (dotIndex > 0)
+                {
+                    publicIdParts[publicIdParts.Length - 1] = lastPart.Substring(0, dotIndex);
                 }
                 
-                return publicIdWithExtension;
+                return string.Join("/", publicIdParts);
             }
             catch
             {
                 return null;
             }
         }
+
+        private static IFormFile CreateCustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            // Get the file extension from original file
+            var extension = Path.GetExtension(originalFile.FileName);
+            var newFileName = customFileName + extension;
+
+            return new CustomFormFile(originalFile, newFileName);
+        }
+
+        private static string? ExtractPublicIdFromUrl(string cloudinaryUrl)
+        {
+            // Keep existing method for backward compatibility
+            return ExtractCloudinaryPublicId(cloudinaryUrl);
+        }
+
+// Removed unused methods IsImageFile and IsVideoFile
+        #endregion
     }
-} 
+
+    /// <summary>
+    /// Custom IFormFile implementation to override filename while preserving original file content
+    /// </summary>
+    internal class CustomFormFile : IFormFile
+    {
+        private readonly IFormFile _originalFile;
+        private readonly string _customFileName;
+
+        public CustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            _originalFile = originalFile;
+            _customFileName = customFileName;
+        }
+
+        public string ContentType => _originalFile.ContentType;
+        public string ContentDisposition => _originalFile.ContentDisposition;
+        public IHeaderDictionary Headers => _originalFile.Headers;
+        public long Length => _originalFile.Length;
+        public string Name => _originalFile.Name;
+        public string FileName => _customFileName; // This is the overridden filename
+
+        public void CopyTo(Stream target) => _originalFile.CopyTo(target);
+        public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default) =>
+            _originalFile.CopyToAsync(target, cancellationToken);
+        public Stream OpenReadStream() => _originalFile.OpenReadStream();
+    }
+}
+

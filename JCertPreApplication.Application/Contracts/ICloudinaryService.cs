@@ -49,10 +49,13 @@ namespace JCertPreApplication.Application.Contracts
         Task<DeletionResult> DeleteRawFileAsync(string publicId);
 
         /// <summary>
-        /// Lấy tất cả các resource từ Cloudinary (Images, Videos, Raw files).
-        /// Xử lý phân trang tự động và gộp kết quả từ tất cả các loại resource.
+        /// Lấy một trang resources từ Cloudinary với hỗ trợ cursor-based pagination.
+        /// Cho phép client yêu cầu các trang tùy ý và nhận cursor cho trang tiếp theo.
         /// </summary>
-        /// <returns>Danh sách tất cả resources với thông tin thống kê</returns>
-        Task<CloudinaryResourcesResponseDto> GetAllResourcesAsync();
+        /// <param name="maxResults">Số lượng tối đa items mỗi trang (1-500)</param>
+        /// <param name="nextCursor">Cursor trả về từ trang trước; null cho trang đầu tiên</param>
+        /// <param name="resourceType">Loại resource cần lọc: "image" (mặc định), "video", hoặc "raw"</param>
+        /// <returns>Một trang resources và cursor cho trang tiếp theo (nếu có)</returns>
+        Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image");
     }
 } 

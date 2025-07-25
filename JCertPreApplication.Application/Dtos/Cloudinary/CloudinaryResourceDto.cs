@@ -43,11 +43,6 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
         public int? Height { get; set; }
 
         /// <summary>
-        /// Thời lượng (cho video, tính bằng giây)
-        /// </summary>
-        public double? Duration { get; set; }
-
-        /// <summary>
         /// Ngày tạo resource
         /// </summary>
         public DateTime CreatedAt { get; set; }
@@ -68,32 +63,36 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
         public int Version { get; set; }
 
         /// <summary>
-        /// Tên file gốc
-        /// </summary>
-        public string? OriginalFilename { get; set; }
-
-        /// <summary>
         /// Chuyển đổi từ Cloudinary Resource sang DTO
         /// </summary>
         /// <param name="resource">Cloudinary Resource object</param>
         /// <returns>CloudinaryResourceDto</returns>
         public static CloudinaryResourceDto FromCloudinaryResource(Resource resource)
         {
+            var resourceType = resource.ResourceType?.ToString() ?? string.Empty;
+            var format = resource.Format ?? string.Empty;
+            
+            // Enhanced format handling for raw files
+            if (resourceType.Equals("raw", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(format))
+            {
+                // Extract extension from publicId for raw files when format is empty
+                var ext = System.IO.Path.GetExtension(resource.PublicId)?.TrimStart('.').ToLowerInvariant();
+                format = ext ?? string.Empty;
+            }
+            
             return new CloudinaryResourceDto
             {
                 PublicId = resource.PublicId ?? string.Empty,
                 SecureUrl = resource.SecureUrl?.ToString() ?? string.Empty,
-                ResourceType = resource.ResourceType?.ToString() ?? string.Empty,
-                Format = resource.Format ?? string.Empty,
+                ResourceType = resourceType,
+                Format = format, // Enhanced format với xử lý đặc biệt cho raw files
                 Bytes = resource.Bytes,
                 Width = resource.Width,
                 Height = resource.Height,
-                Duration = null, // Duration not available in basic Resource object
                 CreatedAt = ParseCreatedAt(resource.CreatedAt),
                 Folder = ExtractFolderFromPublicId(resource.PublicId),
                 Tags = resource.Tags?.ToList() ?? new List<string>(),
-                Version = int.TryParse(resource.Version, out var version) ? version : 1,
-                OriginalFilename = null // OriginalFilename not available in basic Resource object
+                Version = int.TryParse(resource.Version, out var version) ? version : 1
             };
         }
 
