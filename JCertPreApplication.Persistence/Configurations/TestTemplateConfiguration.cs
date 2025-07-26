@@ -22,8 +22,7 @@ namespace JCertPreApplication.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(tt => tt.totalScore)
-                .IsRequired()
-                .HasMaxLength(100);
+                .IsRequired();
 
             builder.Property(tt => tt.toPassPercentage)
                 .HasColumnType("decimal(5,2)")

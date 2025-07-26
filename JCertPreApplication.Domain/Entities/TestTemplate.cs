@@ -9,7 +9,7 @@ namespace JCertPreApplication.Domain.Entities
 
         public string templateName { get; set; } = null!;
         public int durationMinutes { get; set; } = 0;
-        public string totalScore { get; set; } = null!;
+        public int totalScore { get; set; } = 0; 
         public decimal toPassPercentage { get; set; } = 0.0m;
 
         public virtual TestTemplateType TestTemplateType { get; set; } = null!;

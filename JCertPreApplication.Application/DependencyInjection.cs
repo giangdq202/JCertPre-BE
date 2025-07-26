@@ -16,6 +16,7 @@ using JCertPreApplication.Application.Features.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
 using JCertPreApplication.Application.Features.TestAttempts;
 using JCertPreApplication.Application.Features.Tests;
+using JCertPreApplication.Application.Features.TestTemplateConfigs;
 using JCertPreApplication.Application.Features.Users;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,6 +48,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IAttemptAnswerService, AttemptAnswerService>();
             services.AddScoped<ITestTemplateTypeService, TestTemplateTypeService>();
             services.AddScoped<ITestTemplateService, TestTemplateService>();
+            services.AddScoped<ITestTemplateConfigService, TestTemplateConfigService>();
             services.AddScoped<IDocumentService, DocumentService>();
 
             // Add AutoMapper
