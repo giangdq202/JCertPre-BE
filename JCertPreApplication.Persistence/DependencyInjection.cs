@@ -17,15 +17,14 @@ namespace JCertPreApplication.Persistence
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-            // Read connection string from environment variable only (from .env file)
-            var connectionString = Environment.GetEnvironmentVariable("JCERTPRE_DB_CONNECTION_STRING");
+            // Read connection string using .NET Configuration system (supports environment variables with ConnectionStrings__JCertPreDB format)
+            var connectionString = configuration.GetConnectionString("JCertPreDB");
 
             if (string.IsNullOrEmpty(connectionString))
             {
                 throw new ArgumentException(
-                    "JCERTPRE_DB_CONNECTION_STRING environment variable not found. " +
-                    "Please set it in your .env file. Example: " +
-                    "JCERTPRE_DB_CONNECTION_STRING=Host=localhost;Port=5432;Username=admin;Password=yourpassword;Database=JCertPreDB;SSL Mode=Prefer;Trust Server Certificate=true"
+                    "JCertPreDB connection string not found. " +
+                    "Please set it using environment variable: ConnectionStrings__JCertPreDB or in appsettings.json"
                 );
             }
 
