@@ -26,7 +26,6 @@ static void SetupConfiguration(WebApplicationBuilder builder)
     builder.Configuration.AddEnvironmentVariables();
     builder.Configuration.AddUserSecrets<Program>();
     
-    ReplaceConfigurationPlaceholders(builder.Configuration);
     RegisterConfigurations(builder);
 }
 
@@ -70,29 +69,6 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     var liveKitConfig = new LiveKitConfiguration();
     config.GetSection("LiveKit").Bind(liveKitConfig);
     builder.Services.AddSingleton(liveKitConfig);
-}
-
-static void ReplaceConfigurationPlaceholders(IConfiguration configuration)
-{
-    var sections = new[] { "ConnectionStrings", "Jwt", "Cors", "Api", "Cloudinary", "Firebase", "Redis", "LiveKit" };
-    
-    foreach (var sectionName in sections)
-    {
-        var section = configuration.GetSection(sectionName);
-        foreach (var child in section.GetChildren())
-        {
-            var value = child.Value;
-            if (!string.IsNullOrEmpty(value) && value.StartsWith("#{") && value.EndsWith("}#"))
-            {
-                var envVarName = value[2..^2]; // Equivalent to Substring(2, value.Length - 4)
-                var envValue = Environment.GetEnvironmentVariable(envVarName);
-                if (!string.IsNullOrEmpty(envValue))
-                {
-                    configuration[$"{sectionName}:{child.Key}"] = envValue;
-                }
-            }
-        }
-    }
 }
 #endregion
 
