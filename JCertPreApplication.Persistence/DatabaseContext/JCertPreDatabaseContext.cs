@@ -39,6 +39,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<TestAttempt> TestAttempts { get; set; }
         public DbSet<TestQuestion> TestQuestions { get; set; }
         public DbSet<TestScoreSummary> TestScoreSummaries { get; set; }
+        public DbSet<TestTemplateType> TestTemplateTypes { get; set; }
         public DbSet<TestTemplate> TestTemplates { get; set; }
         public DbSet<TestTemplateConfig> TestTemplateConfigs { get; set; }
         public DbSet<User> Users { get; set; }
@@ -74,6 +75,7 @@ namespace JCertPreApplication.Persistence.DatabaseContext
             modelBuilder.ApplyConfiguration(new TestAttemptConfiguration());
             modelBuilder.ApplyConfiguration(new TestQuestionConfiguration());
             modelBuilder.ApplyConfiguration(new TestScoreSummaryConfiguration());
+            modelBuilder.ApplyConfiguration(new TestTemplateTypeConfiguration());
             modelBuilder.ApplyConfiguration(new TestTemplateConfiguration());
             modelBuilder.ApplyConfiguration(new TestTemplateConfigConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());

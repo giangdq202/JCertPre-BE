@@ -11,7 +11,7 @@ namespace JCertPreApplication.Domain.Entities
         public int durationMinutes { get; set; }
         public Guid? lessonId { get; set; }
         public Guid createdByUserId { get; set; }
-        public Guid? testTemplateId { get; set; } 
+        public Guid? TestTemplateTypeId { get; set; }
         public DateTime? availableFrom { get; set; }
         public DateTime? availableTo { get; set; }
         public int maxAttempts { get; set; }
@@ -19,7 +19,7 @@ namespace JCertPreApplication.Domain.Entities
 
         public virtual Lesson? Lesson { get; set; } = null!;
         public virtual User CreatedByUser { get; set; } = null!;
-        public virtual TestTemplate? TestTemplate { get; set; }
+        public virtual TestTemplateType? TestTemplateType { get; set; } = null!;
         public virtual ICollection<TestQuestion> TestQuestions { get; set; } = new List<TestQuestion>();
         public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
         public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();

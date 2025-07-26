@@ -171,32 +171,9 @@ public class TestAttemptService : ITestAttemptService
             return int.TryParse(parts.Last(), out var val) ? val : 0;
         }
 
-        // draft
-        var userKanji = GetUserScore(q => q.questionType == "kanji");
-        var maxKanji = GetMaxScore(maxScoreSummary.KanjiScore);
-        var userVocabulary = GetUserScore(q => q.questionType == "vocabulary");
-        var maxVocabulary = GetMaxScore(maxScoreSummary.VocabularyScore);
-        var userGrammar = GetUserScore(q => q.questionType == "grammar");
-        var maxGrammar = GetMaxScore(maxScoreSummary.GrammarScore);
-        var userReading = GetUserScore(q => q.questionType == "reading");
-        var maxReading = GetMaxScore(maxScoreSummary.ReadingScore);
-        var userListening = GetUserScore(q => q.questionType == "listening");
-        var maxListening = GetMaxScore(maxScoreSummary.ListeningScore);
 
-        // Save as "user/max" string
-        var summary = new TestScoreSummary
-        {
-            TestScoreSummaryId = Guid.NewGuid(),
-            TestId = attempt.testId,
-            TestAttemptId = attempt.attemptId,
-            KanjiScore = $"{userKanji}/{maxKanji}",
-            VocabularyScore = $"{userVocabulary}/{maxVocabulary}",
-            GrammarScore = $"{userGrammar}/{maxGrammar}",
-            ReadingScore = $"{userReading}/{maxReading}",
-            ListeningScore = $"{userListening}/{maxListening}"
-        };
 
-        await _testScoreSummaryRepository.InsertAsync(summary);
+
     }
 
     /// <summary>

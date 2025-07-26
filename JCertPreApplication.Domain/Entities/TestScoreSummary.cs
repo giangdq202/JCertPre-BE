@@ -6,7 +6,6 @@ namespace JCertPreApplication.Domain.Entities
     /// Stores pre-calculated max scores for a test and user scores for a test attempt.
     /// If TestAttemptId is null, the row is for the Test's max scores.
     /// If TestAttemptId is not null, the row is for a user's attempt scores.
-    /// Each field is stored as "userScore/maxScore" (e.g., "18/20") for attempts, or just maxScore for tests.
     /// </summary>
     public class TestScoreSummary
     {
@@ -14,13 +13,20 @@ namespace JCertPreApplication.Domain.Entities
         public Guid TestId { get; set; } // Always required
         public Guid? TestAttemptId { get; set; } // Null for max score, not null for user attempt
 
-        // 5 score fields as string (e.g., "18/20" or "20")
-        public string? KanjiScore { get; set; }
-        public string? VocabularyScore { get; set; }
-        public string? GrammarScore { get; set; }
-        public string? ReadingScore { get; set; }
-        public string? ListeningScore { get; set; }
-        public string? TotalScore { get; set; } 
+        public int kanji_score { get; set; } = 0;
+        public int kanji_max_score { get; set; } = 0;
+        public int vocab_score { get; set; } = 0;
+        public int vocab_max_score { get; set; } = 0;
+        public int grammar_score { get; set; } = 0;
+        public int grammar_max_score { get; set; } = 0;
+        public int reading_score { get; set; } = 0;
+        public int reading_max_score { get; set; } = 0;
+        public int listening_score { get; set; } = 0;
+        public int listening_max_score { get; set; } = 0;
+        public int total_score { get; set; } = 0;
+        public int total_max_score { get; set; } = 0;
+        public decimal percentage_score { get; set; } = 0m;
+        public decimal passing_percentage { get; set; } = 0m;
 
         // Navigation properties
         public virtual Test Test { get; set; } = null!;

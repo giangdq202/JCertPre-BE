@@ -1,5 +1,4 @@
 ﻿using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -32,6 +31,9 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.createdByUserId)
                 .IsRequired();
 
+            builder.Property(t => t.TestTemplateTypeId)
+                .IsRequired(false);
+
             builder.Property(t => t.availableFrom)
                 .IsRequired(false);
 
@@ -45,11 +47,8 @@ namespace JCertPreApplication.Persistence.Configurations
                 .IsRequired()
                 .HasConversion<string>();
 
-            builder.Property(t => t.testTemplateId)
-                .IsRequired(false);
-
             builder.HasOne(t => t.Lesson)
-                .WithMany(q => q.Tests)
+                .WithMany(l => l.Tests)
                 .HasForeignKey(t => t.lessonId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.NoAction);
@@ -59,10 +58,10 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasForeignKey(t => t.createdByUserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasOne(t => t.TestTemplate)
-                .WithMany(tt => tt.Tests)
-                .HasForeignKey(t => t.testTemplateId)
+                
+            builder.HasOne(t => t.TestTemplateType)
+                .WithMany(ttt => ttt.Tests)
+                .HasForeignKey(t => t.TestTemplateTypeId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.SetNull);
 
