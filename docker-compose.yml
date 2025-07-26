@@ -6,7 +6,7 @@ services:
     container_name: jcertpre-be-container
     restart: unless-stopped
     ports:
-      - "5001:5001"
+      - "5001:8080"
     env_file:
       - .env
 
