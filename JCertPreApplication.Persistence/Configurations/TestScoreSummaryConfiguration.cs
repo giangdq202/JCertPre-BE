@@ -17,11 +17,63 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(tss => tss.TestAttemptId)
                 .IsRequired(false);
 
-            builder.Property(tss => tss.KanjiScore).HasColumnType("text").IsRequired(false);
-            builder.Property(tss => tss.VocabularyScore).HasColumnType("text").IsRequired(false);
-            builder.Property(tss => tss.GrammarScore).HasColumnType("text").IsRequired(false);
-            builder.Property(tss => tss.ReadingScore).HasColumnType("text").IsRequired(false);
-            builder.Property(tss => tss.ListeningScore).HasColumnType("text").IsRequired(false);
+            builder.Property(tss => tss.kanji_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.kanji_max_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.vocab_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.vocab_max_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.grammar_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.grammar_max_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.reading_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.reading_max_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.listening_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.listening_max_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.total_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.total_max_score)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(tss => tss.percentage_score)
+                .HasColumnType("decimal(5,2)")
+                .IsRequired()
+                .HasDefaultValue(0m);
+
+            builder.Property(tss => tss.passing_percentage)
+                .HasColumnType("decimal(5,2)")
+                .IsRequired()
+                .HasDefaultValue(0m);
 
             builder.HasOne(tss => tss.Test)
                 .WithMany(t => t.TestScoreSummaries)

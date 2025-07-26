@@ -32,7 +32,7 @@ namespace JCertPreApplication.Domain.Entities
         public virtual ICollection<Test> CreatedTests { get; set; } = new List<Test>();
         public virtual ICollection<CourseInstructor> InstructorCourses { get; set; } = new List<CourseInstructor>();
         public virtual ICollection<LessonProgress> LessonProgresses { get; set; } = new List<LessonProgress>();
-        public virtual ICollection<TestTemplate> TestTemplates { get; set; } = new List<TestTemplate>();
+        public virtual ICollection<TestTemplateType> TestTemplateTypes { get; set; } = new List<TestTemplateType>();
         public virtual ICollection<CreditTransaction> CreditTransactions { get; set; } = new List<CreditTransaction>();
     }
 }

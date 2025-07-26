@@ -1,6 +1,8 @@
-using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
+/// <summary>
+/// Controller for managing TestTemplate CRUD operations.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
 public class TestTemplateController : ControllerBase
@@ -13,23 +15,12 @@ public class TestTemplateController : ControllerBase
     }
 
     /// <summary>
-    /// Get all test templates with search, filter, and paging.
+    /// Get all test templates by testTemplateTypeId.
     /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> GetAll([FromQuery] string? search, [FromQuery] CourseLevel? level, [FromQuery] TestType? type, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+    [HttpGet("by-type/{testTemplateTypeId:guid}")]
+    public async Task<IActionResult> GetAllByTypeId(Guid testTemplateTypeId)
     {
-        var result = await _service.GetAllAsync(search, level, type, pageIndex, pageSize);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Get a test template by id.
-    /// </summary>
-    [HttpGet("{id:guid}")]
-    public async Task<IActionResult> GetById(Guid id)
-    {
-        var result = await _service.GetByIdAsync(id);
-        if (result == null) return NotFound();
+        var result = await _service.GetAllByTypeIdAsync(testTemplateTypeId);
         return Ok(result);
     }
 
@@ -40,36 +31,26 @@ public class TestTemplateController : ControllerBase
     public async Task<IActionResult> Create([FromBody] CreateTestTemplateDto dto)
     {
         var result = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = result.TemplateId }, result);
+        return CreatedAtAction(nameof(GetAllByTypeId), new { testTemplateTypeId = result.TestTemplateTypeId }, result);
     }
 
     /// <summary>
-    /// Update an existing test template.
+    /// Update a test template by templateId.
     /// </summary>
-    [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateTestTemplateDto dto)
+    [HttpPut("{templateId:guid}")]
+    public async Task<IActionResult> Update(Guid templateId, [FromBody] UpdateTestTemplateDto dto)
     {
-        var result = await _service.UpdateAsync(id, dto);
+        var result = await _service.UpdateAsync(templateId, dto);
         return Ok(result);
     }
 
     /// <summary>
-    /// Update only the isActive field of a test template.
+    /// Delete a test template by templateId.
     /// </summary>
-    [HttpPatch("{id:guid}/is-active")]
-    public async Task<IActionResult> UpdateIsActive(Guid id, [FromQuery] bool isActive)
+    [HttpDelete("{templateId:guid}")]
+    public async Task<IActionResult> Delete(Guid templateId)
     {
-        var result = await _service.UpdateIsActiveAsync(id, isActive);
-        return Ok(result);
-    }
-
-    /// <summary>
-    /// Delete a test template.
-    /// </summary>
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        await _service.DeleteAsync(id);
+        await _service.DeleteAsync(templateId);
         return NoContent();
     }
 }

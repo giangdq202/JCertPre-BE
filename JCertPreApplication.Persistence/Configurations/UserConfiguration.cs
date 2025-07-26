@@ -99,15 +99,15 @@ namespace JCertPreApplication.Persistence.Configurations
                    .HasForeignKey(ic => ic.InstructorId)
                    .OnDelete(DeleteBehavior.NoAction);
 
-            builder.HasMany(u => u.TestTemplates)
-                   .WithOne(tt => tt.CreatedByUser)
-                   .HasForeignKey(tt => tt.userId)
-                   .OnDelete(DeleteBehavior.NoAction);
-
             builder.HasMany(u => u.CreditTransactions)
                    .WithOne(ct => ct.User)
                    .HasForeignKey(ct => ct.user_id)
                    .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasMany(u => u.TestTemplateTypes)
+                   .WithOne(ttt => ttt.CreatedByUser)
+                   .HasForeignKey(ttt => ttt.userId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
