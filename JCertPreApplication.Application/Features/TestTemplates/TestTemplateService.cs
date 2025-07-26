@@ -70,8 +70,8 @@ public class TestTemplateService : ITestTemplateService
                 entity.templateName = dto.templateName;
             if (dto.durationMinutes.HasValue)
                 entity.durationMinutes = dto.durationMinutes.Value;
-            if (dto.totalScore != null)
-                entity.totalScore = dto.totalScore;
+            if (dto.totalScore.HasValue)
+                entity.totalScore = dto.totalScore.Value;
             if (dto.toPassPercentage.HasValue)
                 entity.toPassPercentage = dto.toPassPercentage.Value;
 

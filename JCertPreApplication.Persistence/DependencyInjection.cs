@@ -63,6 +63,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ITestScoreSummaryRepository, TestScoreSummaryRepository>();
             services.AddScoped<ITestTemplateTypeRepository, TestTemplateTypeRepository>();
             services.AddScoped<ITestTemplateRepository, TestTemplateRepository>();
+            services.AddScoped<ITestTemplateConfigRepository, TestTemplateConfigRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             // Infrastructure Services
             services.AddScoped<ICloudinaryService, CloudinaryService>();
