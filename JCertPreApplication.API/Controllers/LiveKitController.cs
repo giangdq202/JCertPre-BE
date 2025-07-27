@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using JCertPreApplication.Application.Features.LiveKit;
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
 
 namespace JCertPreApplication.API.Controllers;

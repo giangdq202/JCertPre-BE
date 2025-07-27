@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace JCertPreApplication.Application.Features.LiveKit
+namespace JCertPreApplication.Application.Contracts
 {
     public interface ILiveKitService
     {

@@ -5,6 +5,7 @@ using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
 using JCertPreApplication.Persistence.Services.Cloudinary;
 using JCertPreApplication.Persistence.Services.Firebase;
+using JCertPreApplication.Persistence.Services.LiveKit;
 using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -67,6 +68,7 @@ namespace JCertPreApplication.Persistence
             // Infrastructure Services
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();
 
             services.AddBackgroundServices();

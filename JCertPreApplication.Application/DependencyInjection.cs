@@ -9,7 +9,6 @@ using JCertPreApplication.Application.Features.Documents;
 using JCertPreApplication.Application.Features.Enrollment;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.Lessons;
-using JCertPreApplication.Application.Features.LiveKit;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
@@ -40,7 +39,6 @@ namespace JCertPreApplication.Application
             services.AddScoped<IChoiceService, ChoiceService>();
             services.AddScoped<ILessonService, LessonService>();
             services.AddScoped<ITestService, TestService>();
-            services.AddScoped<ILiveKitService, LiveKitService>();
             services.AddScoped<ISubContentService, SubContentService>();
             services.AddScoped<ITestQuestionService, TestQuestionService>();
             services.AddScoped<IUserService, UserService>();

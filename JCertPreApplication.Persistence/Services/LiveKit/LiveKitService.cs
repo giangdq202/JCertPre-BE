@@ -1,11 +1,9 @@
 using System;
-using System.Threading.Tasks;
 using JCertPreApplication.Domain.Configuration;
 using Livekit.Server.Sdk.Dotnet;
-using JCertPreApplication.Application.Exceptions;
-using System.Collections.Generic;
+using JCertPreApplication.Application.Contracts;
 
-namespace JCertPreApplication.Application.Features.LiveKit
+namespace JCertPreApplication.Persistence.Services.LiveKit
 {
     /// <summary>
     /// Implementation of LiveKit service operations
@@ -67,4 +65,4 @@ namespace JCertPreApplication.Application.Features.LiveKit
             return tokenBuilder.ToJwt();
         }
     }
-} 
+}
