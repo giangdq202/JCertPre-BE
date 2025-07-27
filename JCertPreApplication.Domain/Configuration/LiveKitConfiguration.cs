@@ -14,4 +14,9 @@ public class LiveKitConfiguration
     /// The API Secret used to sign tokens for LiveKit server.
     /// </summary>
     public string ApiSecret { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The LiveKit server URL.
+    /// </summary>
+    public string ServerUrl { get; set; } = string.Empty;
 } 
