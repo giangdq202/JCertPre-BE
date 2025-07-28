@@ -20,9 +20,10 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(lp => lp.lessonId)
                 .IsRequired();
 
-            builder.Property(lp => lp.isCompleted)
+            builder.Property(lp => lp.completionRate)
                 .IsRequired()
-                .HasDefaultValue(false);
+                .HasColumnType("decimal(5,2)")
+                .HasDefaultValue(0.0m);
 
             builder.HasOne(lp => lp.User)
                 .WithMany(u => u.LessonProgresses)

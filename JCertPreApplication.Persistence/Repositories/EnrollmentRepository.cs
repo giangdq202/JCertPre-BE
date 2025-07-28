@@ -42,5 +42,10 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Include(e => e.Course)
                 .FirstOrDefaultAsync(e => e.enrollmentId == enrollmentId);
         }
+        public async Task<bool> IsUserEnrolledInCourseAsync(Guid userId, Guid courseId)
+        {
+            return await _dbSet
+                .AnyAsync(e => e.userId == userId && e.courseId == courseId);
+        }
     }
 } 

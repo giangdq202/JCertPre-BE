@@ -11,7 +11,11 @@ namespace JCertPreApplication.Domain.Entities
         public Guid testQuestionId { get; set; }
         public Guid testId { get; set; }
         public Guid questionId { get; set; }
+        public int questionNumber { get; set; } = 0;
+        public int? partNumber { get; set; }
+        public int? partDurationMinutes { get; set; }
         public bool isActive { get; set; }
+
 
         // Navigation properties
         public virtual Test Test { get; set; } = null!;
