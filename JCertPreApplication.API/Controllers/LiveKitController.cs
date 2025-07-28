@@ -57,7 +57,6 @@ public class LiveKitController : ControllerBase
     /// Generates an admin token with full permissions.
     /// </summary>
     [HttpGet("admin-token")]
-    [Authorize] // Require authentication for admin tokens
     public IActionResult GetAdminToken(
         [FromQuery] [Required] string roomName,
         [FromQuery] string? participantIdentity = null,
@@ -76,7 +75,6 @@ public class LiveKitController : ControllerBase
     /// Creates a new room with specified settings.
     /// </summary>
     [HttpPost("rooms")]
-    [Authorize]
     public async Task<IActionResult> CreateRoom(
         [FromBody] CreateRoomRequest request)
     {
@@ -95,7 +93,6 @@ public class LiveKitController : ControllerBase
     /// Gets all active rooms.
     /// </summary>
     [HttpGet("rooms")]
-    [Authorize]
     public async Task<IActionResult> GetRooms()
     {
         var rooms = await _liveKitService.ListRoomsAsync();
@@ -106,7 +103,6 @@ public class LiveKitController : ControllerBase
     /// Gets information about a specific room.
     /// </summary>
     [HttpGet("rooms/{roomName}")]
-    [Authorize]
     public async Task<IActionResult> GetRoom(string roomName)
     {
         var room = await _liveKitService.GetRoomAsync(roomName);
@@ -121,7 +117,6 @@ public class LiveKitController : ControllerBase
     /// Deletes a room and disconnects all participants.
     /// </summary>
     [HttpDelete("rooms/{roomName}")]
-    [Authorize]
     public async Task<IActionResult> DeleteRoom(string roomName)
     {
         await _liveKitService.DeleteRoomAsync(roomName);
@@ -132,7 +127,6 @@ public class LiveKitController : ControllerBase
     /// Gets all participants in a room.
     /// </summary>
     [HttpGet("rooms/{roomName}/participants")]
-    [Authorize]
     public async Task<IActionResult> GetParticipants(string roomName)
     {
         var participants = await _liveKitService.ListParticipantsAsync(roomName);
@@ -143,7 +137,6 @@ public class LiveKitController : ControllerBase
     /// Removes a participant from a room.
     /// </summary>
     [HttpDelete("rooms/{roomName}/participants/{identity}")]
-    [Authorize]
     public async Task<IActionResult> RemoveParticipant(string roomName, string identity)
     {
         await _liveKitService.RemoveParticipantAsync(roomName, identity);
@@ -154,7 +147,6 @@ public class LiveKitController : ControllerBase
     /// Promotes a participant to instructor role.
     /// </summary>
     [HttpPost("rooms/{roomName}/participants/{identity}/promote")]
-    [Authorize]
     public async Task<IActionResult> PromoteToInstructor(string roomName, string identity)
     {
         var participant = await _liveKitService.PromoteToInstructorAsync(roomName, identity);
@@ -165,7 +157,6 @@ public class LiveKitController : ControllerBase
     /// Demotes a participant to student role.
     /// </summary>
     [HttpPost("rooms/{roomName}/participants/{identity}/demote")]
-    [Authorize]
     public async Task<IActionResult> DemoteToStudent(string roomName, string identity)
     {
         var participant = await _liveKitService.DemoteToStudentAsync(roomName, identity);
@@ -176,7 +167,6 @@ public class LiveKitController : ControllerBase
     /// Mutes a participant's audio.
     /// </summary>
     [HttpPost("rooms/{roomName}/participants/{identity}/mute")]
-    [Authorize]
     public async Task<IActionResult> MuteParticipant(string roomName, string identity)
     {
         await _liveKitService.MuteParticipantAudioAsync(roomName, identity);
@@ -187,7 +177,6 @@ public class LiveKitController : ControllerBase
     /// Sends a message to all participants in a room.
     /// </summary>
     [HttpPost("rooms/{roomName}/broadcast")]
-    [Authorize]
     public async Task<IActionResult> BroadcastMessage(
         string roomName,
         [FromBody] BroadcastMessageRequest request)
@@ -200,7 +189,6 @@ public class LiveKitController : ControllerBase
     /// Gets room statistics.
     /// </summary>
     [HttpGet("rooms/{roomName}/statistics")]
-    [Authorize]
     public async Task<IActionResult> GetRoomStatistics(string roomName)
     {
         var statistics = await _liveKitService.GetRoomStatisticsAsync(roomName);

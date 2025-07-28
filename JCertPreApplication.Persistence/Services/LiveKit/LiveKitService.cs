@@ -6,6 +6,7 @@ using Google.Protobuf;
 using JCertPreApplication.Domain.Configuration;
 using Livekit.Server.Sdk.Dotnet;
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Exceptions;
 
 namespace JCertPreApplication.Persistence.Services.LiveKit
 {
@@ -47,7 +48,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         {
             if (string.IsNullOrEmpty(roomName) || string.IsNullOrEmpty(participantIdentity))
             {
-                throw new ArgumentException("roomName and participantIdentity are required.");
+                throw ApiException.BadRequest("INVALID_PARAMETERS", "roomName and participantIdentity are required.");
             }
 
             var grants = GetVideoGrantsForRole(role, roomName);
@@ -57,12 +58,23 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
                 .WithGrants(grants)
                 .WithTtl(ttl ?? TimeSpan.FromHours(4));
 
+            // Auto-add role to attributes for easier identification
+            var allAttributes = new Dictionary<string, string>
+            {
+                ["role"] = role.ToString().ToLower(),
+                ["joinedAt"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds().ToString()
+            };
+
             // Add custom attributes if provided
             if (attributes != null && attributes.Any())
             {
-                tokenBuilder.WithAttributes(attributes);
+                foreach (var attr in attributes)
+                {
+                    allAttributes[attr.Key] = attr.Value;
+                }
             }
 
+            tokenBuilder.WithAttributes(allAttributes);
             return tokenBuilder.ToJwt();
         }
 
@@ -110,6 +122,11 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             string roomName,
             RoomSettings? settings = null)
         {
+            if (string.IsNullOrEmpty(roomName))
+            {
+                throw ApiException.BadRequest("INVALID_ROOM_NAME", "Room name is required.");
+            }
+
             var request = new CreateRoomRequest
             {
                 Name = roomName,
@@ -151,6 +168,11 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         /// </summary>
         public async Task DeleteRoomAsync(string roomName)
         {
+            if (string.IsNullOrEmpty(roomName))
+            {
+                throw ApiException.BadRequest("INVALID_ROOM_NAME", "Room name is required.");
+            }
+
             var request = new DeleteRoomRequest { Room = roomName };
             await _roomClient.DeleteRoom(request);
         }
@@ -187,6 +209,11 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         /// </summary>
         public async Task<ParticipantInfo> GetParticipantAsync(string roomName, string identity)
         {
+            if (string.IsNullOrEmpty(roomName) || string.IsNullOrEmpty(identity))
+            {
+                throw ApiException.BadRequest("INVALID_PARAMETERS", "Room name and participant identity are required.");
+            }
+
             var request = new RoomParticipantIdentity
             {
                 Room = roomName,
@@ -202,6 +229,11 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         /// </summary>
         public async Task RemoveParticipantAsync(string roomName, string identity)
         {
+            if (string.IsNullOrEmpty(roomName) || string.IsNullOrEmpty(identity))
+            {
+                throw ApiException.BadRequest("INVALID_PARAMETERS", "Room name and participant identity are required.");
+            }
+
             var request = new RoomParticipantIdentity
             {
                 Room = roomName,
@@ -347,6 +379,16 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             string data,
             DataPacket.Types.Kind kind = DataPacket.Types.Kind.Reliable)
         {
+            if (string.IsNullOrEmpty(roomName))
+            {
+                throw ApiException.BadRequest("INVALID_ROOM_NAME", "Room name is required.");
+            }
+
+            if (string.IsNullOrEmpty(data))
+            {
+                throw ApiException.BadRequest("INVALID_DATA", "Data cannot be empty.");
+            }
+
             var request = new SendDataRequest
             {
                 Room = roomName,
@@ -435,6 +477,57 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
                 await SendDataToParticipantsAsync(roomName, jsonData, instructorIdentities);
             }
         }
+
+        /// <summary>
+        /// Send emergency message từ student tới instructor (microphone issue, technical problem, etc.)
+        /// </summary>
+        public async Task SendEmergencyMessageAsync(
+            string roomName,
+            string studentIdentity,
+            string studentName,
+            string messageType,
+            string message)
+        {
+            var emergencyData = new
+            {
+                type = "emergency_message",
+                messageType = messageType, // "mic_broken", "connection_issue", "question", "help_needed"
+                message = message,
+                studentIdentity = studentIdentity,
+                studentName = studentName,
+                timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+                priority = "high"
+            };
+
+            var instructors = await GetInstructorsAsync(roomName);
+            var instructorIdentities = instructors.Select(p => p.Identity).ToArray();
+
+            if (instructorIdentities.Length > 0)
+            {
+                var jsonData = System.Text.Json.JsonSerializer.Serialize(emergencyData);
+                await SendDataToParticipantsAsync(roomName, jsonData, instructorIdentities);
+            }
+        }
+
+        /// <summary>
+        /// Send whiteboard interaction data từ student
+        /// </summary>
+        public async Task SendWhiteboardInteractionAsync(
+            string roomName,
+            string participantIdentity,
+            object whiteboardData)
+        {
+            var interactionData = new
+            {
+                type = "whiteboard_interaction",
+                participantIdentity = participantIdentity,
+                data = whiteboardData,
+                timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            };
+
+            var jsonData = System.Text.Json.JsonSerializer.Serialize(interactionData);
+            await SendDataToRoomAsync(roomName, jsonData, DataPacket.Types.Kind.Reliable);
+        }
         #endregion
 
         #region Webhook Processing
@@ -447,9 +540,9 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             {
                 return _webhookReceiver.Receive(payload, authHeader);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw new InvalidOperationException("Failed to process webhook", ex);
+                throw ApiException.InternalServerError("WEBHOOK_PROCESSING_FAILED", "Failed to process LiveKit webhook");
             }
         }
 
@@ -499,7 +592,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         {
             var participants = await ListParticipantsAsync(roomName);
             return participants
-                .Where(p => p.Permission?.CanPublishData == true)
+                .Where(p => p.Metadata != null && p.Metadata.Contains("\"role\":\"instructor\""))
                 .ToArray();
         }
 
@@ -510,7 +603,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         {
             var participants = await ListParticipantsAsync(roomName);
             return participants
-                .Where(p => p.Permission?.CanPublishData != true)
+                .Where(p => p.Metadata == null || !p.Metadata.Contains("\"role\":\"instructor\""))
                 .ToArray();
         }
 
@@ -538,7 +631,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             var room = await GetRoomAsync(roomName);
             if (room == null)
             {
-                throw new InvalidOperationException($"Room {roomName} not found");
+                throw ApiException.NotFound("Room", roomName);
             }
 
             var participants = await ListParticipantsAsync(roomName);
@@ -547,8 +640,8 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             {
                 RoomName = roomName,
                 TotalParticipants = (int)room.NumParticipants,
-                InstructorCount = participants.Count(p => p.Permission?.CanPublishData == true),
-                StudentCount = participants.Count(p => p.Permission?.CanPublishData != true),
+                InstructorCount = participants.Count(p => p.Metadata != null && p.Metadata.Contains("\"role\":\"instructor\"")),
+                StudentCount = participants.Count(p => p.Metadata == null || !p.Metadata.Contains("\"role\":\"instructor\"")),
                 CreationTime = DateTimeOffset.FromUnixTimeSeconds(room.CreationTime),
                 IsRecording = room.ActiveRecording
             };
@@ -584,11 +677,11 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
                     RoomJoin = true,
                     Room = roomName,
                     CanPublish = true,
-                    CanPublishData = false,
+                    CanPublishData = true,    // ✅ Cho phép gửi tin nhắn và tương tác whiteboard
                     CanSubscribe = true,
-                    Hidden = true
+                    CanUpdateOwnMetadata = true  // ✅ Cho phép cập nhật thông tin cá nhân
                 },
-                _ => throw new ArgumentException($"Unknown role: {role}")
+                _ => throw ApiException.BadRequest("INVALID_ROLE", $"Unknown participant role: {role}")
             };
         }
 
