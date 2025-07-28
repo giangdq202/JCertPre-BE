@@ -14,6 +14,15 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(tq => tq.isActive)
                 .IsRequired();
 
+            builder.Property(tq => tq.questionNumber)
+                .IsRequired();
+
+            builder.Property(tq => tq.partNumber)
+                .IsRequired(false);
+
+            builder.Property(tq => tq.partDurationMinutes)
+                .IsRequired(false);
+
             builder.HasOne(tq => tq.Test)
                 .WithMany(t => t.TestQuestions)
                 .HasForeignKey(tq => tq.testId)

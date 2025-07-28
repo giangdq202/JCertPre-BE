@@ -59,7 +59,10 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 };
                 await _repo.InsertAsync(entity);
                 await _repo.SaveChangesAsync();
-                return MapToDto(entity);
+
+                // Fetch with SubContent included
+                var created = await _repo.GetByConfigIdAsync(entity.configId);
+                return MapToDto(created!);
             }
             catch (Exception ex)
             {
@@ -86,7 +89,10 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
 
                 await _repo.UpdateAsync(entity);
                 await _repo.SaveChangesAsync();
-                return MapToDto(entity);
+
+                // Fetch with SubContent included
+                var updated = await _repo.GetByConfigIdAsync(configId);
+                return MapToDto(updated!);
             }
             catch (Exception ex)
             {
@@ -117,12 +123,20 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
             {
                 configId = entity.configId,
                 templateId = entity.templateId,
-                subContentId = entity.subContentId,
                 questionCount = entity.questionCount,
                 pointPerQuestion = entity.pointPerQuestion,
                 totalPoints = entity.totalPoints,
                 sequence = entity.sequence,
-                subContentName = entity.SubContent?.SubContentName.ToString()
+                SubContent = entity.SubContent == null ? null : new SubContentDto
+                {
+                    SubContentId = entity.SubContent.SubContentId,
+                    SubContentName = entity.SubContent.SubContentName.ToString(),
+                    SubContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContent.SubContentName),
+                    Level = entity.SubContent.Level.ToString(),
+                    LevelDescription = EnumHelper.GetEnumDescription(entity.SubContent.Level),
+                    ContentName = entity.SubContent.ContentName.ToString(),
+                    ContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContent.ContentName)
+                }
             };
         }
     }
