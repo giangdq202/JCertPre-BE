@@ -58,6 +58,26 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     config.GetSection(JwtConfiguration.SectionName).Bind(jwtConfig);
     jwtConfig.Validate();
     
+    // Bind and validate Cloudinary config
+    var cloudinaryConfig = new CloudinaryConfiguration();
+    config.GetSection(CloudinaryConfiguration.SectionName).Bind(cloudinaryConfig);
+    cloudinaryConfig.Validate();
+    
+    // Bind and validate Firebase config  
+    var firebaseConfig = new FirebaseConfiguration();
+    config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
+    firebaseConfig.Validate();
+    
+    // Get API configuration to check if we should show debug info
+    var apiConfig = new ApiConfiguration();
+    config.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
+    
+    // Log environment variables for debugging only if enabled
+    if (apiConfig.ShowConfigurationStatus)
+    {
+        LogEnvironmentVariables(config);
+    }
+    
     // Register all configurations
     builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
@@ -65,10 +85,78 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<CloudinaryConfiguration>(config.GetSection(CloudinaryConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
 
-    // Register LiveKit configuration
+    // Register and validate LiveKit configuration
     var liveKitConfig = new LiveKitConfiguration();
     config.GetSection("LiveKit").Bind(liveKitConfig);
+    liveKitConfig.Validate();
     builder.Services.AddSingleton(liveKitConfig);
+}
+
+static void LogEnvironmentVariables(IConfiguration config)
+{
+    Console.WriteLine("\n=== ENVIRONMENT VARIABLES DEBUG ===");
+    
+    // Database Configuration
+    Console.WriteLine($"Database ConnectionString: {MaskSensitiveData(config.GetConnectionString("JCertPreDB"))}");
+    
+    // JWT Configuration
+    Console.WriteLine("\n[JWT Configuration]");
+    Console.WriteLine($"SecretKey: {MaskSensitiveData(config["Jwt:SecretKey"])}");
+    Console.WriteLine($"RefreshSecretKey: {MaskSensitiveData(config["Jwt:RefreshSecretKey"])}");
+    Console.WriteLine($"Issuer: {config["Jwt:Issuer"]}");
+    Console.WriteLine($"Audience: {config["Jwt:Audience"]}");
+    Console.WriteLine($"ExpiryInMinutes: {config["Jwt:ExpiryInMinutes"]}");
+    
+    // Redis Configuration
+    Console.WriteLine("\n[Redis Configuration]");
+    Console.WriteLine($"ConnectionString: {MaskSensitiveData(config["Redis:ConnectionString"])}");
+    
+    // API Configuration
+    Console.WriteLine("\n[API Configuration]");
+    Console.WriteLine($"Environment: {config["Api:Environment"]}");
+    Console.WriteLine($"Urls: {config["Api:Urls"]}");
+    Console.WriteLine($"ShowConfigurationStatus: {config["Api:ShowConfigurationStatus"]}");
+    
+    // CORS Configuration
+    Console.WriteLine("\n[CORS Configuration]");
+    Console.WriteLine($"AllowedOrigins: {config["Cors:AllowedOrigins"]}");
+    
+    // Cloudinary Configuration
+    Console.WriteLine("\n[Cloudinary Configuration]");
+    Console.WriteLine($"CloudName: {config["Cloudinary:CloudName"]}");
+    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["Cloudinary:ApiKey"])}");
+    Console.WriteLine($"ApiSecret: {MaskSensitiveData(config["Cloudinary:ApiSecret"])}");
+    Console.WriteLine($"Secure: {config["Cloudinary:Secure"]}");
+    
+    // Firebase Configuration
+    Console.WriteLine("\n[Firebase Configuration]");
+    Console.WriteLine($"Type: {config["Firebase:Type"]}");
+    Console.WriteLine($"ProjectId: {config["Firebase:ProjectId"]}");
+    Console.WriteLine($"PrivateKeyId: {MaskSensitiveData(config["Firebase:PrivateKeyId"])}");
+    Console.WriteLine($"PrivateKey: {(string.IsNullOrEmpty(config["Firebase:PrivateKey"]) ? "NOT SET" : "***MASKED***")}");
+    Console.WriteLine($"ClientEmail: {config["Firebase:ClientEmail"]}");
+    Console.WriteLine($"ClientId: {config["Firebase:ClientId"]}");
+    Console.WriteLine($"AuthUri: {config["Firebase:AuthUri"]}");
+    Console.WriteLine($"TokenUri: {config["Firebase:TokenUri"]}");
+    
+    // LiveKit Configuration
+    Console.WriteLine("\n[LiveKit Configuration]");
+    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["LiveKit:ApiKey"])}");
+    Console.WriteLine($"ApiSecret: {MaskSensitiveData(config["LiveKit:ApiSecret"])}");
+    Console.WriteLine($"ServerUrl: {config["LiveKit:ServerUrl"]}");
+    
+    Console.WriteLine("\n=== END ENVIRONMENT VARIABLES DEBUG ===\n");
+}
+
+static string MaskSensitiveData(string? value)
+{
+    if (string.IsNullOrEmpty(value))
+        return "NOT SET";
+    
+    if (value.Length <= 4)
+        return "***";
+    
+    return $"{value.Substring(0, 4)}***{value.Substring(value.Length - 4)}";
 }
 #endregion
 

@@ -18,6 +18,10 @@ namespace JCertPreApplication.Persistence
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            // Get API configuration to check if we should show status messages
+            var apiConfig = new ApiConfiguration();
+            configuration.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
+            
             // Read connection string using .NET Configuration system (supports environment variables with ConnectionStrings__JCertPreDB format)
             var connectionString = configuration.GetConnectionString("JCertPreDB");
 
@@ -73,9 +77,14 @@ namespace JCertPreApplication.Persistence
 
             services.AddBackgroundServices();
 
-            Console.WriteLine("✅ Database connection configured successfully");
-            Console.WriteLine("✅ Redis cache configured successfully");
-            Console.WriteLine("✅ Cloudinary service configured successfully");
+            // Show configuration status messages only if enabled
+            if (apiConfig.ShowConfigurationStatus)
+            {
+                Console.WriteLine("✅ Database connection configured successfully");
+                Console.WriteLine("✅ Redis cache configured successfully");
+                Console.WriteLine("✅ Cloudinary service configured successfully");
+            }
+            
             return services;
         }
         private static IServiceCollection AddBackgroundServices(this IServiceCollection services)
