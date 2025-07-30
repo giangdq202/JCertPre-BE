@@ -145,6 +145,11 @@ namespace JCertPreApplication.Application.Features.Course
             if (await _courseRepository.HasActiveInstructorAsync(courseId, instructorId))
                 throw ApiException.BadRequest("INSTRUCTOR_ALREADY_ACTIVE", "This instructor is already active in this course");
 
+            // Check if course already has any active instructor
+            var activeInstructors = await _courseRepository.GetActiveCourseInstructorsAsync(courseId);
+            if (activeInstructors.Any())
+                throw ApiException.BadRequest("COURSE_HAS_ACTIVE_INSTRUCTOR", "Course already has an active instructor. Please remove the current instructor before assigning a new one.");
+
             await _courseRepository.AddInstructorToCourseAsync(courseId, instructorId);
             await _courseRepository.SaveChangesAsync();
         }
