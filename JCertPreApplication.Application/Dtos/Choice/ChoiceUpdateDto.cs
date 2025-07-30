@@ -2,8 +2,7 @@ namespace JCertPreApplication.Application.Dtos.Choice
 {
     public class ChoiceUpdateDto
     {
-        public required string Content { get; set; }
-        public bool IsCorrect { get; set; }
-        public string? Explanation { get; set; }
+        public string? Content { get; set; }
+        public bool? IsCorrect { get; set; }
     }
-} 
+}

@@ -2,12 +2,7 @@ using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Contracts
 {
-    public interface IChoiceRepository
+    public interface IChoiceRepository : IGenericRepository<Choice>
     {
-        Task<IEnumerable<Choice>> GetByQuestionIdAsync(Guid questionId);
-        Task<Choice?> GetByIdAsync(Guid choiceId);
-        Task<Choice> AddAsync(Guid questionId, Choice choice);
-        Task UpdateListAsync(Guid questionId, IEnumerable<Choice> choices);
-        Task DeleteAsync(Guid questionId, Guid choiceId);
     }
 }

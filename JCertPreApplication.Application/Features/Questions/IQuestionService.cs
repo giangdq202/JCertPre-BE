@@ -8,19 +8,19 @@ namespace JCertPreApplication.Application.Features.Questions
 {
     public interface IQuestionService
     {
-        Task<Question> GetByIdAsync(Guid id);
-        Task<IEnumerable<Question>> GetAllAsync();
-        Task<Question> CreateAsync(CreateQuestionDto createDto);
-        Task<Question> UpdateAsync(Guid id, UpdateQuestionDto updateDto);
+        Task<QuestionDto> GetByIdAsync(Guid id);
+        Task<IEnumerable<QuestionDto>> GetAllAsync();
+        Task<QuestionDto> CreateAsync(CreateQuestionDto createDto);
+        Task<QuestionDto> UpdateAsync(Guid id, UpdateQuestionDto updateDto);
         Task DeleteAsync(Guid id);
-        Task<Pagination<Question>> GetPaginatedWithDetailsAsync(
+        Task<Pagination<QuestionDto>> GetPaginatedWithDetailsAsync(
             string? searchTerm,
             int pageIndex,
             int pageSize,
             ContentName? contentName = null,
             CourseLevel? level = null,
             SubContentName? subContentName = null,
-            QuestionDifficulty? difficulty = null // Optional: add filtering by difficulty
+            QuestionDifficulty? difficulty = null
         );
     }
 }

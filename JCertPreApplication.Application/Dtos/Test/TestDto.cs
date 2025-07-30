@@ -12,5 +12,7 @@ public class TestDto
     public DateTime? AvailableFrom { get; set; }
     public DateTime? AvailableTo { get; set; }
     public int MaxAttempts { get; set; }
-    public TestStatus Status { get; set; } // <-- Added
+    public TestStatus Status { get; set; }
+    public Guid? TestTemplateTypeId { get; set; }
+    public string? TestTemplateTypeName { get; set; }
 }

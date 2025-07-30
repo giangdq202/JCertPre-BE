@@ -11,9 +11,6 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.ToTable("test_question");
             builder.HasKey(tq => tq.testQuestionId);
 
-            builder.Property(tq => tq.isActive)
-                .IsRequired();
-
             builder.Property(tq => tq.questionNumber)
                 .IsRequired();
 

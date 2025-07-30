@@ -29,8 +29,7 @@ public class QuestionController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
-        var questions = await _questionService.GetAllAsync();
-        var dtos = questions.Select(MapToQuestionDto);
+        var dtos = await _questionService.GetAllAsync();
         return Ok(dtos);
     }
 
@@ -40,10 +39,10 @@ public class QuestionController : ControllerBase
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var question = await _questionService.GetByIdAsync(id);
-        if (question == null)
+        var dto = await _questionService.GetByIdAsync(id);
+        if (dto == null)
             return NotFound();
-        return Ok(MapToQuestionDto(question));
+        return Ok(dto);
     }
 
     /// <summary>
@@ -56,7 +55,7 @@ public class QuestionController : ControllerBase
             return BadRequest(ModelState);
 
         var created = await _questionService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.questionId }, MapToQuestionDto(created));
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     /// <summary>
@@ -69,7 +68,7 @@ public class QuestionController : ControllerBase
             return BadRequest(ModelState);
 
         var updated = await _questionService.UpdateAsync(id, dto);
-        return Ok(MapToQuestionDto(updated));
+        return Ok(updated);
     }
 
     /// <summary>
@@ -94,47 +93,7 @@ public class QuestionController : ControllerBase
         [FromQuery] CourseLevel? level = null,
         [FromQuery] SubContentName? subContentName = null)
     {
-        var result = await _questionService.GetPaginatedWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName);
-
-        var dto = new Pagination<QuestionDto>
-        {
-            PageIndex = result.PageIndex,
-            PageSize = result.PageSize,
-            TotalItemsCount = result.TotalItemsCount,
-            Items = result.Items.Select(MapToQuestionDto).ToList()
-        };
+        var dto = await _questionService.GetPaginatedWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName);
         return Ok(dto);
-    }
-
-    // Mapping logic at controller layer
-    private static QuestionDto MapToQuestionDto(Question question)
-    {
-        var subContent = question.SubContent;
-        return new QuestionDto
-        {
-            Id = question.questionId,
-            Content = question.questionText,
-            Explanation = question.explanation,
-            Points = question.points,
-            Difficulty = question.difficulty, // Add this line
-            Choices = question.Choices?.Select(c => new ChoiceReadDto
-            {
-                Id = c.choiceId,
-                Content = c.choiceText,
-                IsCorrect = c.isCorrect,
-                QuestionId = c.questionId
-            }).ToList(),
-            QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
-            {
-                MediaUrl = a.mediaUrl,
-                MediaType = a.mediaType
-            }).ToList(),
-            ContentName = subContent?.ContentName.ToString() ?? "",
-            ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
-            Level = subContent?.Level.ToString() ?? "",
-            LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
-            SubContentName = subContent?.SubContentName.ToString() ?? "",
-            SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
-        };
     }
 }

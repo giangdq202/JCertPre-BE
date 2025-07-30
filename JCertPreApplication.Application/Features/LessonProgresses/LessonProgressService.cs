@@ -80,8 +80,7 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
                 // Get lessonIds for the course
                 var lessonIds = (await _lessonRepo.GetAllAsync(l => l.courseId == dto.CourseId)).Select(l => l.lessonId).ToList();
 
-                var userProgresses = await _repo.GetAllAsync(lp => lp.userId == dto.UserId && lessonIds.Contains(lp.lessonId));
-                var userProgressesCount = userProgresses.Count;
+                var userProgressesCount = (await _repo.GetAllAsync(lp => lp.userId == dto.UserId && lessonIds.Contains(lp.lessonId))).Count;
                 // Calculate completion rate as if the new progress is already added
                 var completionRate = lessonIds.Count == 0 ? 0.0m :
                     Math.Round((decimal)(userProgressesCount + 1) / lessonIds.Count * 100, 2);
