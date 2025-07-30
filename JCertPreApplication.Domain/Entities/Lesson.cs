@@ -1,4 +1,4 @@
-﻿namespace JCertPreApplication.Domain.Entities
+namespace JCertPreApplication.Domain.Entities
 {
     public class Lesson
     {
@@ -13,8 +13,5 @@
         public virtual ICollection<Document> Documents { get; set; } = new List<Document>();
         public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
         public virtual ICollection<LessonProgress> LessonProgresses { get; set; } = new List<LessonProgress>();
-
-        // 1-1 relation: Each lesson has at most one Livestream
-        public virtual Livestream? Livestream { get; set; }
     }
 }

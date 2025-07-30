@@ -11,13 +11,17 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.ToTable("livestream");
             builder.HasKey(ls => ls.livestreamId);
 
-            builder.Property(ls => ls.lessonId).IsRequired();
-            builder.Property(ls => ls.startTime).IsRequired();
-            builder.Property(ls => ls.endTime).IsRequired();
+            // Configure properties
+            builder.Property(ls => ls.courseId).IsRequired();
+            builder.Property(ls => ls.description).HasMaxLength(500);
+            builder.Property(ls => ls.scheduledDateTime).IsRequired();
+            builder.Property(ls => ls.durationMinutes).IsRequired();
+            builder.Property(ls => ls.status).IsRequired().HasConversion<string>();
 
-            builder.HasOne(ls => ls.Lesson)
-                .WithOne(l => l.Livestream)
-                .HasForeignKey<Livestream>(ls => ls.lessonId)
+            // Configure relationships
+            builder.HasOne(ls => ls.Course)
+                .WithMany(c => c.Livestreams)
+                .HasForeignKey(ls => ls.courseId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
