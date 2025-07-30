@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Dtos.Auth
 {
@@ -44,7 +45,9 @@ namespace JCertPreApplication.Application.Dtos.Auth
         [StringLength(20, ErrorMessage = "Phone number cannot exceed 20 characters")]
         public string? Phone { get; set; }
 
-        [StringLength(500, ErrorMessage = "Avatar URL cannot exceed 500 characters")]
-        public string? avatarUrl { get; set; }
+        /// <summary>
+        /// Avatar image file (optional). Supports common image formats.
+        /// </summary>
+        public IFormFile? AvatarFile { get; set; }
     }
 }

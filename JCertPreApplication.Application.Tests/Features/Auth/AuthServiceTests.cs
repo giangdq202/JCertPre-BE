@@ -20,6 +20,7 @@ namespace JCertPreApplication.Application.Tests.Features.Auth
         private readonly Mock<IFirebaseService> _firebaseServiceMock;
         private readonly Mock<IPasswordService> _passwordServiceMock;
         private readonly Mock<ITokenCacheRepository> _tokenCacheRepositoryMock;
+        private readonly Mock<ICloudinaryService> _cloudinaryServiceMock;
         private readonly IOptions<JwtConfiguration> _jwtOptions;
         private readonly AuthService _authService;
 
@@ -30,6 +31,7 @@ namespace JCertPreApplication.Application.Tests.Features.Auth
             _firebaseServiceMock = new Mock<IFirebaseService>();
             _passwordServiceMock = new Mock<IPasswordService>();
             _tokenCacheRepositoryMock = new Mock<ITokenCacheRepository>();
+            _cloudinaryServiceMock = new Mock<ICloudinaryService>();
 
             _jwtOptions = Options.Create(new JwtConfiguration
             {
@@ -46,6 +48,7 @@ namespace JCertPreApplication.Application.Tests.Features.Auth
                 _firebaseServiceMock.Object,
                 _passwordServiceMock.Object,
                 _tokenCacheRepositoryMock.Object,
+                _cloudinaryServiceMock.Object,
                 _jwtOptions);
         }
 
