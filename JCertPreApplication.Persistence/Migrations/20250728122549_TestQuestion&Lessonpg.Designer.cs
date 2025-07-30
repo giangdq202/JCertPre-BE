@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250728122549_TestQuestion&Lessonpg")]
+    partial class TestQuestionLessonpg
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -389,26 +392,19 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("courseId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("description")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<int>("durationMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("scheduledDateTime")
+                    b.Property<DateTime>("endTime")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("status")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.Property<Guid>("lessonId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("startTime")
+                        .HasColumnType("timestamp with time zone");
 
                     b.HasKey("livestreamId");
 
-                    b.HasIndex("courseId");
+                    b.HasIndex("lessonId")
+                        .IsUnique();
 
                     b.ToTable("livestream", (string)null);
                 });
@@ -1287,13 +1283,13 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Livestream", b =>
                 {
-                    b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
-                        .WithMany("Livestreams")
-                        .HasForeignKey("courseId")
+                    b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
+                        .WithOne("Livestream")
+                        .HasForeignKey("JCertPreApplication.Domain.Entities.Livestream", "lessonId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Course");
+                    b.Navigation("Lesson");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Message", b =>
@@ -1575,8 +1571,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Navigation("Lessons");
 
-                    b.Navigation("Livestreams");
-
                     b.Navigation("StudyPlanItems");
                 });
 
@@ -1585,6 +1579,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("LessonProgresses");
+
+                    b.Navigation("Livestream");
 
                     b.Navigation("Tests");
                 });

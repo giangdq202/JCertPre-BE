@@ -8,5 +8,6 @@ namespace JCertPreApplication.Application.Contracts
         Task<IEnumerable<Enrollment>> GetUserEnrollmentsAsync(Guid userId);
         Task<IEnumerable<Enrollment>> GetCourseEnrollmentsAsync(Guid courseId);
         Task<Enrollment?> GetEnrollmentWithDetailsAsync(Guid enrollmentId);
+        Task<bool> IsUserEnrolledInCourseAsync(Guid userId, Guid courseId);
     }
 } 

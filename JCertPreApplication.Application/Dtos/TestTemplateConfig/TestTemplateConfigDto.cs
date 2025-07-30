@@ -12,5 +12,6 @@ namespace JCertPreApplication.Application.Dtos.TestTemplateConfig
         public int totalPoints { get; set; }
         public int sequence { get; set; }
         public string? subContentName { get; set; }
+        public SubContentDto? SubContent { get; set; }
     }
 }
