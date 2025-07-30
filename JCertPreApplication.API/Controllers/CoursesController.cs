@@ -48,7 +48,8 @@ namespace JCertPreApplication.API.Controllers
         /// Creates a new course.
         /// </summary>
         [HttpPost]
-        public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto createCourseDto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateCourse([FromForm] CreateCourseDto createCourseDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -61,7 +62,8 @@ namespace JCertPreApplication.API.Controllers
         /// Updates an existing course.
         /// </summary>
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCourse(Guid id, [FromBody] UpdateCourseDto updateCourseDto)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> UpdateCourse(Guid id, [FromForm] UpdateCourseDto updateCourseDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

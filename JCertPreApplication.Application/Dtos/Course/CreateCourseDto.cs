@@ -1,4 +1,5 @@
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
 namespace JCertPreApplication.Application.Dtos.Course
@@ -50,7 +51,15 @@ namespace JCertPreApplication.Application.Dtos.Course
         public decimal Price { get; set; }
 
         /// <summary>
+        /// Course thumbnail image file. Optional field.
+        /// Supported formats: JPEG, PNG, GIF, BMP, WebP, SVG
+        /// </summary>
+        /// <example>Image file upload</example>
+        public IFormFile? ThumbnailFile { get; set; }
+
+        /// <summary>
         /// URL to the course thumbnail image. Optional field.
+        /// This field is deprecated in favor of ThumbnailFile.
         /// </summary>
         /// <example>https://cdn.jcertpre.com/thumbnails/n5-course-thumb.jpg</example>
         [Url(ErrorMessage = "Please provide a valid URL for the thumbnail")]

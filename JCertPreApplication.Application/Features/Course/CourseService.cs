@@ -5,6 +5,7 @@ using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Features.Course
 {
@@ -12,39 +13,71 @@ namespace JCertPreApplication.Application.Features.Course
     {
         private readonly ICourseRepository _courseRepository;
         private readonly IUserRepository _userRepository;
+        private readonly ICloudinaryService _cloudinaryService;
 
-        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository)
+        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository, ICloudinaryService cloudinaryService)
         {
             _courseRepository = courseRepository;
             _userRepository = userRepository;
+            _cloudinaryService = cloudinaryService;
         }
 
         public async Task<CourseDto> CreateCourseAsync(CreateCourseDto createCourseDto)
         {
-            // Check if title is unique
-            if (!await _courseRepository.IsTitleUniqueAsync(createCourseDto.Title))
-                throw ApiException.BadRequest("COURSE_TITLE_EXISTS", "A course with this title already exists");
-
-            // Create new course entity
-            var course = new Domain.Entities.Course
+            try
             {
-                courseId = Guid.NewGuid(),
-                title = createCourseDto.Title,
-                description = createCourseDto.Description,
-                level = createCourseDto.Level,
-                courseType = createCourseDto.CourseType,
-                price = createCourseDto.Price,
-                thumbnailUrl = createCourseDto.ThumbnailUrl,
-                status = CourseStatus.Draft, // Default status
-                createdAt = DateTime.UtcNow
-            };
+                // Check if title is unique
+                if (!await _courseRepository.IsTitleUniqueAsync(createCourseDto.Title))
+                    throw ApiException.BadRequest("COURSE_TITLE_EXISTS", "A course with this title already exists");
 
-            await _courseRepository.InsertAsync(course);
-            await _courseRepository.SaveChangesAsync();
+                // Generate course ID first
+                var courseId = Guid.NewGuid();
+                string? thumbnailUrl = null;
 
-            // Return course directly without querying DB again
-            // The course object in memory already contains all necessary data
-            return MapToCourseDto(course);
+                // Handle thumbnail upload if provided
+                if (createCourseDto.ThumbnailFile != null)
+                {
+                    // Create a custom FormFile with courseId as filename
+                    var customFormFile = CreateCustomFormFile(createCourseDto.ThumbnailFile, courseId.ToString());
+                    
+                    // Upload thumbnail to Cloudinary
+                    var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                    
+                    if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                    {
+                        thumbnailUrl = uploadResult.SecureUrl.ToString();
+                    }
+                }
+
+                // Create new course entity
+                var course = new Domain.Entities.Course
+                {
+                    courseId = courseId,
+                    title = createCourseDto.Title,
+                    description = createCourseDto.Description,
+                    level = createCourseDto.Level,
+                    courseType = createCourseDto.CourseType,
+                    price = createCourseDto.Price,
+                    thumbnailUrl = thumbnailUrl,
+                    status = CourseStatus.Draft, // Default status
+                    createdAt = DateTime.UtcNow
+                };
+
+                await _courseRepository.InsertAsync(course);
+                await _courseRepository.SaveChangesAsync();
+
+                // Return course directly without querying DB again
+                // The course object in memory already contains all necessary data
+                return MapToCourseDto(course);
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("COURSE_CREATE_ERROR", $"An error occurred while creating the course: {ex.Message}");
+            }
         }
 
         public async Task<CourseDto> GetCourseByIdAsync(Guid courseId)
@@ -71,38 +104,82 @@ namespace JCertPreApplication.Application.Features.Course
 
         public async Task<CourseDto> UpdateCourseAsync(Guid courseId, UpdateCourseDto updateCourseDto)
         {
-            var course = await _courseRepository.GetByIdAsync(courseId);
-            if (course == null)
-                throw ApiException.NotFound("Course", courseId);
-
-            // Check title uniqueness if title is being updated
-            if (!string.IsNullOrEmpty(updateCourseDto.Title) && course.title != updateCourseDto.Title)
+            try
             {
-                if (!await _courseRepository.IsTitleUniqueAsync(updateCourseDto.Title, courseId))
-                    throw ApiException.BadRequest("COURSE_TITLE_EXISTS", "A course with this title already exists");
+                var course = await _courseRepository.GetByIdAsync(courseId);
+                if (course == null)
+                    throw ApiException.NotFound("Course", courseId);
+
+                // Check title uniqueness if title is being updated
+                if (!string.IsNullOrEmpty(updateCourseDto.Title) && course.title != updateCourseDto.Title)
+                {
+                    if (!await _courseRepository.IsTitleUniqueAsync(updateCourseDto.Title, courseId))
+                        throw ApiException.BadRequest("COURSE_TITLE_EXISTS", "A course with this title already exists");
+                }
+
+                // Handle thumbnail upload if new file is provided
+                if (updateCourseDto.ThumbnailFile != null)
+                {
+                    // Delete old thumbnail from Cloudinary if exists
+                    if (!string.IsNullOrEmpty(course.thumbnailUrl))
+                    {
+                        try
+                        {
+                            var oldPublicId = ExtractCloudinaryPublicId(course.thumbnailUrl);
+                            if (!string.IsNullOrWhiteSpace(oldPublicId))
+                            {
+                                await _cloudinaryService.DeleteImageAsync(oldPublicId);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log warning but don't fail the update if old image deletion fails
+                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old Cloudinary thumbnail: {ex.Message}");
+                        }
+                    }
+
+                    // Upload new thumbnail using courseId as filename
+                    var customFormFile = CreateCustomFormFile(updateCourseDto.ThumbnailFile, courseId.ToString());
+                    var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                    
+                    if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                    {
+                        course.thumbnailUrl = uploadResult.SecureUrl.ToString();
+                    }
+                }
+                else if (updateCourseDto.ThumbnailUrl != null) // Allow setting to null or updating URL
+                {
+                    course.thumbnailUrl = updateCourseDto.ThumbnailUrl;
+                }
+
+                // Update only provided fields
+                if (!string.IsNullOrEmpty(updateCourseDto.Title))
+                    course.title = updateCourseDto.Title;
+                if (!string.IsNullOrEmpty(updateCourseDto.Description))
+                    course.description = updateCourseDto.Description;
+                if (updateCourseDto.Level.HasValue)
+                    course.level = updateCourseDto.Level.Value;
+                if (updateCourseDto.CourseType.HasValue)
+                    course.courseType = updateCourseDto.CourseType.Value;
+                if (updateCourseDto.Price.HasValue)
+                    course.price = updateCourseDto.Price.Value;
+                if (updateCourseDto.Status.HasValue)
+                    course.status = updateCourseDto.Status.Value;
+
+                await _courseRepository.UpdateAsync(course);
+                await _courseRepository.SaveChangesAsync();
+
+                var updatedCourse = await _courseRepository.GetCourseWithDetailsAsync(courseId);
+                return MapToCourseDto(updatedCourse!);
             }
-
-            // Update only provided fields
-            if (!string.IsNullOrEmpty(updateCourseDto.Title))
-                course.title = updateCourseDto.Title;
-            if (!string.IsNullOrEmpty(updateCourseDto.Description))
-                course.description = updateCourseDto.Description;
-            if (updateCourseDto.Level.HasValue)
-                course.level = updateCourseDto.Level.Value;
-            if (updateCourseDto.CourseType.HasValue)
-                course.courseType = updateCourseDto.CourseType.Value;
-            if (updateCourseDto.Price.HasValue)
-                course.price = updateCourseDto.Price.Value;
-            if (updateCourseDto.ThumbnailUrl != null) // Allow setting to null
-                course.thumbnailUrl = updateCourseDto.ThumbnailUrl;
-            if (updateCourseDto.Status.HasValue)
-                course.status = updateCourseDto.Status.Value;
-
-            await _courseRepository.UpdateAsync(course);
-            await _courseRepository.SaveChangesAsync();
-
-            var updatedCourse = await _courseRepository.GetCourseWithDetailsAsync(courseId);
-            return MapToCourseDto(updatedCourse!);
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("COURSE_UPDATE_ERROR", $"An error occurred while updating the course: {ex.Message}");
+            }
         }
 
         public async Task DeleteCourseAsync(Guid courseId)
@@ -274,5 +351,82 @@ namespace JCertPreApplication.Application.Features.Course
                 roleName = user.Role?.roleName
             };
         }
+
+        private static IFormFile CreateCustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            // Get the file extension from original file
+            var extension = Path.GetExtension(originalFile.FileName);
+            var newFileName = customFileName + extension;
+
+            return new CustomFormFile(originalFile, newFileName);
+        }
+
+        private static string? ExtractCloudinaryPublicId(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+
+            try
+            {
+                var uri = new Uri(url);
+                var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
+                var uploadIdx = Array.IndexOf(segments, "upload");
+
+                if (uploadIdx == -1 || uploadIdx >= segments.Length - 1)
+                    return null;
+
+                // Get everything after upload/ as potential public ID
+                var publicIdParts = segments.Skip(uploadIdx + 1).ToArray();
+
+                // Skip version if present (starts with 'v' followed by numbers)
+                if (publicIdParts.Length > 0 && publicIdParts[0].StartsWith("v") &&
+                    publicIdParts[0].Length > 1 && publicIdParts[0].Skip(1).All(char.IsDigit))
+                {
+                    publicIdParts = publicIdParts.Skip(1).ToArray();
+                }
+
+                if (publicIdParts.Length == 0) return null;
+
+                // Remove file extension from the last part
+                var lastPart = publicIdParts.Last();
+                var dotIndex = lastPart.LastIndexOf('.');
+                if (dotIndex > 0)
+                {
+                    publicIdParts[publicIdParts.Length - 1] = lastPart.Substring(0, dotIndex);
+                }
+                
+                return string.Join("/", publicIdParts);
+            }
+            catch
+            {
+                return null;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Custom IFormFile implementation to override filename while preserving original file content
+    /// </summary>
+    internal class CustomFormFile : IFormFile
+    {
+        private readonly IFormFile _originalFile;
+        private readonly string _customFileName;
+
+        public CustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            _originalFile = originalFile;
+            _customFileName = customFileName;
+        }
+
+        public string ContentType => _originalFile.ContentType;
+        public string ContentDisposition => _originalFile.ContentDisposition;
+        public IHeaderDictionary Headers => _originalFile.Headers;
+        public long Length => _originalFile.Length;
+        public string Name => _originalFile.Name;
+        public string FileName => _customFileName; // This is the overridden filename
+
+        public void CopyTo(Stream target) => _originalFile.CopyTo(target);
+        public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default) =>
+            _originalFile.CopyToAsync(target, cancellationToken);
+        public Stream OpenReadStream() => _originalFile.OpenReadStream();
     }
 } 
