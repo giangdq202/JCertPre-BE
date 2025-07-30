@@ -46,28 +46,27 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Updates multiple choices for a question.
+        /// Updates a specific choice.
         /// </summary>
-        /// <param name="questionId">ID of the question.</param>
-        /// <param name="dtos">List of choices to update.</param>
+        /// <param name="choiceId">ID of the choice to update.</param>
+        /// <param name="dto">Choice update data.</param>
         /// <returns>No content on success.</returns>
-        [HttpPut("question/{questionId}")]
-        public async Task<IActionResult> UpdateList(Guid questionId, [FromBody] IEnumerable<ChoiceUpdateDto> dtos)
+        [HttpPut("choice/{choiceId}")]
+        public async Task<IActionResult> Update(Guid choiceId, [FromBody] ChoiceUpdateDto dto)
         {
-            await _choiceService.UpdateListAsync(questionId, dtos);
+            await _choiceService.UpdateAsync(choiceId, dto);
             return NoContent();
         }
 
         /// <summary>
         /// Deletes a specific choice.
         /// </summary>
-        /// <param name="questionId">ID of the question.</param>
         /// <param name="choiceId">ID of the choice to delete.</param>
         /// <returns>No content on success.</returns>
-        [HttpDelete("question/{questionId}/choice/{choiceId}")]
-        public async Task<IActionResult> Delete(Guid questionId, Guid choiceId)
+        [HttpDelete("choice/{choiceId}")]
+        public async Task<IActionResult> Delete(Guid choiceId)
         {
-            await _choiceService.DeleteAsync(questionId, choiceId);
+            await _choiceService.DeleteAsync(choiceId);
             return NoContent();
         }
     }
