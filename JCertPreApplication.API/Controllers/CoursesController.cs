@@ -25,10 +25,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Gets courses with filtering, searching, and pagination.
+        /// Gets courses with filtering and pagination.
         /// </summary>
-        /// <param name="queryParameters">Filter, search, and pagination parameters.</param>
-        /// <returns>Paginated list of courses.</returns>
         [HttpGet]
         public async Task<IActionResult> GetCourses([FromQuery] CourseQueryParameters queryParameters)
         {
@@ -37,10 +35,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Gets detailed course information.
+        /// Gets course by ID.
         /// </summary>
-        /// <param name="id">Course ID.</param>
-        /// <returns>Complete course information.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetCourse(Guid id)
         {
@@ -51,10 +47,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Creates a new course.
         /// </summary>
-        /// <param name="createCourseDto">Course creation data.</param>
-        /// <returns>Created course details.</returns>
         [HttpPost]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> CreateCourse([FromBody] CreateCourseDto createCourseDto)
         {
             if (!ModelState.IsValid)
@@ -67,11 +60,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Updates an existing course.
         /// </summary>
-        /// <param name="id">Course ID.</param>
-        /// <param name="updateCourseDto">Course update data.</param>
-        /// <returns>Updated course details.</returns>
         [HttpPut("{id}")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> UpdateCourse(Guid id, [FromBody] UpdateCourseDto updateCourseDto)
         {
             if (!ModelState.IsValid)
@@ -84,10 +73,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Deletes a course.
         /// </summary>
-        /// <param name="id">Course ID.</param>
-        /// <returns>No content on success.</returns>
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Admin")] // Uncomment when authentication is implemented
         public async Task<IActionResult> DeleteCourse(Guid id)
         {
             await _courseService.DeleteCourseAsync(id);
@@ -95,13 +81,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Updates course publication status.
+        /// Updates course status.
         /// </summary>
-        /// <param name="id">Course ID.</param>
-        /// <param name="status">New status (Draft, Published, Archived, Suspended).</param>
-        /// <returns>No content on success.</returns>
         [HttpPatch("{id}/status")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> UpdateCourseStatus(Guid id, [FromBody] CourseStatus status)
         {
             await _courseService.UpdateCourseStatusAsync(id, status);
@@ -111,11 +93,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Assigns an instructor to a course.
         /// </summary>
-        /// <param name="courseId">Course ID.</param>
-        /// <param name="instructorId">Instructor ID.</param>
-        /// <returns>No content on success.</returns>
         [HttpPost("{courseId}/instructors/{instructorId}")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> AddInstructorToCourse(Guid courseId, Guid instructorId)
         {
             await _courseService.AddInstructorToCourseAsync(courseId, instructorId);
@@ -125,11 +103,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Removes an instructor from a course.
         /// </summary>
-        /// <param name="courseId">Course ID.</param>
-        /// <param name="instructorId">Instructor ID.</param>
-        /// <returns>No content on success.</returns>
         [HttpDelete("{courseId}/instructors/{instructorId}")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> RemoveInstructorFromCourse(Guid courseId, Guid instructorId)
         {
             await _courseService.RemoveInstructorFromCourseAsync(courseId, instructorId);
@@ -139,8 +113,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets all instructors for a course.
         /// </summary>
-        /// <param name="courseId">Course ID.</param>
-        /// <returns>List of course instructors.</returns>
         [HttpGet("{courseId}/instructors")]
         public async Task<IActionResult> GetCourseInstructors(Guid courseId)
         {
@@ -151,8 +123,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets instructor assignment history for a course.
         /// </summary>
-        /// <param name="courseId">Course ID.</param>
-        /// <returns>List of instructor history records.</returns>
         [HttpGet("{courseId}/instructors/history")]
         public async Task<IActionResult> GetCourseInstructorHistory(Guid courseId)
         {
@@ -163,8 +133,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets courses taught by an instructor.
         /// </summary>
-        /// <param name="instructorId">Instructor user ID.</param>
-        /// <returns>List of courses where the user is an instructor.</returns>
         [HttpGet("instructor/{instructorId}")]
         public async Task<IActionResult> GetCoursesByInstructor(Guid instructorId)
         {
@@ -175,8 +143,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets courses enrolled by a student.
         /// </summary>
-        /// <param name="studentId">Student user ID.</param>
-        /// <returns>List of courses where the user is enrolled.</returns>
         [HttpGet("student/{studentId}")]
         public async Task<IActionResult> GetCoursesByStudent(Guid studentId)
         {

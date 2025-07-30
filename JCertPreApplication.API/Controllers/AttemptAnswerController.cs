@@ -2,9 +2,16 @@ using JCertPreApplication.Application.Dtos.AttemptAnswer;
 using JCertPreApplication.Application.Features.AttemptAnswers;
 using Microsoft.AspNetCore.Mvc;
 
-[Route("api/attempt-answers")]
-[ApiController]
-public class AttemptAnswerController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages attempt answers.
+    /// </summary>
+    [Route("api/attempt-answers")]
+    [ApiController]
+    [Tags("AttemptAnswers")]
+    [Produces("application/json")]
+    public class AttemptAnswerController : ControllerBase
 {
     private readonly IAttemptAnswerService _service;
 
@@ -32,4 +39,4 @@ public class AttemptAnswerController : ControllerBase
         var result = await _service.AddOrUpdateAnswersAsync(dtos);
         return Ok(result);
     }
-}
+}}

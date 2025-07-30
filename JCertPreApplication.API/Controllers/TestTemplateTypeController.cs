@@ -1,12 +1,16 @@
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-/// <summary>
-/// Controller for managing TestTemplateType CRUD operations.
-/// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class TestTemplateTypeController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages test template types.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    [Tags("TestTemplateTypes")]
+    [Produces("application/json")]
+    public class TestTemplateTypeController : ControllerBase
 {
     private readonly ITestTemplateTypeService _service;
 
@@ -64,4 +68,4 @@ public class TestTemplateTypeController : ControllerBase
         var result = await _service.UpdateIsActiveAsync(testTemplateTypeId, isActive);
         return Ok(result);
     }
-}
+}}

@@ -97,18 +97,12 @@ namespace JCertPreApplication.API.Controllers
 
         private Guid GetCurrentUserId()
         {
-            // For development environment, return a mock user ID
-            // TODO: In production, uncomment the authentication logic below
-            return Guid.Parse("11111111-1111-1111-1111-111111111111");
-            
-            /*
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
             {
                 throw new UnauthorizedAccessException("Invalid user ID in token");
             }
             return userId;
-            */
         }
     }
 } 

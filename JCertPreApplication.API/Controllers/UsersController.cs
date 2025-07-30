@@ -1,7 +1,6 @@
 using JCertPreApplication.API.Common;
 using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Features.Users;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -23,10 +22,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves all users with pagination and filtering capabilities.
+        /// Retrieves all users with pagination and filtering.
         /// </summary>
-        /// <param name="parameters">Query parameters for pagination and filtering.</param>
-        /// <returns>Paginated list of users with their basic information.</returns>
         [HttpGet]
         public async Task<IActionResult> GetAllUsers([FromQuery] UserQueryParameters parameters)
         {
@@ -35,10 +32,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves a specific user by their unique identifier.
+        /// Retrieves a specific user by ID.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user.</param>
-        /// <returns>User details including profile information.</returns>
         [HttpGet("{userId:guid}")]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
@@ -55,11 +50,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Updates user profile information including avatar upload.
+        /// Updates user profile information.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user to update.</param>
-        /// <param name="updateUserDto">The updated user information.</param>
-        /// <returns>Updated user profile with current information.</returns>
         [HttpPut("{userId:guid}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateUser(Guid userId, [FromForm] UpdateUserDto updateUserDto)
@@ -69,10 +61,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Deactivates a user account (soft delete).
+        /// Deactivates a user account.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user to deactivate.</param>
-        /// <returns>Confirmation of successful deactivation.</returns>
         [HttpDelete("{userId:guid}")]
         public async Task<IActionResult> DeleteUser(Guid userId)
         {
@@ -89,11 +79,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Updates user avatar by uploading a new image file.
+        /// Updates user avatar.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user to update.</param>
-        /// <param name="avatarFile">The new avatar image file.</param>
-        /// <returns>Updated user profile with new avatar URL.</returns>
         [HttpPut("{userId:guid}/avatar")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateUserAvatar(Guid userId, IFormFile avatarFile)
@@ -104,10 +91,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Verifies if a user exists in the system.
+        /// Checks if a user exists.
         /// </summary>
-        /// <param name="userId">The unique identifier of the user to check.</param>
-        /// <returns>HTTP 200 if user exists, HTTP 404 if not found.</returns>
         [HttpHead("{userId:guid}")]
         public async Task<IActionResult> UserExists(Guid userId)
         {

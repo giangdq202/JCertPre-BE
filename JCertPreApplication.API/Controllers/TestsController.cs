@@ -2,7 +2,6 @@ using JCertPreApplication.Application.Dtos.Test;
 using JCertPreApplication.Application.Features.Tests;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 

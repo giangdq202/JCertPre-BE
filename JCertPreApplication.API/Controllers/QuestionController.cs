@@ -7,14 +7,16 @@ using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-/// <summary>
-/// API endpoints for managing Question entities.
-/// </summary>
-[ApiController]
-[Route("api/[controller]")]
-[Tags("Questions")]
-[Produces("application/json")]
-public class QuestionController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages question entities.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    [Tags("Questions")]
+    [Produces("application/json")]
+    public class QuestionController : ControllerBase
 {
     private readonly IQuestionService _questionService;
 
@@ -137,4 +139,4 @@ public class QuestionController : ControllerBase
             SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
         };
     }
-}
+}}

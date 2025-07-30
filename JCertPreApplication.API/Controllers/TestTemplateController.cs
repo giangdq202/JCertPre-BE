@@ -1,11 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 
-/// <summary>
-/// Controller for managing TestTemplate CRUD operations.
-/// </summary>
-[ApiController]
-[Route("api/[controller]")]
-public class TestTemplateController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages test templates.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    [Tags("TestTemplates")]
+    [Produces("application/json")]
+    public class TestTemplateController : ControllerBase
 {
     private readonly ITestTemplateService _service;
 
@@ -53,4 +57,4 @@ public class TestTemplateController : ControllerBase
         await _service.DeleteAsync(templateId);
         return NoContent();
     }
-}
+}}

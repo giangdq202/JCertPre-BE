@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
@@ -6,8 +5,13 @@ using System.ComponentModel.DataAnnotations;
 
 namespace JCertPreApplication.API.Controllers;
 
+/// <summary>
+/// Manages LiveKit integration for real-time communication.
+/// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Tags("LiveKit")]
+[Produces("application/json")]
 public class LiveKitController : ControllerBase
 {
     private readonly ILiveKitService _liveKitService;

@@ -1,14 +1,17 @@
 using JCertPreApplication.Application.Dtos.Livestream;
 using JCertPreApplication.Application.Features.Livestreams;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Manages livestream operations.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize] // Temporarily disabled for testing
+    [Tags("Livestreams")]
+    [Produces("application/json")]
     public class LivestreamController : ControllerBase
     {
         private readonly ILivestreamService _livestreamService;
@@ -19,10 +22,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Create a new livestream (Academic Manager only)
+        /// Creates a new livestream.
         /// </summary>
         [HttpPost]
-        // [Authorize(Roles = "Academic Manager")] // Temporarily disabled for testing
         public async Task<IActionResult> CreateLivestream([FromBody] CreateLivestreamDto createDto)
         {
             if (!ModelState.IsValid)
@@ -33,7 +35,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestream by ID
+        /// Gets livestream by ID.
         /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLivestreamById(Guid id)
@@ -46,10 +48,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Update livestream (Academic Manager only)
+        /// Updates a livestream.
         /// </summary>
         [HttpPut("{id}")]
-        // [Authorize(Roles = "Academic Manager")] // Temporarily disabled for testing
         public async Task<IActionResult> UpdateLivestream(Guid id, [FromBody] UpdateLivestreamDto updateDto)
         {
             if (!ModelState.IsValid)
@@ -60,10 +61,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Delete livestream (Academic Manager only)
+        /// Deletes a livestream.
         /// </summary>
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Academic Manager")] // Temporarily disabled for testing
         public async Task<IActionResult> DeleteLivestream(Guid id)
         {
             await _livestreamService.DeleteLivestreamAsync(id);
@@ -71,7 +71,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestreams with pagination and filters
+        /// Gets livestreams with pagination and filters.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetLivestreams(
@@ -85,7 +85,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestreams by course ID
+        /// Gets livestreams by course ID.
         /// </summary>
         [HttpGet("course/{courseId}")]
         public async Task<IActionResult> GetLivestreamsByCourse(Guid courseId)
@@ -95,7 +95,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Generate join token for livestream
+        /// Generates join token for livestream.
         /// </summary>
         [HttpGet("{id}/join-token")]
         public async Task<IActionResult> GetJoinToken(Guid id, [FromQuery] Guid userId)
@@ -108,10 +108,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Start livestream (Instructor only)
+        /// Starts a livestream.
         /// </summary>
         [HttpPost("{id}/start")]
-        // [Authorize(Roles = "Instructor")] // Temporarily disabled for testing
         public async Task<IActionResult> StartLivestream(Guid id, [FromQuery] Guid userId)
         {
             if (!await _livestreamService.CanInstructorStartLivestreamAsync(userId, id))
@@ -122,7 +121,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Check if user can join livestream
+        /// Checks if user can join livestream.
         /// </summary>
         [HttpGet("{id}/can-join")]
         public async Task<IActionResult> CanJoinLivestream(Guid id, [FromQuery] Guid userId)
@@ -132,7 +131,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestreams by user ID (for both instructors and students)
+        /// Gets livestreams by user ID.
         /// </summary>
         [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetLivestreamsByUser(Guid userId)
@@ -142,7 +141,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestream timetable by user ID with additional info for UI
+        /// Gets livestream timetable by user ID.
         /// </summary>
         [HttpGet("user/{userId}/timetable")]
         public async Task<IActionResult> GetLivestreamTimetableByUser(Guid userId)

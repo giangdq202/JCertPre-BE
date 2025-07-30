@@ -9,6 +9,8 @@ namespace JCertPreApplication.API.Controllers
     /// </summary>
     [ApiController]
     [Route("api/lesson-progress")]
+    [Tags("LessonProgress")]
+    [Produces("application/json")]
     public class LessonProgressController : ControllerBase
     {
         private readonly ILessonProgressService _service;
