@@ -4,7 +4,6 @@ namespace JCertPreApplication.Domain.Enums
     {
         SCHEDULED,      // Đã lên lịch, chưa bắt đầu
         LIVE,          // Đang diễn ra
-        COMPLETED,     // Đã hoàn thành
-        CANCELLED      // Đã hủy
+        COMPLETED     // Đã hoàn thành
     }
 }
