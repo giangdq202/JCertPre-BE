@@ -9,6 +9,7 @@ using JCertPreApplication.Application.Features.Documents;
 using JCertPreApplication.Application.Features.Enrollment;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.Lessons;
+using JCertPreApplication.Application.Features.Livestreams;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
@@ -48,6 +49,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<ITestTemplateService, TestTemplateService>();
             services.AddScoped<ITestTemplateConfigService, TestTemplateConfigService>();
             services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<ILivestreamService, LivestreamService>();
 
             // Add AutoMapper
             services.AddAutoMapper(typeof(DependencyInjection).Assembly);

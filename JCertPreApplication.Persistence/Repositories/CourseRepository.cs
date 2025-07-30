@@ -153,6 +153,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             var instructors = await _context.Set<CourseInstructor>()
                 .Include(ci => ci.Instructor)
+                    .ThenInclude(u => u.Role)
                 .Where(ci => ci.CourseId == courseId && ci.IsActive)
                 .Select(ci => ci.Instructor)
                 .ToListAsync();

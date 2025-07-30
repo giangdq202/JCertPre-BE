@@ -238,7 +238,14 @@ namespace JCertPreApplication.Application.Features.Course
                 Id = user.userId,
                 fullName = user.fullName,
                 email = user.email,
-                phone = user.phone
+                phone = user.phone,
+                avatarUrl = user.avatarUrl,
+                credit = user.credit,
+                createdAt = user.createdAt,
+                lastLogin = user.lastLogin,
+                status = user.status,
+                roleId = user.roleId,
+                roleName = user.Role?.roleName
             };
         }
     }
