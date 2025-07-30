@@ -180,15 +180,36 @@ namespace JCertPreApplication.Application.Features.Course
                 throw ApiException.NotFound("Course", courseId);
 
             var history = await _courseRepository.GetCourseInstructorHistoryAsync(courseId);
-            return history.Select(ci => new CourseInstructorHistoryDto
+            return history.Select(h => new CourseInstructorHistoryDto
             {
-                InstructorId = ci.InstructorId,
-                InstructorName = ci.Instructor.fullName,
-                AssignedOn = ci.AssignedOn,
-                LeftOn = ci.LeftOn,
-                IsActive = ci.IsActive,
-                Notes = ci.Notes
+                CourseId = h.CourseId,
+                InstructorId = h.InstructorId,
+                InstructorName = h.Instructor.fullName,
+                AssignedOn = h.AssignedOn,
+                LeftOn = h.LeftOn,
+                IsActive = h.IsActive,
+                Notes = h.Notes
             });
+        }
+
+        public async Task<IEnumerable<CourseListDto>> GetCoursesByInstructorAsync(Guid instructorId)
+        {
+            var user = await _userRepository.GetByIdAsync(instructorId);
+            if (user == null)
+                throw ApiException.NotFound("User", instructorId);
+
+            var courses = await _courseRepository.GetCoursesByInstructorAsync(instructorId);
+            return courses.Select(MapToCourseListDto);
+        }
+
+        public async Task<IEnumerable<CourseListDto>> GetCoursesByStudentAsync(Guid studentId)
+        {
+            var user = await _userRepository.GetByIdAsync(studentId);
+            if (user == null)
+                throw ApiException.NotFound("User", studentId);
+
+            var courses = await _courseRepository.GetCoursesByStudentAsync(studentId);
+            return courses.Select(MapToCourseListDto);
         }
 
         private static CourseDto MapToCourseDto(Domain.Entities.Course course)
@@ -238,7 +259,14 @@ namespace JCertPreApplication.Application.Features.Course
                 Id = user.userId,
                 fullName = user.fullName,
                 email = user.email,
-                phone = user.phone
+                phone = user.phone,
+                avatarUrl = user.avatarUrl,
+                credit = user.credit,
+                createdAt = user.createdAt,
+                lastLogin = user.lastLogin,
+                status = user.status,
+                roleId = user.roleId,
+                roleName = user.Role?.roleName
             };
         }
     }

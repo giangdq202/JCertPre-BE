@@ -35,12 +35,6 @@ namespace JCertPreApplication.Persistence.Configurations
                 .WithOne(lp => lp.Lesson)
                 .HasForeignKey(lp => lp.lessonId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // 1-1: Lesson <-> Livestream
-            builder.HasOne(l => l.Livestream)
-                .WithOne(ls => ls.Lesson)
-                .HasForeignKey<Livestream>(ls => ls.lessonId)
-                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

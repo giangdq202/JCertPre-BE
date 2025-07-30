@@ -5,6 +5,7 @@ using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
 using JCertPreApplication.Persistence.Services.Cloudinary;
 using JCertPreApplication.Persistence.Services.Firebase;
+using JCertPreApplication.Persistence.Services.LiveKit;
 using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -17,6 +18,10 @@ namespace JCertPreApplication.Persistence
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
+            // Get API configuration to check if we should show status messages
+            var apiConfig = new ApiConfiguration();
+            configuration.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
+            
             // Read connection string using .NET Configuration system (supports environment variables with ConnectionStrings__JCertPreDB format)
             var connectionString = configuration.GetConnectionString("JCertPreDB");
 
@@ -64,17 +69,25 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ITestTemplateRepository, TestTemplateRepository>();
             services.AddScoped<ITestTemplateConfigRepository, TestTemplateConfigRepository>();
             services.AddScoped<IDocumentRepository, DocumentRepository>();
+            services.AddScoped<ILivestreamRepository, LivestreamRepository>();
             services.AddScoped<ILessonProgressRepository, LessonProgressRepository>();
+
             // Infrastructure Services
             services.AddScoped<ICloudinaryService, CloudinaryService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();
 
             services.AddBackgroundServices();
 
-            Console.WriteLine("✅ Database connection configured successfully");
-            Console.WriteLine("✅ Redis cache configured successfully");
-            Console.WriteLine("✅ Cloudinary service configured successfully");
+            // Show configuration status messages only if enabled
+            if (apiConfig.ShowConfigurationStatus)
+            {
+                Console.WriteLine("✅ Database connection configured successfully");
+                Console.WriteLine("✅ Redis cache configured successfully");
+                Console.WriteLine("✅ Cloudinary service configured successfully");
+            }
+            
             return services;
         }
         private static IServiceCollection AddBackgroundServices(this IServiceCollection services)

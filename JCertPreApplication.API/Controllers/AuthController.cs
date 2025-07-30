@@ -1,4 +1,5 @@
 using JCertPreApplication.API.Common;
+using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Features.Auth;
 using Microsoft.AspNetCore.Mvc;
@@ -27,7 +28,8 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">User registration information.</param>
         /// <returns>Authentication tokens and user profile.</returns>
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterModel model)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Register([FromForm] RegisterModel model)
         {
             var (accessToken, refreshToken, user) = await _authService.RegisterAsync(model);
             return Ok(new { accessToken, refreshToken, user });

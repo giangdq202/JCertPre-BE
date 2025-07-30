@@ -10,7 +10,7 @@ using JCertPreApplication.Application.Features.Enrollment;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.LessonProgresses;
 using JCertPreApplication.Application.Features.Lessons;
-using JCertPreApplication.Application.Features.LiveKit;
+using JCertPreApplication.Application.Features.Livestreams;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
@@ -41,7 +41,6 @@ namespace JCertPreApplication.Application
             services.AddScoped<IChoiceService, ChoiceService>();
             services.AddScoped<ILessonService, LessonService>();
             services.AddScoped<ITestService, TestService>();
-            services.AddScoped<ILiveKitService, LiveKitService>();
             services.AddScoped<ISubContentService, SubContentService>();
             services.AddScoped<ITestQuestionService, TestQuestionService>();
             services.AddScoped<IUserService, UserService>();
@@ -51,6 +50,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<ITestTemplateService, TestTemplateService>();
             services.AddScoped<ITestTemplateConfigService, TestTemplateConfigService>();
             services.AddScoped<IDocumentService, DocumentService>();
+            services.AddScoped<ILivestreamService, LivestreamService>();
             services.AddScoped<ILessonProgressService, LessonProgressService>();
 
             // Add AutoMapper

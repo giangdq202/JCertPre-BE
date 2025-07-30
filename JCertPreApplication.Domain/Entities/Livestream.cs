@@ -1,13 +1,17 @@
-﻿namespace JCertPreApplication.Domain.Entities
+﻿using JCertPreApplication.Domain.Enums;
+
+namespace JCertPreApplication.Domain.Entities
 {
     public class Livestream
     {
         public Guid livestreamId { get; set; }
-        public Guid lessonId { get; set; }
-        public DateTime startTime { get; set; }
-        public DateTime endTime { get; set; }
+        public Guid courseId { get; set; }
+        public string? description { get; set; }
+        public DateTime scheduledDateTime { get; set; }
+        public int durationMinutes { get; set; }
+        public LivestreamStatus status { get; set; }
 
-        // 1-1 relation: Each livestream belongs to one lesson
-        public virtual Lesson Lesson { get; set; } = null!;
+        // Navigation properties
+        public virtual Course Course { get; set; } = null!;
     }
 }

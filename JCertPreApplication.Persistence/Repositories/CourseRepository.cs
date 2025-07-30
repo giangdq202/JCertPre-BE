@@ -153,6 +153,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             var instructors = await _context.Set<CourseInstructor>()
                 .Include(ci => ci.Instructor)
+                    .ThenInclude(u => u.Role)
                 .Where(ci => ci.CourseId == courseId && ci.IsActive)
                 .Select(ci => ci.Instructor)
                 .ToListAsync();
@@ -166,6 +167,32 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Include(ci => ci.Instructor)
                 .Where(ci => ci.CourseId == courseId)
                 .OrderByDescending(ci => ci.AssignedOn)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Course>> GetCoursesByInstructorAsync(Guid instructorId)
+        {
+            return await _context.Set<CourseInstructor>()
+                .Include(ci => ci.Course)
+                    .ThenInclude(c => c.Enrollments)
+                .Include(ci => ci.Course)
+                    .ThenInclude(c => c.CourseInstructors)
+                        .ThenInclude(ci2 => ci2.Instructor)
+                .Where(ci => ci.InstructorId == instructorId && ci.IsActive)
+                .Select(ci => ci.Course)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Course>> GetCoursesByStudentAsync(Guid studentId)
+        {
+            return await _context.Set<Enrollment>()
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.Enrollments)
+                .Include(e => e.Course)
+                    .ThenInclude(c => c.CourseInstructors)
+                        .ThenInclude(ci => ci.Instructor)
+                .Where(e => e.userId == studentId)
+                .Select(e => e.Course)
                 .ToListAsync();
         }
     }

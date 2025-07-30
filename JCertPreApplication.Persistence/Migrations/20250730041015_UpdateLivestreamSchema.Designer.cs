@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250730041015_UpdateLivestreamSchema")]
+    partial class UpdateLivestreamSchema
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -363,10 +366,10 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("completionRate")
+                    b.Property<bool>("isCompleted")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(5,2)")
-                        .HasDefaultValue(0.0m);
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<Guid>("lessonId")
                         .HasColumnType("uuid");
@@ -842,17 +845,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.Property<bool>("isActive")
                         .HasColumnType("boolean");
 
-                    b.Property<int?>("partDurationMinutes")
-                        .HasColumnType("integer");
-
-                    b.Property<int?>("partNumber")
-                        .HasColumnType("integer");
-
                     b.Property<Guid>("questionId")
                         .HasColumnType("uuid");
-
-                    b.Property<int>("questionNumber")
-                        .HasColumnType("integer");
 
                     b.Property<Guid>("testId")
                         .HasColumnType("uuid");

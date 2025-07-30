@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Features.Auth
 {
@@ -20,15 +21,17 @@ namespace JCertPreApplication.Application.Features.Auth
         private readonly IFirebaseService _firebaseService;
         private readonly IPasswordService _passwordService;
         private readonly ITokenCacheRepository _tokenCacheRepository;
+        private readonly ICloudinaryService _cloudinaryService;
         private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, ICloudinaryService cloudinaryService, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
             _tokenCacheRepository = tokenCacheRepository ?? throw new ArgumentNullException(nameof(tokenCacheRepository));
+            _cloudinaryService = cloudinaryService ?? throw new ArgumentNullException(nameof(cloudinaryService));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
@@ -72,14 +75,29 @@ namespace JCertPreApplication.Application.Features.Auth
                 throw ApiException.InternalServerError("DEFAULT_ROLE_NOT_FOUND", "Default role STUDENT not found in the system.");
             }
 
+            // Generate userId first to use for avatar filename
+            var userId = Guid.NewGuid();
+            string? avatarUrl = null;
+
+            // Handle avatar file upload if provided
+            if (model.AvatarFile != null)
+            {
+                // Create a custom FormFile with userId as filename
+                var customFormFile = CreateCustomFormFile(model.AvatarFile, userId.ToString());
+
+                // Upload avatar to Cloudinary
+                var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                avatarUrl = uploadResult.SecureUrl.ToString();
+            }
+
             var user = new User
             {
-                userId = Guid.NewGuid(),
+                userId = userId,
                 fullName = model.FullName,
                 email = model.Email,
                 passwordHash = hashedPassword,
                 phone = model.Phone,
-                avatarUrl = model.avatarUrl,
+                avatarUrl = avatarUrl,
                 credit = 0,
                 createdAt = DateTime.UtcNow,
                 lastLogin = DateTime.UtcNow,
@@ -485,5 +503,45 @@ namespace JCertPreApplication.Application.Features.Auth
                 return false;
             }
         }
+
+        #region Private Helper Methods
+
+        private static IFormFile CreateCustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            // Get the file extension from original file
+            var extension = Path.GetExtension(originalFile.FileName);
+            var newFileName = customFileName + extension;
+
+            return new CustomFormFile(originalFile, newFileName);
+        }
+
+        #endregion
+    }
+
+    /// <summary>
+    /// Custom IFormFile implementation to override filename while preserving original file content
+    /// </summary>
+    internal class CustomFormFile : IFormFile
+    {
+        private readonly IFormFile _originalFile;
+        private readonly string _customFileName;
+
+        public CustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            _originalFile = originalFile;
+            _customFileName = customFileName;
+        }
+
+        public string ContentType => _originalFile.ContentType;
+        public string ContentDisposition => _originalFile.ContentDisposition;
+        public IHeaderDictionary Headers => _originalFile.Headers;
+        public long Length => _originalFile.Length;
+        public string Name => _originalFile.Name;
+        public string FileName => _customFileName; // This is the overridden filename
+
+        public void CopyTo(Stream target) => _originalFile.CopyTo(target);
+        public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default) =>
+            _originalFile.CopyToAsync(target, cancellationToken);
+        public Stream OpenReadStream() => _originalFile.OpenReadStream();
     }
 }

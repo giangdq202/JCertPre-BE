@@ -15,5 +15,7 @@ namespace JCertPreApplication.Application.Contracts
         Task<bool> DeactivateInstructorFromCourseAsync(Guid courseId, Guid instructorId, string? notes = null);
         Task<IEnumerable<User>> GetActiveCourseInstructorsAsync(Guid courseId);
         Task<IEnumerable<CourseInstructor>> GetCourseInstructorHistoryAsync(Guid courseId);
+        Task<IEnumerable<Course>> GetCoursesByInstructorAsync(Guid instructorId);
+        Task<IEnumerable<Course>> GetCoursesByStudentAsync(Guid studentId);
     }
 } 

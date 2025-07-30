@@ -159,5 +159,29 @@ namespace JCertPreApplication.API.Controllers
             var history = await _courseService.GetCourseInstructorHistoryAsync(courseId);
             return Ok(history);
         }
+
+        /// <summary>
+        /// Gets courses taught by an instructor.
+        /// </summary>
+        /// <param name="instructorId">Instructor user ID.</param>
+        /// <returns>List of courses where the user is an instructor.</returns>
+        [HttpGet("instructor/{instructorId}")]
+        public async Task<IActionResult> GetCoursesByInstructor(Guid instructorId)
+        {
+            var courses = await _courseService.GetCoursesByInstructorAsync(instructorId);
+            return Ok(courses);
+        }
+
+        /// <summary>
+        /// Gets courses enrolled by a student.
+        /// </summary>
+        /// <param name="studentId">Student user ID.</param>
+        /// <returns>List of courses where the user is enrolled.</returns>
+        [HttpGet("student/{studentId}")]
+        public async Task<IActionResult> GetCoursesByStudent(Guid studentId)
+        {
+            var courses = await _courseService.GetCoursesByStudentAsync(studentId);
+            return Ok(courses);
+        }
     }
 } 
