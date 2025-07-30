@@ -32,6 +32,28 @@ namespace JCertPreApplication.Persistence.Repositories
                 .ToListAsync();
         }
 
+        public async Task<List<Livestream>> GetLivestreamsByUserAsync(Guid userId)
+        {
+            // Get livestreams from courses where user is either instructor or student
+            var instructorCourseIds = await _context.Set<CourseInstructor>()
+                .Where(ci => ci.InstructorId == userId && ci.IsActive)
+                .Select(ci => ci.CourseId)
+                .ToListAsync();
+
+            var studentCourseIds = await _context.Set<Enrollment>()
+                .Where(e => e.userId == userId)
+                .Select(e => e.courseId)
+                .ToListAsync();
+
+            var allCourseIds = instructorCourseIds.Union(studentCourseIds).ToList();
+
+            return await _dbSet
+                .Include(ls => ls.Course)
+                .Where(ls => allCourseIds.Contains(ls.courseId))
+                .OrderBy(ls => ls.scheduledDateTime)
+                .ToListAsync();
+        }
+
         public async Task<Pagination<Livestream>> GetLivestreamsWithPaginationAsync(
             Guid? courseId = null,
             string? searchTerm = null,

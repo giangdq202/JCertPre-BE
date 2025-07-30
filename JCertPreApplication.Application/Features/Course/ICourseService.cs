@@ -17,5 +17,7 @@ namespace JCertPreApplication.Application.Features.Course
         Task RemoveInstructorFromCourseAsync(Guid courseId, Guid instructorId);
         Task<IEnumerable<AppUserDto>> GetCourseInstructorsAsync(Guid courseId);
         Task<IEnumerable<CourseInstructorHistoryDto>> GetCourseInstructorHistoryAsync(Guid courseId);
+        Task<IEnumerable<CourseListDto>> GetCoursesByInstructorAsync(Guid instructorId);
+        Task<IEnumerable<CourseListDto>> GetCoursesByStudentAsync(Guid studentId);
     }
 } 

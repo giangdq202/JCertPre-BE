@@ -214,6 +214,55 @@ namespace JCertPreApplication.Application.Features.Livestreams
             }
         }
 
+        public async Task<List<LivestreamDto>> GetLivestreamsByUserAsync(Guid userId)
+        {
+            try
+            {
+                var livestreams = await _livestreamRepository.GetLivestreamsByUserAsync(userId);
+                return livestreams.Select(MapToDto).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("GET_USER_LIVESTREAMS_ERROR", ex.Message);
+            }
+        }
+
+        public async Task<List<LivestreamTimetableDto>> GetLivestreamTimetableByUserAsync(Guid userId)
+        {
+            try
+            {
+                var livestreams = await _livestreamRepository.GetLivestreamsByUserAsync(userId);
+                var timetableItems = new List<LivestreamTimetableDto>();
+
+                foreach (var livestream in livestreams)
+                {
+                    var canJoin = await CanUserJoinLivestreamAsync(userId, livestream.livestreamId);
+                    var canStart = await CanInstructorStartLivestreamAsync(userId, livestream.livestreamId);
+                    var userRole = await DetermineUserRoleInCourseAsync(userId, livestream.courseId);
+
+                    timetableItems.Add(new LivestreamTimetableDto
+                    {
+                        LivestreamId = livestream.livestreamId,
+                        CourseId = livestream.courseId,
+                        CourseName = livestream.Course?.title ?? "Unknown Course",
+                        Description = livestream.description,
+                        ScheduledDateTime = livestream.scheduledDateTime,
+                        DurationMinutes = livestream.durationMinutes,
+                        Status = livestream.status,
+                        CanJoin = canJoin,
+                        CanStart = canStart,
+                        UserRole = userRole
+                    });
+                }
+
+                return timetableItems.OrderBy(x => x.ScheduledDateTime).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("GET_USER_TIMETABLE_ERROR", ex.Message);
+            }
+        }
+
         public async Task<LivestreamJoinDto> GenerateJoinTokenAsync(Guid userId, Guid livestreamId)
         {
             try
@@ -372,6 +421,17 @@ namespace JCertPreApplication.Application.Features.Livestreams
                 return ParticipantRole.Instructor;
 
             return ParticipantRole.Student;
+        }
+
+        private async Task<UserRoleInCourse> DetermineUserRoleInCourseAsync(Guid userId, Guid courseId)
+        {
+            if (await _courseInstructorRepository.IsInstructorAssignedToCourse(courseId, userId))
+                return UserRoleInCourse.Instructor;
+
+            if (await _enrollmentRepository.IsUserEnrolledAsync(userId, courseId))
+                return UserRoleInCourse.Student;
+
+            return UserRoleInCourse.None;
         }
 
         private static LivestreamDto MapToDto(Livestream livestream)

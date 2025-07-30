@@ -2,6 +2,7 @@ namespace JCertPreApplication.Application.Dtos.Course
 {
     public class CourseInstructorHistoryDto
     {
+        public Guid CourseId { get; set; }
         public Guid InstructorId { get; set; }
         public string InstructorName { get; set; } = string.Empty;
         public DateTime AssignedOn { get; set; }

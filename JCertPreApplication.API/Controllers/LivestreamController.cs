@@ -131,6 +131,26 @@ namespace JCertPreApplication.API.Controllers
             return Ok(new { canJoin });
         }
 
+        /// <summary>
+        /// Get livestreams by user ID (for both instructors and students)
+        /// </summary>
+        [HttpGet("user/{userId}")]
+        public async Task<IActionResult> GetLivestreamsByUser(Guid userId)
+        {
+            var livestreams = await _livestreamService.GetLivestreamsByUserAsync(userId);
+            return Ok(livestreams);
+        }
+
+        /// <summary>
+        /// Get livestream timetable by user ID with additional info for UI
+        /// </summary>
+        [HttpGet("user/{userId}/timetable")]
+        public async Task<IActionResult> GetLivestreamTimetableByUser(Guid userId)
+        {
+            var timetable = await _livestreamService.GetLivestreamTimetableByUserAsync(userId);
+            return Ok(timetable);
+        }
+
         private Guid GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;

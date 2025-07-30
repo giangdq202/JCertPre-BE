@@ -15,6 +15,8 @@ namespace JCertPreApplication.Application.Features.Livestreams
             int pageIndex = 1,
             int pageSize = 10);
         Task<List<LivestreamDto>> GetLivestreamsByCourseAsync(Guid courseId);
+        Task<List<LivestreamDto>> GetLivestreamsByUserAsync(Guid userId);
+        Task<List<LivestreamTimetableDto>> GetLivestreamTimetableByUserAsync(Guid userId);
         
         // LiveKit Integration
         Task<LivestreamJoinDto> GenerateJoinTokenAsync(Guid userId, Guid livestreamId);

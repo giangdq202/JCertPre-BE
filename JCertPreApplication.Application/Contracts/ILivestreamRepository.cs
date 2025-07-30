@@ -7,6 +7,7 @@ namespace JCertPreApplication.Application.Contracts
     {
         Task<Livestream?> GetLivestreamWithDetailsAsync(Guid livestreamId);
         Task<List<Livestream>> GetLivestreamsByCourseIdAsync(Guid courseId);
+        Task<List<Livestream>> GetLivestreamsByUserAsync(Guid userId);
         Task<Pagination<Livestream>> GetLivestreamsWithPaginationAsync(
             Guid? courseId = null,
             string? searchTerm = null,
