@@ -112,7 +112,7 @@ namespace JCertPreApplication.API.Controllers
             Difficulty = question.difficulty, // Add this line
             Choices = question.Choices?.Select(c => new ChoiceReadDto
             {
-                Id = c.choiceId,
+                ChoiceId = c.choiceId,
                 Content = c.choiceText,
                 IsCorrect = c.isCorrect,
                 QuestionId = c.questionId
@@ -131,4 +131,3 @@ namespace JCertPreApplication.API.Controllers
         };
     }
 }}
-}

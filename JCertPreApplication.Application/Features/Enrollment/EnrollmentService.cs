@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Enrollment;
 using JCertPreApplication.Application.Exceptions;
+using JCertPreApplication.Application.Features.Payment;
 using JCertPreApplication.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
@@ -11,17 +12,20 @@ namespace JCertPreApplication.Application.Features.Enrollment
         private readonly IEnrollmentRepository _enrollmentRepository;
         private readonly IUserRepository _userRepository;
         private readonly ICourseRepository _courseRepository;
+        private readonly IPaymentService _paymentService;
         private readonly ILogger<EnrollmentService> _logger;
 
         public EnrollmentService(
             IEnrollmentRepository enrollmentRepository,
             IUserRepository userRepository,
             ICourseRepository courseRepository,
+            IPaymentService paymentService,
             ILogger<EnrollmentService> logger)
         {
             _enrollmentRepository = enrollmentRepository;
             _userRepository = userRepository;
             _courseRepository = courseRepository;
+            _paymentService = paymentService;
             _logger = logger;
         }
 
@@ -54,34 +58,47 @@ namespace JCertPreApplication.Application.Features.Enrollment
             if (course.status != Domain.Enums.CourseStatus.Published)
                 throw ApiException.BadRequest("COURSE_NOT_AVAILABLE", "Course is not available for enrollment");
 
-            // 5. Check user credit (handle type conversion)
-            var coursePrice = (int)Math.Ceiling(course.price); // Convert decimal to int, rounding up
-            if (user.credit < coursePrice)
-                throw ApiException.BadRequest("INSUFFICIENT_CREDIT", $"Insufficient credit. Required: {coursePrice}, Available: {user.credit}");
+            // 5. Check sufficient credit using PaymentService
+            var hasSufficientCredit = await _paymentService.HasSufficientCreditAsync(userId, course.price);
+            if (!hasSufficientCredit)
+            {
+                var currentCredit = user.credit;
+                var requiredCredit = (int)Math.Ceiling(course.price);
+                throw ApiException.BadRequest("INSUFFICIENT_CREDIT", 
+                    $"Insufficient credit. Required: {requiredCredit}, Available: {currentCredit}");
+            }
 
-            // 6. Create enrollment and update user credit in transaction
             try
             {
-                // Deduct credit from user
-                user.credit -= coursePrice;
-                await _userRepository.UpdateAsync(user);
+                // 6. Process payment using PaymentService
+                var paymentResult = await _paymentService.ProcessCreditPaymentAsync(
+                    userId, 
+                    courseId, 
+                    course.price, 
+                    $"Course enrollment: {course.title}");
 
-                // Create enrollment
+                if (!paymentResult.IsSuccess)
+                {
+                    throw ApiException.BadRequest("PAYMENT_FAILED", paymentResult.Message);
+                }
+
+                // 7. Create enrollment after successful payment
                 var enrollment = new Domain.Entities.Enrollment
                 {
                     enrollmentId = Guid.NewGuid(),
                     userId = userId,
                     courseId = courseId,
                     enrollDate = DateTime.UtcNow,
-                    price = course.price // Store original price
+                    price = course.price
                 };
 
                 await _enrollmentRepository.InsertAsync(enrollment);
                 await _enrollmentRepository.SaveChangesAsync();
 
-                _logger.LogInformation("Successfully enrolled user {UserId} in course {CourseId}", userId, courseId);
+                _logger.LogInformation("Successfully enrolled user {UserId} in course {CourseId} with payment {PaymentId}", 
+                    userId, courseId, paymentResult.PaymentId);
 
-                // Return response
+                // 8. Return response
                 return new EnrollmentResponseDto
                 {
                     EnrollmentId = enrollment.enrollmentId,
@@ -90,7 +107,7 @@ namespace JCertPreApplication.Application.Features.Enrollment
                     CourseTitle = course.title,
                     PricePaid = course.price,
                     EnrollDate = enrollment.enrollDate,
-                    RemainingCredit = user.credit,
+                    RemainingCredit = paymentResult.RemainingCredit,
                     Message = "Successfully enrolled in the course"
                 };
             }
