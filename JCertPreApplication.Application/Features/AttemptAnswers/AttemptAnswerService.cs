@@ -116,8 +116,8 @@ namespace JCertPreApplication.Application.Features.AttemptAnswers
             {
                 AnswerId = answer.answerId,
                 AttemptId = answer.attemptId,
-                QuestionId = answer.questionId,
-                ChoiceId = answer.choiceId
+                QuestionId = answer.questionId ?? Guid.Empty,
+                ChoiceId = answer.choiceId ?? Guid.Empty
             };
         }
     }

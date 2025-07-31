@@ -16,7 +16,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.Property(tt => tt.templateName)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(200);
 
             builder.Property(tt => tt.durationMinutes)
                 .IsRequired();
@@ -28,10 +28,13 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasColumnType("decimal(5,2)")
                 .IsRequired();
 
+            builder.Property(tt => tt.sequence)
+                .IsRequired();
+
             builder.HasOne(tt => tt.TestTemplateType)
                 .WithMany(ttt => ttt.TestTemplates)
                 .HasForeignKey(tt => tt.TestTemplateTypeId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
             builder.HasMany(tt => tt.TestTemplateConfigs)
                 .WithOne(tc => tc.TestTemplate)

@@ -95,4 +95,16 @@ namespace JCertPreApplication.API.Controllers
             throw;
         }
     }
+
+    /// <summary>
+    /// Get a test attempt by Id with score summary.
+    /// </summary>
+    [HttpGet("{attemptId}/with-score-summary")]
+    public async Task<IActionResult> GetAttemptWithScoreSummary(Guid attemptId)
+    {
+        var (attempt, scoreSummary) = await _service.GetAttemptWithScoreSummaryAsync(attemptId);
+        if (attempt == null)
+            return NotFound();
+        return Ok(new { Attempt = attempt, ScoreSummary = scoreSummary });
+    }
 }}

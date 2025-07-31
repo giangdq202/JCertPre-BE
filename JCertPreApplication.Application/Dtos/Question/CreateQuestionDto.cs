@@ -14,6 +14,7 @@ namespace JCertPreApplication.Application.Dtos.Question
         [Range(1, 100, ErrorMessage = "Points must be between 1 and 100")]
         public int Points { get; set; } = 1;
         public QuestionDifficulty Difficulty { get; set; }
+        public bool IsActive { get; set; }
 
         // Add these for subcontent selection
         [Required]

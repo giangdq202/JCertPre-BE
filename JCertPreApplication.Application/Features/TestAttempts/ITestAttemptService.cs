@@ -1,3 +1,4 @@
+using JCertPreApplication.Domain.Entities;
 using System.Collections.Generic;
 
 namespace JCertPreApplication.Application.Features.TestAttempts
@@ -23,5 +24,7 @@ namespace JCertPreApplication.Application.Features.TestAttempts
         /// Update the status of a test attempt.
         /// </summary>
         Task<TestAttemptDto> UpdateStatusAsync(Guid attemptId, TestAttemptStatus status);
+
+        Task<(TestAttemptDto Attempt, TestScoreSummary? ScoreSummary)> GetAttemptWithScoreSummaryAsync(Guid attemptId);
     }
 }
