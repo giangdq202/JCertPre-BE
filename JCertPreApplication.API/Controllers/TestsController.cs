@@ -38,16 +38,7 @@ namespace JCertPreApplication.API.Controllers
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10)
         {
-            var pagedEntities = await _testService.GetAllByUserIdAsync(userId, searchTerm, pageIndex, pageSize);
-
-            var pagedDtos = new Pagination<TestDto>
-            {
-                TotalItemsCount = pagedEntities.TotalItemsCount,
-                PageSize = pagedEntities.PageSize,
-                PageIndex = pagedEntities.PageIndex,
-                Items = pagedEntities.Items.Select(MapToTestDto).ToList()
-            };
-
+            var pagedDtos = await _testService.GetAllByUserIdAsync(userId, searchTerm, pageIndex, pageSize);
             return Ok(pagedDtos);
         }
 
@@ -59,23 +50,21 @@ namespace JCertPreApplication.API.Controllers
         [HttpGet("by-lesson/{lessonId}")]
         public async Task<IActionResult> GetByLessonId(Guid lessonId)
         {
-            var entity = await _testService.GetByLessonIdAsync(lessonId);
-            var dto = MapToTestDto(entity!);
+            var dto = await _testService.GetByLessonIdAsync(lessonId);
             return Ok(dto);
         }
 
         /// <summary>
         /// Creates a test for a lesson.
         /// </summary>
+        /// <param name="userId">User ID.</param>
         /// <param name="lessonId">Lesson ID.</param>
         /// <param name="createTestDto">Test details.</param>
         /// <returns>Created test.</returns>
         [HttpPost("by-lesson/{lessonId}")]
-        public async Task<IActionResult> CreateByLessonId(Guid lessonId, [FromBody] CreateTestDto createTestDto)
+        public async Task<IActionResult> CreateByLessonId(Guid userId,Guid lessonId, [FromBody] CreateTestDto createTestDto)
         {
-            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var entity = await _testService.CreateByLessonIdAsync(lessonId, createTestDto, userId);
-            var dto = MapToTestDto(entity);
+            var dto = await _testService.CreateByLessonIdAsync(lessonId, createTestDto, userId);
             return CreatedAtAction(nameof(GetByLessonId), new { lessonId = dto.LessonId }, dto);
         }
 
@@ -88,8 +77,7 @@ namespace JCertPreApplication.API.Controllers
         [HttpPut("{testId}")]
         public async Task<IActionResult> Update(Guid testId, [FromBody] UpdateTestDto updateTestDto)
         {
-            var entity = await _testService.UpdateAsync(testId, updateTestDto);
-            var dto = MapToTestDto(entity);
+            var dto = await _testService.UpdateAsync(testId, updateTestDto);
             return Ok(dto);
         }
 
@@ -105,22 +93,31 @@ namespace JCertPreApplication.API.Controllers
             return NoContent();
         }
 
-        private static TestDto MapToTestDto(Test test)
+        /// <summary>
+        /// Updates the status of a test.
+        /// </summary>
+        /// <param name="testId">Test ID.</param>
+        /// <param name="status">New status.</param>
+        /// <returns>Updated test.</returns>
+        [HttpPatch("{testId}/status")]
+        public async Task<IActionResult> UpdateStatus(Guid testId, [FromBody] TestStatus status)
         {
-            return new TestDto
-            {
-                TestId = test.testId,
-                Title = test.title,
-                Description = test.description,
-                TestType = test.testType,
-                DurationMinutes = test.durationMinutes,
-                LessonId = test.lessonId,
-                CreatedByUserId = test.createdByUserId,
-                AvailableFrom = test.availableFrom,
-                AvailableTo = test.availableTo,
-                MaxAttempts = test.maxAttempts,
-                Status = test.status // <-- Added
-            };
+            var dto = await _testService.UpdateStatusAsync(testId, status);
+            return Ok(dto);
+        }
+
+        /// <summary>
+        /// Gets a test by test ID.
+        /// </summary>
+        /// <param name="testId">Test ID.</param>
+        /// <returns>Test details.</returns>
+        [HttpGet("{testId}")]
+        public async Task<IActionResult> GetByTestId(Guid testId)
+        {
+            var dto = await _testService.GetByTestIdAsync(testId);
+            if (dto == null)
+                return NotFound();
+            return Ok(dto);
         }
     }
 }

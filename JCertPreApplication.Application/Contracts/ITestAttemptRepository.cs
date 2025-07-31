@@ -1,9 +1,12 @@
 using JCertPreApplication.Domain.Entities;
+using System;
+using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Contracts
 {
     public interface ITestAttemptRepository : IGenericRepository<TestAttempt>
     {
-        // Add custom methods if needed, e.g., for auto-submit or batch operations
+        Task<bool> AnyAsync(Expression<Func<TestAttempt, bool>> predicate);
     }
 }

@@ -15,6 +15,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(l => l.title).IsRequired().HasMaxLength(200);
             builder.Property(l => l.lessonOrder).IsRequired();
             builder.Property(l => l.content).IsRequired();
+            builder.Property(l => l.comment).IsRequired(false);
 
             builder.HasOne(l => l.Course)
                 .WithMany(c => c.Lessons)

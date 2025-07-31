@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Question;
+using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
@@ -26,18 +27,16 @@ namespace JCertPreApplication.Application.Features.Questions
         /// <summary>
         /// Retrieves all questions with their subcontent.
         /// </summary>
-        public async Task<IEnumerable<Question>> GetAllAsync()
+        public async Task<IEnumerable<QuestionDto>> GetAllAsync()
         {
             try
             {
-                // Fetch all questions including their SubContent navigation property
-                var questions = await _questionRepository.GetAllAsync("SubContent");
-                return questions;
+                var questions = await _questionRepository.GetAllAsync("SubContent,Choices,QuestionAttachments");
+                return questions.Select(MapToQuestionDto);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
             {
-                // Wrap any unexpected exception in a standardized API exception
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving questions: {ex.Message}");
             }
         }
@@ -46,16 +45,15 @@ namespace JCertPreApplication.Application.Features.Questions
         /// Retrieves a question by its ID.
         /// Throws ApiException.NotFound if question doesn't exist.
         /// </summary>
-        public async Task<Question> GetByIdAsync(Guid id)
+        public async Task<QuestionDto> GetByIdAsync(Guid id)
         {
             try
             {
-                // Attempt to find the question by ID
                 var question = await _questionRepository.GetByIdAsync(id);
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
-                return question;
+                return MapToQuestionDto(question);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -67,7 +65,7 @@ namespace JCertPreApplication.Application.Features.Questions
         /// <summary>
         /// Creates a new question. Looks up SubContent by enums from DTO.
         /// </summary>
-        public async Task<Question> CreateAsync(CreateQuestionDto createDto)
+        public async Task<QuestionDto> CreateAsync(CreateQuestionDto createDto)
         {
             try
             {
@@ -100,7 +98,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (result == null)
                     throw ApiException.InternalServerError("QUESTION_CREATION_ERROR", "Failed to retrieve the created question.");
 
-                return result;
+                return MapToQuestionDto(result);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -113,7 +111,7 @@ namespace JCertPreApplication.Application.Features.Questions
         /// Updates an existing question. Optionally updates SubContent if all enums are provided.
         /// Returns the updated question with SubContent navigation property loaded.
         /// </summary>
-        public async Task<Question> UpdateAsync(Guid id, UpdateQuestionDto updateDto)
+        public async Task<QuestionDto> UpdateAsync(Guid id, UpdateQuestionDto updateDto)
         {
             try
             {
@@ -154,7 +152,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (updated == null)
                     throw ApiException.InternalServerError("QUESTION_UPDATE_ERROR", "Failed to retrieve the updated question.");
 
-                return updated;
+                return MapToQuestionDto(updated);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -194,7 +192,7 @@ namespace JCertPreApplication.Application.Features.Questions
         /// Retrieves paginated questions with details (choices, attachments, subcontent).
         /// Supports filtering by search term, subcontent, and difficulty.
         /// </summary>
-        public async Task<Pagination<Question>> GetPaginatedWithDetailsAsync(
+        public async Task<Pagination<QuestionDto>> GetPaginatedWithDetailsAsync(
             string? searchTerm,
             int pageIndex,
             int pageSize,
@@ -230,9 +228,9 @@ namespace JCertPreApplication.Application.Features.Questions
                     pageIndex,
                     pageSize);
 
-                return new Pagination<Question>
+                return new Pagination<QuestionDto>
                 {
-                    Items = paginatedQuestions.Items,
+                    Items = paginatedQuestions.Items.Select(MapToQuestionDto).ToList(),
                     TotalItemsCount = paginatedQuestions.TotalItemsCount,
                     PageIndex = paginatedQuestions.PageIndex,
                     PageSize = paginatedQuestions.PageSize
@@ -243,6 +241,37 @@ namespace JCertPreApplication.Application.Features.Questions
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving paginated questions: {ex.Message}");
             }
+        }
+
+        private static QuestionDto MapToQuestionDto(Question question)
+        {
+            var subContent = question.SubContent;
+            return new QuestionDto
+            {
+                Id = question.questionId,
+                Content = question.questionText,
+                Explanation = question.explanation,
+                Points = question.points,
+                Difficulty = question.difficulty,
+                Choices = question.Choices?.Select(c => new ChoiceReadDto
+                {
+                    ChoiceId = c.choiceId,
+                    Content = c.choiceText,
+                    IsCorrect = c.isCorrect,
+                    QuestionId = c.questionId
+                }).ToList(),
+                QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+                {
+                    MediaUrl = a.mediaUrl,
+                    MediaType = a.mediaType
+                }).ToList(),
+                ContentName = subContent?.ContentName.ToString() ?? "",
+                ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
+                Level = subContent?.Level.ToString() ?? "",
+                LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
+                SubContentName = subContent?.SubContentName.ToString() ?? "",
+                SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
+            };
         }
     }
 }

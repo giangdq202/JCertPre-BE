@@ -1,5 +1,3 @@
-using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Application.Utilities;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -21,101 +19,58 @@ namespace JCertPreApplication.API.Controllers
     }
 
     /// <summary>
-    /// Add a question to a test.
+    /// Add questions to a test using custom manual input.
     /// </summary>
-    [HttpPost("{testId}/add/{questionId}")]
-    public async Task<IActionResult> AddQuestionToTest(Guid testId, Guid questionId)
+    /// <remarks>
+    /// Example request:
+    /// [
+    ///   {
+    ///     "testId": "11111111-1111-1111-1111-111111111111",
+    ///     "questionId": "22222222-2222-2222-2222-222222222222"
+    ///   },
+    ///   {
+    ///     "testId": "33333333-3333-3333-3333-333333333333",
+    ///     "questionId": "44444444-4444-4444-4444-444444444444"
+    ///   }
+    /// ]
+    /// </remarks>
+    [HttpPost("custom-manual/add")]
+    public async Task<IActionResult> AddQuestionsCustomManual([FromBody] List<AddTestQuestionManualDto> testQuestionPairs)
     {
-        await _service.AddQuestionToTestAsync(testId, questionId);
+        var pairs = testQuestionPairs.Select(x => (x.TestId, x.QuestionId)).ToList();
+        await _service.AddQuestionsCustomManualAsync(pairs);
         return NoContent();
     }
 
     /// <summary>
-    /// Get all questions from a test (paginated).
+    /// Get all questions from a test (no paging).
     /// </summary>
     [HttpGet("{testId}/questions")]
-    public async Task<IActionResult> GetQuestionsByTestId(Guid testId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
+    public async Task<IActionResult> GetQuestionsByTestId(Guid testId)
     {
-        var result = await _service.GetQuestionsByTestIdAsync(testId, pageIndex, pageSize);
-        return Ok(MapToPaginationDto(result));
-    }
-
-    /// <summary>
-    /// Get a specific question from a test.
-    /// </summary>
-    [HttpGet("{testId}/question/{questionId}")]
-    public async Task<IActionResult> GetTestQuestion(Guid testId, Guid questionId)
-    {
-        var result = await _service.GetTestQuestionAsync(testId, questionId);
-        if (result == null)
-            return NotFound();
-        return Ok(MapToTestQuestionDto(result));
-    }
-
-    /// <summary>
-    /// Get all question IDs from a test.
-    /// </summary>
-    [HttpGet("{testId}/question-ids")]
-    public async Task<IActionResult> GetAllQuestionIdsByTestId(Guid testId)
-    {
-        var ids = await _service.GetAllQuestionIdsByTestIdAsync(testId);
-        return Ok(ids);
-    }
-
-    /// <summary>
-    /// Update isActive field for a test question.
-    /// </summary>
-    [HttpPatch("{testId}/question/{questionId}/is-active")]
-    public async Task<IActionResult> UpdateIsActive(Guid testId, Guid questionId, [FromBody] bool isActive)
-    {
-        await _service.UpdateIsActiveAsync(testId, questionId, isActive);
-        return NoContent();
+        var result = await _service.GetQuestionsByTestIdAsync(testId);
+        return Ok(result);
     }
 
     /// <summary>
     /// Delete a question from a test.
     /// </summary>
-    [HttpDelete("{testId}/question/{questionId}")]
-    public async Task<IActionResult> DeleteTestQuestion(Guid testId, Guid questionId)
+    [HttpDelete("{testQuestionId}")]
+    public async Task<IActionResult> DeleteTestQuestion(Guid testQuestionId)
     {
-        await _service.DeleteTestQuestionAsync(testId, questionId);
+        await _service.DeleteTestQuestionAsync(testQuestionId);
         return NoContent();
     }
 
-    private static TestQuestionDto MapToTestQuestionDto(TestQuestion tq)
+    /// <summary>
+    /// Calculate and update max scores for test score summary.
+    /// </summary>
+    /// <param name="testId">Test ID.</param>
+    /// <returns>No content on success.</returns>
+    [HttpPost("{testId}/calculate-max-score")]
+    public async Task<IActionResult> CalculateMaxScore(Guid testId)
     {
-        return new TestQuestionDto
-        {
-            TestQuestionId = tq.testQuestionId,
-            TestId = tq.testId,
-            QuestionId = tq.questionId,
-            IsActive = tq.isActive,
-            Question = tq.Question == null ? null : new QuestionInTestDto
-            {
-                Id = tq.Question.questionId,
-                Content = tq.Question.questionText,
-                Explanation = tq.Question.explanation,
-                Points = tq.Question.points,
-                QuestionType = tq.Question.questionType,
-                Choices = tq.Question.Choices?.Select(c => new ChoiceReadDto
-                {
-                    Id = c.choiceId,
-                    Content = c.choiceText,
-                    IsCorrect = c.isCorrect,
-                    QuestionId = c.questionId
-                }).ToList()
-            }
-        };
-    }
-
-    private static Pagination<TestQuestionDto> MapToPaginationDto(Pagination<TestQuestion> paged)
-    {
-        return new Pagination<TestQuestionDto>
-        {
-            PageIndex = paged.PageIndex,
-            PageSize = paged.PageSize,
-            TotalItemsCount = paged.TotalItemsCount,
-            Items = paged.Items.Select(MapToTestQuestionDto).ToList()
-        };
+        await _service.CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
+        return NoContent();
     }
 }}
