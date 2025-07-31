@@ -3,6 +3,7 @@ using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
+using JCertPreApplication.Persistence.Services.BackgroudServices;
 using JCertPreApplication.Persistence.Services.File;
 using JCertPreApplication.Persistence.Services.Firebase;
 using JCertPreApplication.Persistence.Services.LiveKit;
@@ -101,6 +102,8 @@ namespace JCertPreApplication.Persistence
                 provider.GetRequiredService<TestAttemptAutoSubmitService>());
             services.AddHostedService<TestAttemptAutoSubmitService>(provider =>
                 provider.GetRequiredService<TestAttemptAutoSubmitService>());
+
+            services.AddHostedService<LivestreamStatusBackgroundService>();
 
             return services;
         }

@@ -1,6 +1,5 @@
 using JCertPreApplication.API;
 using JCertPreApplication.API.Middleware;
-using JCertPreApplication.API.Services;
 using JCertPreApplication.Application;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence;
@@ -196,9 +195,6 @@ static void SetupServices(WebApplicationBuilder builder)
     
     // Infrastructure layer services (persistence, external services)
     builder.Services.AddInfrastructure(builder.Configuration);
-    
-    // Background services
-    builder.Services.AddHostedService<LivestreamStatusBackgroundService>();
 }
 
 
