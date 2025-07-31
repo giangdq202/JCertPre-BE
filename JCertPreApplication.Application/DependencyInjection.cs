@@ -11,6 +11,7 @@ using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.LessonProgresses;
 using JCertPreApplication.Application.Features.Lessons;
 using JCertPreApplication.Application.Features.Livestreams;
+using JCertPreApplication.Application.Features.Payment;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Application.Features.StudentProfile;
 using JCertPreApplication.Application.Features.StudyPlan;
@@ -52,6 +53,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<IDocumentService, DocumentService>();
             services.AddScoped<ILivestreamService, LivestreamService>();
             services.AddScoped<ILessonProgressService, LessonProgressService>();
+            services.AddScoped<IPaymentService, PaymentService>();
 
             // Add AutoMapper
             services.AddAutoMapper(typeof(DependencyInjection).Assembly);

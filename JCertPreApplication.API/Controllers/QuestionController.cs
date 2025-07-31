@@ -102,20 +102,20 @@ namespace JCertPreApplication.API.Controllers
     }
 
     /// <summary>
-    /// Get paginated active questions with details (choices, attachments), filterable by subcontent fields.
-    /// </summary>
-    [HttpGet("paging-details/active")]
-    public async Task<IActionResult> GetPagingActiveWithDetails(
-        [FromQuery] int pageIndex = 1,
-        [FromQuery] int pageSize = 10,
-        [FromQuery] string? search = null,
-        [FromQuery] ContentName? contentName = null,
-        [FromQuery] CourseLevel? level = null,
-        [FromQuery] SubContentName? subContentName = null,
-        [FromQuery] QuestionDifficulty? difficulty = null)
-    {
-        var dto = await _questionService.GetPaginatedActiveWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName, difficulty);
-        return Ok(dto);
-    }
-    }
+/// Get paginated active questions with details (choices, attachments), filterable by subcontent fields.
+/// </summary>
+[HttpGet("paging-details/active")]
+public async Task<IActionResult> GetPagingActiveWithDetails(
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? search = null,
+    [FromQuery] ContentName? contentName = null,
+    [FromQuery] CourseLevel? level = null,
+    [FromQuery] SubContentName? subContentName = null,
+    [FromQuery] QuestionDifficulty? difficulty = null)
+{
+    var dto = await _questionService.GetPaginatedActiveWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName, difficulty);
+    return Ok(dto);
+}
+}
 }

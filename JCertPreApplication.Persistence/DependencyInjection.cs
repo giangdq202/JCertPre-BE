@@ -71,6 +71,8 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IDocumentRepository, DocumentRepository>();
             services.AddScoped<ILivestreamRepository, LivestreamRepository>();
             services.AddScoped<ILessonProgressRepository, LessonProgressRepository>();
+            services.AddScoped<IPaymentRepository, PaymentRepository>();
+            services.AddScoped<ICreditTransactionRepository, CreditTransactionRepository>();
 
             // Infrastructure Services - Configure both Cloudinary and Appwrite
             // services.AddScoped<IFileService, Services.File.FileService>(); // Cloudinary implementation (commented for testing)
