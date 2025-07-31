@@ -9,7 +9,6 @@ namespace JCertPreApplication.Application.Features.Questions
     public interface IQuestionService
     {
         Task<QuestionDto> GetByIdAsync(Guid id);
-        Task<IEnumerable<QuestionDto>> GetAllAsync();
         Task<QuestionDto> CreateAsync(CreateQuestionDto createDto);
         Task<QuestionDto> UpdateAsync(Guid id, UpdateQuestionDto updateDto);
         Task DeleteAsync(Guid id);
@@ -22,5 +21,15 @@ namespace JCertPreApplication.Application.Features.Questions
             SubContentName? subContentName = null,
             QuestionDifficulty? difficulty = null
         );
+        Task<Pagination<QuestionDto>> GetPaginatedActiveWithDetailsAsync(
+            string? searchTerm,
+            int pageIndex,
+            int pageSize,
+            ContentName? contentName = null,
+            CourseLevel? level = null,
+            SubContentName? subContentName = null,
+            QuestionDifficulty? difficulty = null
+);
+        Task<QuestionForTestDto?> GetByIdForTestAsync(Guid id);
     }
 }

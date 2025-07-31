@@ -42,7 +42,8 @@ public class TestTemplateService : ITestTemplateService
                 templateName = dto.templateName,
                 durationMinutes = dto.durationMinutes,
                 totalScore = dto.totalScore,
-                toPassPercentage = dto.toPassPercentage
+                toPassPercentage = dto.toPassPercentage,
+                sequence = dto.sequence
             };
             await _repo.InsertAsync(entity);
             await _repo.SaveChangesAsync();
@@ -74,6 +75,8 @@ public class TestTemplateService : ITestTemplateService
                 entity.totalScore = dto.totalScore.Value;
             if (dto.toPassPercentage.HasValue)
                 entity.toPassPercentage = dto.toPassPercentage.Value;
+            if (dto.sequence.HasValue)
+                entity.sequence = dto.sequence.Value;
 
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();
@@ -113,6 +116,7 @@ public class TestTemplateService : ITestTemplateService
         templateName = t.templateName,
         durationMinutes = t.durationMinutes,
         totalScore = t.totalScore,
-        toPassPercentage = t.toPassPercentage
+        toPassPercentage = t.toPassPercentage,
+        sequence = t.sequence
     };
 }

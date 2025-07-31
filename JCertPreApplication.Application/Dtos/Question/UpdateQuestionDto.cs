@@ -9,6 +9,7 @@ namespace JCertPreApplication.Application.Dtos.Question
         public string? Explanation { get; set; }
         public int? Points { get; set; }
         public QuestionDifficulty? Difficulty { get; set; }
+        public bool? IsActive { get; set; }
 
         // Optional: allow updating subcontent
         public ContentName? ContentName { get; set; }

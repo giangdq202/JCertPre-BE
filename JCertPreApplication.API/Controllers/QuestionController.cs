@@ -17,22 +17,12 @@ namespace JCertPreApplication.API.Controllers
     [Tags("Questions")]
     [Produces("application/json")]
     public class QuestionController : ControllerBase
-{
+    {
     private readonly IQuestionService _questionService;
 
     public QuestionController(IQuestionService questionService)
     {
         _questionService = questionService;
-    }
-
-    /// <summary>
-    /// Get all questions.
-    /// </summary>
-    [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var dtos = await _questionService.GetAllAsync();
-        return Ok(dtos);
     }
 
     /// <summary>
@@ -99,35 +89,33 @@ namespace JCertPreApplication.API.Controllers
         return Ok(dto);
     }
 
-    // Mapping logic at controller layer
-    private static QuestionDto MapToQuestionDto(Question question)
+    /// <summary>
+    /// Get a question by its ID for test by the ID.
+    /// </summary>
+    [HttpGet("test/{id:guid}")]
+    public async Task<IActionResult> GetByIdForTest(Guid id)
     {
-        var subContent = question.SubContent;
-        return new QuestionDto
-        {
-            Id = question.questionId,
-            Content = question.questionText,
-            Explanation = question.explanation,
-            Points = question.points,
-            Difficulty = question.difficulty, // Add this line
-            Choices = question.Choices?.Select(c => new ChoiceReadDto
-            {
-                ChoiceId = c.choiceId,
-                Content = c.choiceText,
-                IsCorrect = c.isCorrect,
-                QuestionId = c.questionId
-            }).ToList(),
-            QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
-            {
-                MediaUrl = a.mediaUrl,
-                MediaType = a.mediaType
-            }).ToList(),
-            ContentName = subContent?.ContentName.ToString() ?? "",
-            ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
-            Level = subContent?.Level.ToString() ?? "",
-            LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
-            SubContentName = subContent?.SubContentName.ToString() ?? "",
-            SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
-        };
+        var dto = await _questionService.GetByIdForTestAsync(id);
+        if (dto == null)
+            return NotFound();
+        return Ok(dto);
     }
-}}
+
+    /// <summary>
+/// Get paginated active questions with details (choices, attachments), filterable by subcontent fields.
+/// </summary>
+[HttpGet("paging-details/active")]
+public async Task<IActionResult> GetPagingActiveWithDetails(
+    [FromQuery] int pageIndex = 1,
+    [FromQuery] int pageSize = 10,
+    [FromQuery] string? search = null,
+    [FromQuery] ContentName? contentName = null,
+    [FromQuery] CourseLevel? level = null,
+    [FromQuery] SubContentName? subContentName = null,
+    [FromQuery] QuestionDifficulty? difficulty = null)
+{
+    var dto = await _questionService.GetPaginatedActiveWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName, difficulty);
+    return Ok(dto);
+}
+}
+}

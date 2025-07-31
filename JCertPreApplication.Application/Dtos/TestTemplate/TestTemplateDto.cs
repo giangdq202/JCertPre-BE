@@ -8,4 +8,5 @@ public class TestTemplateDto
     public int durationMinutes { get; set; }
     public int totalScore { get; set; }
     public decimal toPassPercentage { get; set; }
+    public int sequence { get; set; }
 }
