@@ -1,11 +1,11 @@
 using CloudinaryDotNet.Actions;
 
-namespace JCertPreApplication.Application.Dtos.Cloudinary
+namespace JCertPreApplication.Application.Dtos.File
 {
     /// <summary>
-    /// DTO đại diện cho một resource trên Cloudinary
+    /// DTO đại diện cho một resource file
     /// </summary>
-    public class CloudinaryResourceDto
+    public class FileResourceDto
     {
         /// <summary>
         /// Public ID của resource
@@ -66,8 +66,8 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
         /// Chuyển đổi từ Cloudinary Resource sang DTO
         /// </summary>
         /// <param name="resource">Cloudinary Resource object</param>
-        /// <returns>CloudinaryResourceDto</returns>
-        public static CloudinaryResourceDto FromCloudinaryResource(Resource resource)
+        /// <returns>FileResourceDto</returns>
+        public static FileResourceDto FromCloudinaryResource(Resource resource)
         {
             var resourceType = resource.ResourceType?.ToString() ?? string.Empty;
             var format = resource.Format ?? string.Empty;
@@ -80,7 +80,7 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
                 format = ext ?? string.Empty;
             }
             
-            return new CloudinaryResourceDto
+            return new FileResourceDto
             {
                 PublicId = resource.PublicId ?? string.Empty,
                 SecureUrl = resource.SecureUrl?.ToString() ?? string.Empty,
@@ -128,4 +128,4 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
             return null;
         }
     }
-} 
+}

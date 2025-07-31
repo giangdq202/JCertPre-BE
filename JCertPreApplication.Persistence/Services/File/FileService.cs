@@ -1,24 +1,24 @@
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using JCertPreApplication.Application.Contracts;
-using JCertPreApplication.Application.Dtos.Cloudinary;
+using JCertPreApplication.Application.Dtos.File;
 using JCertPreApplication.Application.Exceptions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Diagnostics;
 
-namespace JCertPreApplication.Persistence.Services.Cloudinary
+namespace JCertPreApplication.Persistence.Services.File
 {
-    public class CloudinaryService : ICloudinaryService
+    public class FileService : IFileService
     {
         private readonly CloudinaryDotNet.Cloudinary _cloudinary;
-        private readonly ILogger<CloudinaryService> _logger;
+        private readonly ILogger<FileService> _logger;
         private const int UPLOAD_TIMEOUT_SECONDS = 600; // 10 minutes
         private const int CHUNK_SIZE = 20 * 1024 * 1024; // 20MB chunks
         private const int MAX_CONCURRENT_UPLOADS = 4;
 
-        public CloudinaryService(IOptions<JCertPreApplication.Domain.Configuration.CloudinaryConfiguration> cloudinaryConfig, ILogger<CloudinaryService> logger)
+        public FileService(IOptions<JCertPreApplication.Domain.Configuration.CloudinaryConfiguration> cloudinaryConfig, ILogger<FileService> logger)
         {
             _logger = logger;
 
@@ -46,14 +46,14 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 _cloudinary = new CloudinaryDotNet.Cloudinary(account);
                 _cloudinary.Api.Secure = config.Secure;
 
-                _logger.LogInformation("Cloudinary service initialized successfully for cloud: {CloudName}", config.CloudName);
+                _logger.LogInformation("File service initialized successfully for cloud: {CloudName}", config.CloudName);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to initialize Cloudinary service");
+                _logger.LogError(ex, "Failed to initialize File service");
                 throw ApiException.InternalServerError(
-                    "CLOUDINARY_INIT_FAILED", 
-                    "Failed to initialize Cloudinary service. Please check your Cloudinary configuration."
+                    "FILE_SERVICE_INIT_FAILED", 
+                    "Failed to initialize File service. Please check your Cloudinary configuration."
                 );
             }
         }
@@ -91,8 +91,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary image upload failed: {ErrorMessage}", result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
+                    _logger.LogError("Image upload failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
 
                 _logger.LogDebug("Image uploaded successfully: {PublicId}", result.PublicId);
@@ -155,8 +155,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary video upload failed: {ErrorMessage}", result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
+                    _logger.LogError("Video upload failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
 
                 _logger.LogInformation("Video uploaded successfully: {PublicId}, Duration: {Duration}s, Size: {Size}MB", 
@@ -211,8 +211,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary raw file upload failed: {ErrorMessage}", result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
+                    _logger.LogError("Raw file upload failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
 
                 _logger.LogDebug("Raw file uploaded successfully: {PublicId}", result.PublicId);
@@ -252,8 +252,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary image deletion failed: {ErrorMessage}", result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_DELETE_FAILED", $"Delete failed: {result.Error.Message}");
+                    _logger.LogError("Image deletion failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
                 _logger.LogDebug("Image deleted successfully: {PublicId}", publicId);
@@ -291,8 +291,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary video deletion failed: {ErrorMessage}", result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_DELETE_FAILED", $"Delete failed: {result.Error.Message}");
+                    _logger.LogError("Video deletion failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
                 _logger.LogDebug("Video deleted successfully: {PublicId}", publicId);
@@ -330,8 +330,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary raw file deletion failed: {ErrorMessage}", result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_DELETE_FAILED", $"Delete failed: {result.Error.Message}");
+                    _logger.LogError("Raw file deletion failed: {ErrorMessage}", result.Error.Message);
+                    throw ApiException.BadRequest("DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
                 _logger.LogDebug("Raw file deleted successfully: {PublicId}", publicId);
@@ -348,7 +348,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
             }
         }
 
-        public async Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image")
+        public async Task<FileResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image")
         {
             // Validate maxResults parameter
             if (maxResults < 1 || maxResults > 500)
@@ -373,7 +373,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
 
             try
             {
-                var allDtos = new List<CloudinaryResourceDto>();
+                var allDtos = new List<FileResourceDto>();
 
                 // Single resource type request
                 var result = await GetResourcesForType(resourceTypeEnum, maxResults, nextCursor);
@@ -387,7 +387,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                     {
                         try
                         {
-                            var dto = CloudinaryResourceDto.FromCloudinaryResource(resource);
+                            var dto = FileResourceDto.FromCloudinaryResource(resource);
                             allDtos.Add(dto);
                         }
                         catch (Exception ex)
@@ -400,7 +400,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
 
                 stopwatch.Stop();
 
-                var pageDto = new CloudinaryResourcesPageDto
+                var pageDto = new FileResourcesPageDto
                 {
                     Resources = allDtos.AsReadOnly(),
                     NextCursor = result.NextCursor,
@@ -410,7 +410,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                     ProcessingTimeMs = stopwatch.ElapsedMilliseconds
                 };
 
-                _logger.LogInformation("Successfully retrieved {ActualResults} resources (Type: {ResourceType}) from Cloudinary in {ProcessingTimeMs}ms. HasNextPage: {HasNextPage}", 
+                _logger.LogInformation("Successfully retrieved {ActualResults} resources (Type: {ResourceType}) in {ProcessingTimeMs}ms. HasNextPage: {HasNextPage}", 
                     pageDto.ActualResults, resourceType, pageDto.ProcessingTimeMs, pageDto.HasNextPage);
 
                 return pageDto;
@@ -423,7 +423,7 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
             catch (Exception ex)
             {
                 stopwatch.Stop();
-                _logger.LogError(ex, "Unexpected error while retrieving paginated resources from Cloudinary");
+                _logger.LogError(ex, "Unexpected error while retrieving paginated resources");
                 throw ApiException.InternalServerError("GET_PAGINATED_RESOURCES_ERROR", "Đã xảy ra lỗi trong quá trình lấy danh sách resources phân trang.");
             }
         }
@@ -449,8 +449,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Cloudinary list failed for type {ResourceType}: {ErrorMessage}", resourceType, result.Error.Message);
-                    throw ApiException.BadRequest("CLOUDINARY_LIST_FAILED", $"Failed to list {resourceType} resources: {result.Error.Message}");
+                    _logger.LogError("List failed for type {ResourceType}: {ErrorMessage}", resourceType, result.Error.Message);
+                    throw ApiException.BadRequest("LIST_FAILED", $"Failed to list {resourceType} resources: {result.Error.Message}");
                 }
 
                 return result;
@@ -459,8 +459,8 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
             {
                 _logger.LogError(ex, "Error retrieving resources of type {ResourceType}", resourceType);
                 throw ApiException.InternalServerError(
-                    "CLOUDINARY_LIST_FAILED", 
-                    $"Failed to retrieve {resourceType} resources from Cloudinary: {ex.Message}"
+                    "LIST_FAILED", 
+                    $"Failed to retrieve {resourceType} resources: {ex.Message}"
                 );
             }
         }
@@ -491,4 +491,4 @@ namespace JCertPreApplication.Persistence.Services.Cloudinary
 
         #endregion
     }
-} 
+}

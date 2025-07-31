@@ -1,14 +1,14 @@
-namespace JCertPreApplication.Application.Dtos.Cloudinary
+namespace JCertPreApplication.Application.Dtos.File
 {
     /// <summary>
-    /// DTO đại diện cho một trang kết quả resources từ Cloudinary với hỗ trợ phân trang cursor-based
+    /// DTO đại diện cho một trang kết quả resources với hỗ trợ phân trang cursor-based
     /// </summary>
-    public class CloudinaryResourcesPageDto
+    public class FileResourcesPageDto
     {
         /// <summary>
         /// Danh sách resources trong trang hiện tại
         /// </summary>
-        public IReadOnlyList<CloudinaryResourceDto> Resources { get; init; } = new List<CloudinaryResourceDto>();
+        public IReadOnlyList<FileResourceDto> Resources { get; init; } = new List<FileResourceDto>();
 
         /// <summary>
         /// Cursor để lấy trang tiếp theo (null nếu không có trang tiếp theo)
@@ -45,4 +45,4 @@ namespace JCertPreApplication.Application.Dtos.Cloudinary
         /// </summary>
         public long ProcessingTimeMs { get; init; }
     }
-} 
+}

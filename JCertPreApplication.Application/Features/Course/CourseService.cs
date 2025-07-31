@@ -13,13 +13,13 @@ namespace JCertPreApplication.Application.Features.Course
     {
         private readonly ICourseRepository _courseRepository;
         private readonly IUserRepository _userRepository;
-        private readonly ICloudinaryService _cloudinaryService;
+        private readonly IFileService _fileService;
 
-        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository, ICloudinaryService cloudinaryService)
+        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository, IFileService fileService)
         {
             _courseRepository = courseRepository;
             _userRepository = userRepository;
-            _cloudinaryService = cloudinaryService;
+            _fileService = fileService;
         }
 
         public async Task<CourseDto> CreateCourseAsync(CreateCourseDto createCourseDto)
@@ -40,8 +40,8 @@ namespace JCertPreApplication.Application.Features.Course
                     // Create a custom FormFile with courseId as filename
                     var customFormFile = CreateCustomFormFile(createCourseDto.ThumbnailFile, courseId.ToString());
                     
-                    // Upload thumbnail to Cloudinary
-                    var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                    // Upload thumbnail to file service
+                    var uploadResult = await _fileService.UploadImageAsync(customFormFile);
                     
                     if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
                     {
@@ -128,7 +128,7 @@ namespace JCertPreApplication.Application.Features.Course
                             var oldPublicId = ExtractCloudinaryPublicId(course.thumbnailUrl);
                             if (!string.IsNullOrWhiteSpace(oldPublicId))
                             {
-                                await _cloudinaryService.DeleteImageAsync(oldPublicId);
+                                await _fileService.DeleteImageAsync(oldPublicId);
                             }
                         }
                         catch (Exception ex)
@@ -140,7 +140,7 @@ namespace JCertPreApplication.Application.Features.Course
 
                     // Upload new thumbnail using courseId as filename
                     var customFormFile = CreateCustomFormFile(updateCourseDto.ThumbnailFile, courseId.ToString());
-                    var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                    var uploadResult = await _fileService.UploadImageAsync(customFormFile);
                     
                     if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
                     {

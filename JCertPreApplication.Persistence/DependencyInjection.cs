@@ -3,7 +3,7 @@ using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
-using JCertPreApplication.Persistence.Services.Cloudinary;
+using JCertPreApplication.Persistence.Services.File;
 using JCertPreApplication.Persistence.Services.Firebase;
 using JCertPreApplication.Persistence.Services.LiveKit;
 using JCertPreApplication.Persistence.Services.Security;
@@ -73,7 +73,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ILessonProgressRepository, LessonProgressRepository>();
 
             // Infrastructure Services
-            services.AddScoped<ICloudinaryService, CloudinaryService>();
+            services.AddScoped<IFileService, Services.File.FileService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();

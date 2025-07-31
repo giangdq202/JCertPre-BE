@@ -1,10 +1,10 @@
 using CloudinaryDotNet.Actions;
-using JCertPreApplication.Application.Dtos.Cloudinary;
+using JCertPreApplication.Application.Dtos.File;
 using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Contracts
 {
-    public interface ICloudinaryService
+    public interface IFileService
     {
         /// <summary>
         /// Tải lên một tệp hình ảnh.
@@ -56,6 +56,6 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="nextCursor">Cursor trả về từ trang trước; null cho trang đầu tiên</param>
         /// <param name="resourceType">Loại resource cần lọc: "image" (mặc định), "video", hoặc "raw"</param>
         /// <returns>Một trang resources và cursor cho trang tiếp theo (nếu có)</returns>
-        Task<CloudinaryResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image");
+        Task<FileResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image");
     }
-} 
+}
