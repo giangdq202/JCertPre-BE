@@ -24,10 +24,8 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Creates a new conversation between a student and an academic manager.
+        /// Creates a new conversation.
         /// </summary>
-        /// <param name="studentId">The ID of the student.</param>
-        /// <returns>Created conversation details.</returns>
         [HttpPost("create")]
         public async Task<IActionResult> CreateConversation([FromQuery] Guid studentId)
         {
@@ -38,11 +36,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Sends a message in a conversation.
         /// </summary>
-        /// <param name="conversationId">Target conversation ID.</param>
-        /// <param name="model">Message content.</param>
-        /// <returns>Sent message details.</returns>
         [HttpPost("send-messages/{conversationId}")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] MessageRequest model)
         {
             var senderIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -63,11 +57,7 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Assigns an instructor to a conversation.
         /// </summary>
-        /// <param name="conversationId">Target conversation ID.</param>
-        /// <param name="instructorId">Instructor to assign.</param>
-        /// <returns>No content on success.</returns>
         [HttpPost("assign-instructor/{conversationId}")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> AssignInstructor([FromRoute] Guid conversationId, [FromQuery] Guid instructorId)
         {
             await _conversationService.AssignInstructorAsync(conversationId, instructorId);
@@ -77,8 +67,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets conversation details with messages.
         /// </summary>
-        /// <param name="id">Conversation ID.</param>
-        /// <returns>Complete conversation details.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetConversation(Guid id)
         {
@@ -87,11 +75,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Gets all conversations for the authenticated user.
+        /// Gets all conversations for the user.
         /// </summary>
-        /// <returns>List of user's conversations.</returns>
         [HttpGet("my-conversations")]
-        // [Authorize] // Uncomment when authentication is implemented
         public async Task<IActionResult> GetMyConversations()
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);

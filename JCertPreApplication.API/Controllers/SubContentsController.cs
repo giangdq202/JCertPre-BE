@@ -3,12 +3,16 @@ using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-/// <summary>
-/// API controller for SubContent CRUD operations.
-/// </summary>
-[Route("api/subcontents")]
-[ApiController]
-public class SubContentsController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages sub-content operations.
+    /// </summary>
+    [Route("api/subcontents")]
+    [ApiController]
+    [Tags("SubContents")]
+    [Produces("application/json")]
+    public class SubContentsController : ControllerBase
 {
     private readonly ISubContentService _service;
 
@@ -134,4 +138,4 @@ public class SubContentsController : ControllerBase
         var values = EnumHelper.GetEnumValuesWithDescriptions<ContentName>();
         return Ok(values);
     }
-}
+}}

@@ -14,13 +14,13 @@ namespace JCertPreApplication.Application.Features.Users
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
-        private readonly ICloudinaryService _cloudinaryService;
+        private readonly IFileService _fileService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, ICloudinaryService cloudinaryService)
+        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService)
         {
             _userRepository = userRepository;
             _mapper = mapper;
-            _cloudinaryService = cloudinaryService;
+            _fileService = fileService;
         }
 
         public async Task<Pagination<AppUserDto>> GetAllUsersAsync(UserQueryParameters parameters)
@@ -113,7 +113,7 @@ namespace JCertPreApplication.Application.Features.Users
                             var oldPublicId = ExtractCloudinaryPublicId(user.avatarUrl);
                             if (!string.IsNullOrWhiteSpace(oldPublicId))
                             {
-                                await _cloudinaryService.DeleteImageAsync(oldPublicId);
+                                await _fileService.DeleteImageAsync(oldPublicId);
                             }
                         }
                         catch (Exception ex)
@@ -131,7 +131,7 @@ namespace JCertPreApplication.Application.Features.Users
                 var customFormFile = CreateCustomFormFile(updateUserDto.AvatarFile, userId.ToString());
 
                 // Upload new avatar
-                var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                var uploadResult = await _fileService.UploadImageAsync(customFormFile);
                 user.avatarUrl = uploadResult.SecureUrl.ToString();
             }
 

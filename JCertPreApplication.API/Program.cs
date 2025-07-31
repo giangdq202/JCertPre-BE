@@ -64,6 +64,19 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     config.GetSection(CloudinaryConfiguration.SectionName).Bind(cloudinaryConfig);
     cloudinaryConfig.Validate();
     
+    // Bind and validate Appwrite config
+    var appwriteConfig = new AppwriteConfiguration();
+    config.GetSection(AppwriteConfiguration.SectionName).Bind(appwriteConfig);
+    // Note: Appwrite validation is optional for testing purposes
+    try
+    {
+        appwriteConfig.Validate();
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Warning: Appwrite configuration validation failed: {ex.Message}");
+    }
+    
     // Bind and validate Firebase config  
     var firebaseConfig = new FirebaseConfiguration();
     config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
@@ -84,6 +97,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
     builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
     builder.Services.Configure<CloudinaryConfiguration>(config.GetSection(CloudinaryConfiguration.SectionName));
+    builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
 
     // Register and validate LiveKit configuration
@@ -128,6 +142,16 @@ static void LogEnvironmentVariables(IConfiguration config)
     Console.WriteLine($"ApiKey: {MaskSensitiveData(config["Cloudinary:ApiKey"])}");
     Console.WriteLine($"ApiSecret: {MaskSensitiveData(config["Cloudinary:ApiSecret"])}");
     Console.WriteLine($"Secure: {config["Cloudinary:Secure"]}");
+    
+    // Appwrite Configuration
+    Console.WriteLine("\n[Appwrite Configuration]");
+    Console.WriteLine($"Endpoint: {config["Appwrite:Endpoint"]}");
+    Console.WriteLine($"ProjectId: {config["Appwrite:ProjectId"]}");
+    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["Appwrite:ApiKey"])}");
+    Console.WriteLine($"ImagesBucketId: {config["Appwrite:ImagesBucketId"]}");
+    Console.WriteLine($"VideosBucketId: {config["Appwrite:VideosBucketId"]}");
+    Console.WriteLine($"DocumentsBucketId: {config["Appwrite:DocumentsBucketId"]}");
+    Console.WriteLine($"MaxFileSizeMB: {config["Appwrite:MaxFileSizeMB"]}");
     
     // Firebase Configuration
     Console.WriteLine("\n[Firebase Configuration]");

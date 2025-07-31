@@ -1,9 +1,16 @@
 using JCertPreApplication.Application.Features.TestAttempts;
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/[controller]")]
-public class TestAttemptController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages test attempts.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    [Tags("TestAttempts")]
+    [Produces("application/json")]
+    public class TestAttemptController : ControllerBase
 {
     private readonly ITestAttemptService _service;
     private readonly ILogger<TestAttemptController> _logger;
@@ -88,4 +95,4 @@ public class TestAttemptController : ControllerBase
             throw;
         }
     }
-}
+}}

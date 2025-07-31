@@ -1,8 +1,15 @@
 using Microsoft.AspNetCore.Mvc;
 
-[ApiController]
-[Route("api/test-questions")]
-public class TestQuestionController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages test questions.
+    /// </summary>
+    [ApiController]
+    [Route("api/test-questions")]
+    [Tags("TestQuestions")]
+    [Produces("application/json")]
+    public class TestQuestionController : ControllerBase
 {
     private readonly ITestQuestionService _service;
 
@@ -66,4 +73,4 @@ public class TestQuestionController : ControllerBase
         await _service.CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
         return NoContent();
     }
-}
+}}

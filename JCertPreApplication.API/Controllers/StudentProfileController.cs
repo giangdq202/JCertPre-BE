@@ -24,10 +24,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Creates a new student profile.
         /// </summary>
-        /// <param name="userId">Student user ID.</param>
-        /// <param name="currentLevel">Current Japanese level.</param>
-        /// <param name="learningGoals">Study objectives.</param>
-        /// <returns>Created student profile.</returns>
         [HttpPost("create")]
         public async Task<ActionResult> CreateStudentProfile([FromQuery] Guid userId, [FromQuery] string currentLevel, [FromQuery] string learningGoals)
         {
@@ -39,8 +35,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets a student's profile.
         /// </summary>
-        /// <param name="userId">Student user ID.</param>
-        /// <returns>Student profile details.</returns>
         [HttpGet("{userId}")]
         public async Task<ActionResult<StudentProfileDto>> GetStudentProfile(Guid userId)
         {
@@ -52,10 +46,6 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Updates a student's profile.
         /// </summary>
-        /// <param name="userId">Student user ID.</param>
-        /// <param name="currentLevel">Updated Japanese level.</param>
-        /// <param name="learningGoals">Updated study objectives.</param>
-        /// <returns>Updated student profile.</returns>
         [HttpPut("update/{userId}")]
         public async Task<ActionResult<StudentProfileDto>> UpdateStudentProfile(Guid userId, [FromQuery] string currentLevel, [FromQuery] string learningGoals)
         {

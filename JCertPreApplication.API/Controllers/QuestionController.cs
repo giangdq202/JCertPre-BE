@@ -7,14 +7,16 @@ using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
-/// <summary>
-/// API endpoints for managing Question entities.
-/// </summary>
-[ApiController]
-[Route("api/[controller]")]
-[Tags("Questions")]
-[Produces("application/json")]
-public class QuestionController : ControllerBase
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Manages question entities.
+    /// </summary>
+    [ApiController]
+    [Route("api/[controller]")]
+    [Tags("Questions")]
+    [Produces("application/json")]
+    public class QuestionController : ControllerBase
 {
     private readonly IQuestionService _questionService;
 
@@ -96,4 +98,37 @@ public class QuestionController : ControllerBase
         var dto = await _questionService.GetPaginatedWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName);
         return Ok(dto);
     }
+
+    // Mapping logic at controller layer
+    private static QuestionDto MapToQuestionDto(Question question)
+    {
+        var subContent = question.SubContent;
+        return new QuestionDto
+        {
+            Id = question.questionId,
+            Content = question.questionText,
+            Explanation = question.explanation,
+            Points = question.points,
+            Difficulty = question.difficulty, // Add this line
+            Choices = question.Choices?.Select(c => new ChoiceReadDto
+            {
+                Id = c.choiceId,
+                Content = c.choiceText,
+                IsCorrect = c.isCorrect,
+                QuestionId = c.questionId
+            }).ToList(),
+            QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+            {
+                MediaUrl = a.mediaUrl,
+                MediaType = a.mediaType
+            }).ToList(),
+            ContentName = subContent?.ContentName.ToString() ?? "",
+            ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
+            Level = subContent?.Level.ToString() ?? "",
+            LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
+            SubContentName = subContent?.SubContentName.ToString() ?? "",
+            SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
+        };
+    }
+}}
 }

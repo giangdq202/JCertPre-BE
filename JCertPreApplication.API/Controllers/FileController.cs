@@ -1,27 +1,27 @@
 using JCertPreApplication.Application.Contracts;
-using JCertPreApplication.Application.Dtos.Cloudinary;
+using JCertPreApplication.Application.Dtos.File;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Handles Cloudinary file operations including upload, delete, and resource management.
+    /// Handles file operations including upload, delete, and resource management.
     /// </summary>
-    [Route("api/cloudinary")]
+    [Route("api/files")]
     [ApiController]
-    [Tags("Cloudinary")]
+    [Tags("Files")]
     [Produces("application/json")]
-    public class CloudinaryController : ControllerBase
+    public class FileController : ControllerBase
     {
-        private readonly ICloudinaryService _cloudinaryService;
+        private readonly IFileService _fileService;
 
-        public CloudinaryController(ICloudinaryService cloudinaryService)
+        public FileController(IFileService fileService)
         {
-            _cloudinaryService = cloudinaryService ?? throw new ArgumentNullException(nameof(cloudinaryService));
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
         }
 
         /// <summary>
-        /// Uploads an image file to Cloudinary.
+        /// Uploads an image file.
         /// </summary>
         /// <param name="file">The image file to upload (JPEG, PNG, GIF, BMP, WebP, SVG).</param>
         /// <returns>Upload result with public ID and URL.</returns>
@@ -29,7 +29,7 @@ namespace JCertPreApplication.API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
-            var result = await _cloudinaryService.UploadImageAsync(file);
+            var result = await _fileService.UploadImageAsync(file);
             return Ok(new
             {
                 success = true,
@@ -48,7 +48,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Uploads a video file to Cloudinary using chunked upload for large files.
+        /// Uploads a video file using chunked upload for large files.
         /// </summary>
         /// <param name="file">The video file to upload (MP4, AVI, MOV, WMV, FLV, WebM, MKV, 3GP).</param>
         /// <returns>Upload result with public ID and URL.</returns>
@@ -56,7 +56,7 @@ namespace JCertPreApplication.API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
-            var result = await _cloudinaryService.UploadVideoAsync(file);
+            var result = await _fileService.UploadVideoAsync(file);
             return Ok(new
             {
                 success = true,
@@ -76,7 +76,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Uploads a raw file (documents, archives, etc.) to Cloudinary.
+        /// Uploads a raw file (documents, archives, etc.).
         /// </summary>
         /// <param name="file">The raw file to upload.</param>
         /// <returns>Upload result with public ID and URL.</returns>
@@ -84,7 +84,7 @@ namespace JCertPreApplication.API.Controllers
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadRawFile(IFormFile file)
         {
-            var result = await _cloudinaryService.UploadRawFileAsync(file);
+            var result = await _fileService.UploadRawFileAsync(file);
             return Ok(new
             {
                 success = true,
@@ -101,14 +101,14 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Deletes an image from Cloudinary by public ID.
+        /// Deletes an image by public ID.
         /// </summary>
         /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
         [HttpDelete("delete/image")]
         public async Task<IActionResult> DeleteImage([FromBody] DeleteResourceDto request)
         {
-            var result = await _cloudinaryService.DeleteImageAsync(request.PublicId);
+            var result = await _fileService.DeleteImageAsync(request.PublicId);
             return Ok(new
             {
                 success = true,
@@ -122,14 +122,14 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Deletes a video from Cloudinary by public ID.
+        /// Deletes a video by public ID.
         /// </summary>
         /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
         [HttpDelete("delete/video")]
         public async Task<IActionResult> DeleteVideo([FromBody] DeleteResourceDto request)
         {
-            var result = await _cloudinaryService.DeleteVideoAsync(request.PublicId);
+            var result = await _fileService.DeleteVideoAsync(request.PublicId);
             return Ok(new
             {
                 success = true,
@@ -143,14 +143,14 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Deletes a raw file from Cloudinary by public ID.
+        /// Deletes a raw file by public ID.
         /// </summary>
         /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
         [HttpDelete("delete/file")]
         public async Task<IActionResult> DeleteRawFile([FromBody] DeleteResourceDto request)
         {
-            var result = await _cloudinaryService.DeleteRawFileAsync(request.PublicId);
+            var result = await _fileService.DeleteRawFileAsync(request.PublicId);
             return Ok(new
             {
                 success = true,
@@ -164,7 +164,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Gets a paginated list of resources from Cloudinary.
+        /// Gets a paginated list of resources.
         /// </summary>
         /// <param name="maxResults">Maximum number of results per page (1-500). Default: 100.</param>
         /// <param name="nextCursor">Cursor for the next page. Use null for the first page.</param>
@@ -176,7 +176,7 @@ namespace JCertPreApplication.API.Controllers
             [FromQuery] string? nextCursor = null,
             [FromQuery] string resourceType = "image")
         {
-            var result = await _cloudinaryService.GetResourcesPageAsync(maxResults, nextCursor, resourceType);
+            var result = await _fileService.GetResourcesPageAsync(maxResults, nextCursor, resourceType);
             return Ok(new
             {
                 success = true,
@@ -186,7 +186,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Test endpoint to check if Cloudinary service is working.
+        /// Test endpoint to check if file service is working.
         /// </summary>
         /// <returns>Service status.</returns>
         [HttpGet("health")]
@@ -195,9 +195,9 @@ namespace JCertPreApplication.API.Controllers
             return Ok(new
             {
                 success = true,
-                message = "Cloudinary service is healthy",
+                message = "File service is healthy",
                 timestamp = DateTime.UtcNow
             });
         }
     }
-} 
+}

@@ -649,3 +649,7 @@ secrets.json
 
 # Entity Framework
 # Migrations/ - Commented out to track migrations
+
+
+# DS_Store files
+.DS_Store

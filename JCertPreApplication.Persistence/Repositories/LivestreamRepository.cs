@@ -56,7 +56,8 @@ namespace JCertPreApplication.Persistence.Repositories
 
         public async Task<Pagination<Livestream>> GetLivestreamsWithPaginationAsync(
             Guid? courseId = null,
-            string? searchTerm = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
             int pageIndex = 1,
             int pageSize = 10)
         {
@@ -72,12 +73,15 @@ namespace JCertPreApplication.Persistence.Repositories
                 query = query.Where(ls => ls.courseId == courseId.Value);
             }
 
-            // Search in description
-            if (!string.IsNullOrEmpty(searchTerm))
+            // Filter by date range
+            if (startDate.HasValue)
             {
-                query = query.Where(ls => 
-                    ls.description != null && ls.description.ToLower().Contains(searchTerm.ToLower()) ||
-                    ls.Course.title.ToLower().Contains(searchTerm.ToLower()));
+                query = query.Where(ls => ls.scheduledDateTime >= startDate.Value);
+            }
+
+            if (endDate.HasValue)
+            {
+                query = query.Where(ls => ls.scheduledDateTime <= endDate.Value);
             }
 
             // Order by scheduled date
@@ -105,7 +109,6 @@ namespace JCertPreApplication.Persistence.Repositories
 
             var query = _dbSet.Where(ls => 
                 ls.courseId == courseId &&
-                ls.status != Domain.Enums.LivestreamStatus.CANCELLED &&
                 ls.status != Domain.Enums.LivestreamStatus.COMPLETED);
 
             if (excludeLivestreamId.HasValue)

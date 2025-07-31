@@ -176,14 +176,15 @@ namespace JCertPreApplication.Application.Features.Livestreams
 
         public async Task<Pagination<LivestreamDto>> GetLivestreamsAsync(
             Guid? courseId = null,
-            string? searchTerm = null,
+            DateTime? startDate = null,
+            DateTime? endDate = null,
             int pageIndex = 1,
             int pageSize = 10)
         {
             try
             {
                 var paginatedLivestreams = await _livestreamRepository.GetLivestreamsWithPaginationAsync(
-                    courseId, searchTerm, pageIndex, pageSize);
+                    courseId, startDate, endDate, pageIndex, pageSize);
 
                 var dtos = paginatedLivestreams.Items.Select(MapToDto).ToList();
 
@@ -237,7 +238,6 @@ namespace JCertPreApplication.Application.Features.Livestreams
                 foreach (var livestream in livestreams)
                 {
                     var canJoin = await CanUserJoinLivestreamAsync(userId, livestream.livestreamId);
-                    var canStart = await CanInstructorStartLivestreamAsync(userId, livestream.livestreamId);
                     var userRole = await DetermineUserRoleInCourseAsync(userId, livestream.courseId);
 
                     timetableItems.Add(new LivestreamTimetableDto
@@ -250,7 +250,6 @@ namespace JCertPreApplication.Application.Features.Livestreams
                         DurationMinutes = livestream.durationMinutes,
                         Status = livestream.status,
                         CanJoin = canJoin,
-                        CanStart = canStart,
                         UserRole = userRole
                     });
                 }
@@ -313,6 +312,9 @@ namespace JCertPreApplication.Application.Features.Livestreams
                 var livestream = await _livestreamRepository.GetByIdAsync(livestreamId);
                 if (livestream == null) return false;
 
+                // Only allow joining LIVE livestreams
+                if (livestream.status != LivestreamStatus.LIVE) return false;
+
                 var user = await _userRepository.GetWithRolesAsync(userId);
                 if (user == null) return false;
 
@@ -332,77 +334,23 @@ namespace JCertPreApplication.Application.Features.Livestreams
             }
         }
 
-        public async Task<bool> CanInstructorStartLivestreamAsync(Guid userId, Guid livestreamId)
+        public Task<bool> CanInstructorStartLivestreamAsync(Guid userId, Guid livestreamId)
         {
-            try
-            {
-                var livestream = await _livestreamRepository.GetByIdAsync(livestreamId);
-                if (livestream == null) return false;
-
-                return await _courseInstructorRepository.IsInstructorAssignedToCourse(livestream.courseId, userId);
-            }
-            catch
-            {
-                return false;
-            }
+            // This method is now deprecated as livestreams start automatically
+            // Keeping it for backwards compatibility but always returns false
+            return Task.FromResult(false);
         }
 
-        public async Task StartLivestreamAsync(Guid livestreamId)
+        [Obsolete("Livestreams are now started automatically by background service")]
+        public Task StartLivestreamAsync(Guid livestreamId)
         {
-            try
-            {
-                var livestream = await _livestreamRepository.GetByIdAsync(livestreamId);
-                if (livestream == null)
-                    throw ApiException.NotFound("Livestream", livestreamId);
-
-                if (livestream.status != LivestreamStatus.SCHEDULED)
-                    throw ApiException.BadRequest("INVALID_STATUS", "Only scheduled livestreams can be started");
-
-                // Create LiveKit room
-                await _liveKitService.CreateRoomAsync(GetRoomName(livestreamId));
-
-                // Update status
-                livestream.status = LivestreamStatus.LIVE;
-                await _livestreamRepository.UpdateAsync(livestream);
-                await _livestreamRepository.SaveChangesAsync();
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("START_LIVESTREAM_ERROR", ex.Message);
-            }
+            throw ApiException.BadRequest("MANUAL_START_DISABLED", "Livestreams are started automatically 15 minutes before scheduled time");
         }
 
-        public async Task EndLivestreamAsync(Guid livestreamId)
+        [Obsolete("Livestreams are now ended automatically by background service")]
+        public Task EndLivestreamAsync(Guid livestreamId)
         {
-            try
-            {
-                var livestream = await _livestreamRepository.GetByIdAsync(livestreamId);
-                if (livestream == null)
-                    throw ApiException.NotFound("Livestream", livestreamId);
-
-                if (livestream.status != LivestreamStatus.LIVE)
-                    throw ApiException.BadRequest("INVALID_STATUS", "Only live livestreams can be ended");
-
-                // Delete LiveKit room
-                await _liveKitService.DeleteRoomAsync(GetRoomName(livestreamId));
-
-                // Update status
-                livestream.status = LivestreamStatus.COMPLETED;
-                await _livestreamRepository.UpdateAsync(livestream);
-                await _livestreamRepository.SaveChangesAsync();
-            }
-            catch (ApiException)
-            {
-                throw;
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("END_LIVESTREAM_ERROR", ex.Message);
-            }
+            throw ApiException.BadRequest("MANUAL_END_DISABLED", "Livestreams are ended automatically after scheduled duration");
         }
 
         public string GetDisplayTitle(LivestreamDto livestream)

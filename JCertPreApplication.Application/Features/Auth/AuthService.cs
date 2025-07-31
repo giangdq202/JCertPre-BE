@@ -21,17 +21,17 @@ namespace JCertPreApplication.Application.Features.Auth
         private readonly IFirebaseService _firebaseService;
         private readonly IPasswordService _passwordService;
         private readonly ITokenCacheRepository _tokenCacheRepository;
-        private readonly ICloudinaryService _cloudinaryService;
+        private readonly IFileService _fileService;
         private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, ICloudinaryService cloudinaryService, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, IFileService fileService, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
             _tokenCacheRepository = tokenCacheRepository ?? throw new ArgumentNullException(nameof(tokenCacheRepository));
-            _cloudinaryService = cloudinaryService ?? throw new ArgumentNullException(nameof(cloudinaryService));
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
@@ -85,8 +85,8 @@ namespace JCertPreApplication.Application.Features.Auth
                 // Create a custom FormFile with userId as filename
                 var customFormFile = CreateCustomFormFile(model.AvatarFile, userId.ToString());
 
-                // Upload avatar to Cloudinary
-                var uploadResult = await _cloudinaryService.UploadImageAsync(customFormFile);
+                // Upload avatar to file service
+                var uploadResult = await _fileService.UploadImageAsync(customFormFile);
                 avatarUrl = uploadResult.SecureUrl.ToString();
             }
 

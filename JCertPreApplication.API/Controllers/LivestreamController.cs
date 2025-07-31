@@ -1,14 +1,17 @@
 using JCertPreApplication.Application.Dtos.Livestream;
 using JCertPreApplication.Application.Features.Livestreams;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {
+    /// <summary>
+    /// Manages livestream operations.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
-    // [Authorize] // Temporarily disabled for testing
+    [Tags("Livestreams")]
+    [Produces("application/json")]
     public class LivestreamController : ControllerBase
     {
         private readonly ILivestreamService _livestreamService;
@@ -19,10 +22,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Create a new livestream (Academic Manager only)
+        /// Creates a new livestream.
         /// </summary>
         [HttpPost]
-        // [Authorize(Roles = "Academic Manager")] // Temporarily disabled for testing
         public async Task<IActionResult> CreateLivestream([FromBody] CreateLivestreamDto createDto)
         {
             if (!ModelState.IsValid)
@@ -33,7 +35,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestream by ID
+        /// Gets livestream by ID.
         /// </summary>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetLivestreamById(Guid id)
@@ -46,10 +48,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Update livestream (Academic Manager only)
+        /// Updates a livestream.
         /// </summary>
         [HttpPut("{id}")]
-        // [Authorize(Roles = "Academic Manager")] // Temporarily disabled for testing
         public async Task<IActionResult> UpdateLivestream(Guid id, [FromBody] UpdateLivestreamDto updateDto)
         {
             if (!ModelState.IsValid)
@@ -60,10 +61,9 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Delete livestream (Academic Manager only)
+        /// Deletes a livestream.
         /// </summary>
         [HttpDelete("{id}")]
-        // [Authorize(Roles = "Academic Manager")] // Temporarily disabled for testing
         public async Task<IActionResult> DeleteLivestream(Guid id)
         {
             await _livestreamService.DeleteLivestreamAsync(id);
@@ -71,84 +71,67 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Get livestreams with pagination and filters
+        /// Gets livestreams with comprehensive filtering and pagination.
+        /// Supports filtering by course, user, date range, and status.
+        /// Can return regular list or timetable format.
         /// </summary>
         [HttpGet]
         public async Task<IActionResult> GetLivestreams(
             [FromQuery] Guid? courseId = null,
-            [FromQuery] string? searchTerm = null,
+            [FromQuery] Guid? userId = null,
+            [FromQuery] DateTime? startDate = null,
+            [FromQuery] DateTime? endDate = null,
+            [FromQuery] bool? timetableFormat = false,
             [FromQuery] int pageIndex = 1,
             [FromQuery] int pageSize = 10)
         {
-            var result = await _livestreamService.GetLivestreamsAsync(courseId, searchTerm, pageIndex, pageSize);
+            // If userId is provided and timetableFormat is requested, return timetable
+            if (userId.HasValue && timetableFormat == true)
+            {
+                var timetable = await _livestreamService.GetLivestreamTimetableByUserAsync(userId.Value);
+                return Ok(timetable);
+            }
+
+            // If userId is provided but not timetable format, get user's livestreams
+            if (userId.HasValue)
+            {
+                var userLivestreams = await _livestreamService.GetLivestreamsByUserAsync(userId.Value);
+                return Ok(userLivestreams);
+            }
+
+            // If courseId is provided, get course livestreams (no pagination for simplicity)
+            if (courseId.HasValue && pageIndex == 1 && pageSize == 10 && !startDate.HasValue && !endDate.HasValue)
+            {
+                var courseLivestreams = await _livestreamService.GetLivestreamsByCourseAsync(courseId.Value);
+                return Ok(courseLivestreams);
+            }
+
+            // Default: get all livestreams with pagination and filters
+            var result = await _livestreamService.GetLivestreamsAsync(courseId, startDate, endDate, pageIndex, pageSize);
             return Ok(result);
         }
 
         /// <summary>
-        /// Get livestreams by course ID
-        /// </summary>
-        [HttpGet("course/{courseId}")]
-        public async Task<IActionResult> GetLivestreamsByCourse(Guid courseId)
-        {
-            var result = await _livestreamService.GetLivestreamsByCourseAsync(courseId);
-            return Ok(result);
-        }
-
-        /// <summary>
-        /// Generate join token for livestream
+        /// Generates join token for livestream.
         /// </summary>
         [HttpGet("{id}/join-token")]
         public async Task<IActionResult> GetJoinToken(Guid id, [FromQuery] Guid userId)
         {
             if (!await _livestreamService.CanUserJoinLivestreamAsync(userId, id))
-                return Forbid("You don't have permission to join this livestream");
+                return Forbid("You don't have permission to join this livestream or the livestream is not currently live");
 
             var result = await _livestreamService.GenerateJoinTokenAsync(userId, id);
             return Ok(result);
         }
 
         /// <summary>
-        /// Start livestream (Instructor only)
-        /// </summary>
-        [HttpPost("{id}/start")]
-        // [Authorize(Roles = "Instructor")] // Temporarily disabled for testing
-        public async Task<IActionResult> StartLivestream(Guid id, [FromQuery] Guid userId)
-        {
-            if (!await _livestreamService.CanInstructorStartLivestreamAsync(userId, id))
-                return Forbid("You don't have permission to start this livestream");
-
-            await _livestreamService.StartLivestreamAsync(id);
-            return Ok(new { message = "Livestream started successfully" });
-        }
-
-        /// <summary>
-        /// Check if user can join livestream
+        /// Checks if user can join livestream.
         /// </summary>
         [HttpGet("{id}/can-join")]
         public async Task<IActionResult> CanJoinLivestream(Guid id, [FromQuery] Guid userId)
         {
             var canJoin = await _livestreamService.CanUserJoinLivestreamAsync(userId, id);
             return Ok(new { canJoin });
-        }
-
-        /// <summary>
-        /// Get livestreams by user ID (for both instructors and students)
-        /// </summary>
-        [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetLivestreamsByUser(Guid userId)
-        {
-            var livestreams = await _livestreamService.GetLivestreamsByUserAsync(userId);
-            return Ok(livestreams);
-        }
-
-        /// <summary>
-        /// Get livestream timetable by user ID with additional info for UI
-        /// </summary>
-        [HttpGet("user/{userId}/timetable")]
-        public async Task<IActionResult> GetLivestreamTimetableByUser(Guid userId)
-        {
-            var timetable = await _livestreamService.GetLivestreamTimetableByUserAsync(userId);
-            return Ok(timetable);
         }
 
         private Guid GetCurrentUserId()

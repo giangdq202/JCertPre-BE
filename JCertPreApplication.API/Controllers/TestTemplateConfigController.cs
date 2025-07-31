@@ -9,6 +9,8 @@ namespace JCertPreApplication.API.Controllers
     /// </summary>
     [ApiController]
     [Route("api/test-template-configs")]
+    [Tags("TestTemplateConfigs")]
+    [Produces("application/json")]
     public class TestTemplateConfigController : ControllerBase
     {
         private readonly ITestTemplateConfigService _service;
