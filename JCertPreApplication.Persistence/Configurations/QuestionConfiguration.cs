@@ -15,19 +15,24 @@ namespace JCertPreApplication.Persistence.Configurations
             .IsRequired();
 
         builder.Property(q => q.questionText)
-            .IsRequired();
+            .IsRequired()
+            .HasMaxLength(500);
 
-        builder.Property(q => q.questionType)
+            builder.Property(q => q.questionType)
             .IsRequired()
             .HasMaxLength(50);
 
         builder.Property(q => q.explanation)
-            .IsRequired();
+            .IsRequired(false)
+            .HasMaxLength(1000);
 
-        builder.Property(q => q.difficulty)
+            builder.Property(q => q.difficulty)
             .IsRequired()
             .HasConversion<string>()
             .HasMaxLength(10);
+
+            builder.Property(q => q.isActive)
+            .IsRequired();
 
             builder.Property(q => q.points)
             .IsRequired();
@@ -55,7 +60,7 @@ namespace JCertPreApplication.Persistence.Configurations
         builder.HasMany(q => q.AttemptAnswers)
             .WithOne(aa => aa.Question)
             .HasForeignKey(aa => aa.questionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);
     }
 }
 }

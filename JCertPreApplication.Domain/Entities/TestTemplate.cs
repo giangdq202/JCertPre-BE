@@ -11,6 +11,7 @@ namespace JCertPreApplication.Domain.Entities
         public int durationMinutes { get; set; } = 0;
         public int totalScore { get; set; } = 0; 
         public decimal toPassPercentage { get; set; } = 0.0m;
+        public int sequence { get; set; } = 1;
 
         public virtual TestTemplateType TestTemplateType { get; set; } = null!;
         public virtual ICollection<TestTemplateConfig> TestTemplateConfigs { get; set; } = new List<TestTemplateConfig>();

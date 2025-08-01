@@ -13,17 +13,20 @@ public class TestQuestionService : ITestQuestionService
     private readonly ITestRepository _testRepo;
     private readonly ITestAttemptRepository _testAttemptRepo;
     private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
+    private readonly IQuestionRepository _questionRepository;
 
     public TestQuestionService(
         ITestQuestionRepository testQuestionRepo,
         ITestRepository testRepo,
         ITestAttemptRepository testAttemptRepo,
-        ITestScoreSummaryRepository testScoreSummaryRepository)
+        ITestScoreSummaryRepository testScoreSummaryRepository,
+        IQuestionRepository questionRepository)
     {
         _testQuestionRepo = testQuestionRepo;
         _testRepo = testRepo;
         _testAttemptRepo = testAttemptRepo;
         _testScoreSummaryRepository = testScoreSummaryRepository;
+        _questionRepository = questionRepository;
     }
 
     public async Task AddQuestionsCustomManualAsync(List<(Guid testId, Guid questionId)> testQuestionPairs)
@@ -45,13 +48,25 @@ public class TestQuestionService : ITestQuestionService
                 var existingQuestions = await _testQuestionRepo.GetAllAsync(tq => tq.testId == testId);
                 int startNumber = existingQuestions.Count + 1;
 
-                var entities = group.Select((pair, idx) => new TestQuestion
+                var entities = new List<TestQuestion>();
+                foreach (var pair in group)
                 {
-                    testQuestionId = Guid.NewGuid(),
-                    testId = testId,
-                    questionId = pair.questionId,
-                    questionNumber = startNumber + idx
-                }).ToList();
+                    // Use question repo for faster isActive check
+                    var question = await _questionRepository.GetByIdAsync(pair.questionId);
+                    if (question == null || !question.isActive)
+                        continue; // Skip inactive or not found questions
+
+                    entities.Add(new TestQuestion
+                    {
+                        testQuestionId = Guid.NewGuid(),
+                        testId = testId,
+                        questionId = pair.questionId,
+                        questionNumber = startNumber++
+                    });
+                }
+
+                if (entities.Count == 0)
+                    continue; // No active questions to add for this test
 
                 await _testQuestionRepo.AddRangeAsync(entities);
                 await _testQuestionRepo.SaveChangesAsync();

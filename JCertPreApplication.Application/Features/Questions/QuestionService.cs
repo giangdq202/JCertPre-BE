@@ -25,23 +25,6 @@ namespace JCertPreApplication.Application.Features.Questions
         }
 
         /// <summary>
-        /// Retrieves all questions with their subcontent.
-        /// </summary>
-        public async Task<IEnumerable<QuestionDto>> GetAllAsync()
-        {
-            try
-            {
-                var questions = await _questionRepository.GetAllAsync("SubContent,Choices,QuestionAttachments");
-                return questions.Select(MapToQuestionDto);
-            }
-            catch (ApiException) { throw; }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving questions: {ex.Message}");
-            }
-        }
-
-        /// <summary>
         /// Retrieves a question by its ID.
         /// Throws ApiException.NotFound if question doesn't exist.
         /// </summary>
@@ -49,7 +32,11 @@ namespace JCertPreApplication.Application.Features.Questions
         {
             try
             {
-                var question = await _questionRepository.GetByIdAsync(id);
+                // Load Choices, QuestionAttachments, SubContent
+                var question = await _questionRepository.GetFirstOrDefaultAsync(
+                    q => q.questionId == id,
+                    "Choices,QuestionAttachments,SubContent"
+                );
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
@@ -77,7 +64,6 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (subContent == null)
                     throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
 
-                // Create the Question entity
                 var question = new Question
                 {
                     questionId = Guid.NewGuid(),
@@ -86,7 +72,8 @@ namespace JCertPreApplication.Application.Features.Questions
                     questionType = "multiple-choice",
                     points = createDto.Points,
                     difficulty = createDto.Difficulty,
-                    SubContentId = subContent.SubContentId
+                    SubContentId = subContent.SubContentId,
+                    isActive = createDto.IsActive
                 };
 
                 // Insert and persist the new question
@@ -115,12 +102,10 @@ namespace JCertPreApplication.Application.Features.Questions
         {
             try
             {
-                // Find the question to update
                 var question = await _questionRepository.GetByIdAsync(id);
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
-                // Update fields if provided
                 if (updateDto.Content != null)
                     question.questionText = updateDto.Content;
                 if (updateDto.Explanation != null)
@@ -129,8 +114,9 @@ namespace JCertPreApplication.Application.Features.Questions
                     question.points = updateDto.Points.Value;
                 if (updateDto.Difficulty.HasValue)
                     question.difficulty = updateDto.Difficulty.Value;
+                if (updateDto.IsActive.HasValue)
+                    question.isActive = updateDto.IsActive.Value;
 
-                // If all subcontent enums are provided, update SubContentId
                 if (updateDto.ContentName.HasValue && updateDto.Level.HasValue && updateDto.SubContentName.HasValue)
                 {
                     var subContent = await _subContentRepository.GetFirstOrDefaultAsync(
@@ -143,11 +129,9 @@ namespace JCertPreApplication.Application.Features.Questions
                     question.SubContentId = subContent.SubContentId;
                 }
 
-                // Persist the updated question
                 await _questionRepository.UpdateAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                // Retrieve the updated question with SubContent navigation property loaded
                 var updated = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == question.questionId, "SubContent");
                 if (updated == null)
                     throw ApiException.InternalServerError("QUESTION_UPDATE_ERROR", "Failed to retrieve the updated question.");
@@ -243,6 +227,36 @@ namespace JCertPreApplication.Application.Features.Questions
             }
         }
 
+        /// <summary>
+        /// Retrieves a question by its ID for the test. Lighter DTO for test performance.
+        /// </summary>
+        public async Task<QuestionForTestDto?> GetByIdForTestAsync(Guid id)
+        {
+            var question = await _questionRepository.GetFirstOrDefaultAsync(
+                q => q.questionId == id,
+                "Choices,QuestionAttachments"
+            );
+            if (question == null)
+                return null;
+
+            return new QuestionForTestDto
+            {
+                Id = question.questionId,
+                Content = question.questionText,
+                QuestionType = question.questionType,
+                Choices = question.Choices?.Select(c => new ChoiceForTestDto
+                {
+                    ChoiceId = c.choiceId,
+                    Content = c.choiceText
+                }).ToList(),
+                QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+                {
+                    MediaUrl = a.mediaUrl,
+                    MediaType = a.mediaType
+                }).ToList()
+            };
+        }
+
         private static QuestionDto MapToQuestionDto(Question question)
         {
             var subContent = question.SubContent;
@@ -253,6 +267,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 Explanation = question.explanation,
                 Points = question.points,
                 Difficulty = question.difficulty,
+                IsActive = question.isActive,
                 Choices = question.Choices?.Select(c => new ChoiceReadDto
                 {
                     ChoiceId = c.choiceId,
@@ -272,6 +287,55 @@ namespace JCertPreApplication.Application.Features.Questions
                 SubContentName = subContent?.SubContentName.ToString() ?? "",
                 SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
             };
+        }
+
+        /// <summary>
+        /// Retrieves paginated active questions with details (choices, attachments, subcontent).
+        /// Supports filtering by search term, subcontent, and difficulty.
+        /// </summary>
+        public async Task<Pagination<QuestionDto>> GetPaginatedActiveWithDetailsAsync(
+            string? searchTerm,
+            int pageIndex,
+            int pageSize,
+            ContentName? contentName = null,
+            CourseLevel? level = null,
+            SubContentName? subContentName = null,
+            QuestionDifficulty? difficulty = null)
+        {
+            try
+            {
+                // Build predicate for filtering, always require isActive == true
+                Expression<Func<Question, bool>> predicate = q =>
+                    q.isActive &&
+                    (string.IsNullOrEmpty(searchTerm) ||
+                        q.questionText.ToLower().Contains(searchTerm.ToLower()) ||
+                        q.explanation.ToLower().Contains(searchTerm.ToLower())) &&
+                    (!contentName.HasValue || q.SubContent.ContentName == contentName.Value) &&
+                    (!level.HasValue || q.SubContent.Level == level.Value) &&
+                    (!subContentName.HasValue || q.SubContent.SubContentName == subContentName.Value) &&
+                    (!difficulty.HasValue || q.difficulty == difficulty.Value);
+
+                string includeProperties = "Choices,QuestionAttachments,SubContent";
+
+                var paginatedQuestions = await _questionRepository.GetPaginationAsync(
+                    predicate,
+                    includeProperties,
+                    pageIndex,
+                    pageSize);
+
+                return new Pagination<QuestionDto>
+                {
+                    Items = paginatedQuestions.Items.Select(MapToQuestionDto).ToList(),
+                    TotalItemsCount = paginatedQuestions.TotalItemsCount,
+                    PageIndex = paginatedQuestions.PageIndex,
+                    PageSize = paginatedQuestions.PageSize
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving active paginated questions: {ex.Message}");
+            }
         }
     }
 }

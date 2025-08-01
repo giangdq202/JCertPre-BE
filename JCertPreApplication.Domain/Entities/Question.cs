@@ -10,7 +10,7 @@ namespace JCertPreApplication.Domain.Entities
         public string questionType { get; set; } = null!;
         public string explanation { get; set; } = null!;
         public QuestionDifficulty difficulty { get; set; }
-
+        public bool isActive { get; set; }
         public int points { get; set; }
 
         public virtual SubContent SubContent { get; set; } = null!;

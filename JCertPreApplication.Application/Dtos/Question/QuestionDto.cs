@@ -14,6 +14,7 @@ namespace JCertPreApplication.Application.Dtos.Question
         public string? Explanation { get; set; }
         public int Points { get; set; }
         public QuestionDifficulty Difficulty { get; set; } // Add this line
+        public bool IsActive { get; set; }
         public ICollection<ChoiceReadDto>? Choices { get; set; }
         public ICollection<QuestionAttachmentDto>? QuestionAttachments { get; set; }
 
