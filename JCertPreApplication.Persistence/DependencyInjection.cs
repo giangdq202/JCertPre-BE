@@ -3,6 +3,7 @@ using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence.Cache;
 using JCertPreApplication.Persistence.DatabaseContext;
 using JCertPreApplication.Persistence.Repositories;
+using JCertPreApplication.Persistence.Services;
 using JCertPreApplication.Persistence.Services.BackgroudServices;
 using JCertPreApplication.Persistence.Services.File;
 using JCertPreApplication.Persistence.Services.Firebase;
@@ -81,6 +82,18 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();
+
+            // Configure PayOS
+            services.Configure<PayOSConfiguration>(configuration.GetSection(PayOSConfiguration.SectionName));
+            services.AddScoped<IPaymentGateway>(provider =>
+            {
+                var payOSConfig = configuration.GetSection(PayOSConfiguration.SectionName).Get<PayOSConfiguration>();
+                if (payOSConfig == null)
+                {
+                    throw new ArgumentException("PayOS configuration not found. Please configure PayOS section in appsettings.json");
+                }
+                return new PayOSService(payOSConfig.ClientId, payOSConfig.ApiKey, payOSConfig.ChecksumKey);
+            });
 
             services.AddBackgroundServices();
 
