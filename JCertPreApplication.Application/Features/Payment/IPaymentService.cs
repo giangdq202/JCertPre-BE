@@ -35,5 +35,20 @@ namespace JCertPreApplication.Application.Features.Payment
         /// <param name="userId">User ID</param>
         /// <returns>List of credit transaction DTOs</returns>
         Task<IEnumerable<CreditTransactionDto>> GetUserCreditHistoryAsync(Guid userId);
+
+        /// <summary>
+        /// Tạo link thanh toán PayOS để nạp credit (rate 1:1)
+        /// </summary>
+        Task<CreateCreditPurchaseResponseDto> CreateCreditPurchaseAsync(Guid userId, int creditAmount);
+
+        /// <summary>
+        /// Xử lý webhook từ PayOS
+        /// </summary>
+        Task ProcessPayOSWebhookAsync(WebhookTypeDto webhookBody);
+
+        /// <summary>
+        /// Đăng ký webhook URL với PayOS
+        /// </summary>
+        Task<string> ConfirmPayOSWebhookAsync(string webhookUrl);
     }
 }

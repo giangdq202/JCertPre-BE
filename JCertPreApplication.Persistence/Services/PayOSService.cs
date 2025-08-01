@@ -9,10 +9,14 @@ namespace JCertPreApplication.Persistence.Services;
 public class PayOSService : IPaymentGateway
 {
     private readonly PayOS _payOS;
+    private readonly string _returnUrl;
+    private readonly string _cancelUrl;
 
-    public PayOSService(string clientId, string apiKey, string checksumKey)
+    public PayOSService(string clientId, string apiKey, string checksumKey, string returnUrl, string cancelUrl)
     {
         _payOS = new PayOS(clientId, apiKey, checksumKey);
+        _returnUrl = returnUrl;
+        _cancelUrl = cancelUrl;
     }
 
     public async Task<CreatePaymentResultDto> CreatePaymentLinkAsync(PaymentDataDto paymentData)
@@ -24,8 +28,8 @@ public class PayOSService : IPaymentGateway
                 amount: paymentData.Amount,
                 description: paymentData.Description,
                 items: paymentData.Items.Select(i => new Net.payOS.Types.ItemData(i.Name, i.Quantity, i.Price)).ToList(),
-                returnUrl: paymentData.ReturnUrl,
-                cancelUrl: paymentData.CancelUrl
+                returnUrl: _returnUrl,
+                cancelUrl: _cancelUrl
             );
 
             var createPaymentResult = await _payOS.createPaymentLink(paymentDataRequest);

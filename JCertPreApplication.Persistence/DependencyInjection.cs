@@ -92,7 +92,8 @@ namespace JCertPreApplication.Persistence
                 {
                     throw new ArgumentException("PayOS configuration not found. Please configure PayOS section in appsettings.json");
                 }
-                return new PayOSService(payOSConfig.ClientId, payOSConfig.ApiKey, payOSConfig.ChecksumKey);
+                return new PayOSService(payOSConfig.ClientId, payOSConfig.ApiKey, payOSConfig.ChecksumKey, 
+                    payOSConfig.ReturnUrl, payOSConfig.CancelUrl);
             });
 
             services.AddBackgroundServices();
