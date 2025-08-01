@@ -1,6 +1,5 @@
 using JCertPreApplication.API;
 using JCertPreApplication.API.Middleware;
-using JCertPreApplication.API.Services;
 using JCertPreApplication.Application;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence;
@@ -99,6 +98,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<CloudinaryConfiguration>(config.GetSection(CloudinaryConfiguration.SectionName));
     builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
+    builder.Services.Configure<FrontendConfiguration>(config.GetSection(FrontendConfiguration.SectionName));
 
     // Register and validate LiveKit configuration
     var liveKitConfig = new LiveKitConfiguration();
@@ -196,9 +196,6 @@ static void SetupServices(WebApplicationBuilder builder)
     
     // Infrastructure layer services (persistence, external services)
     builder.Services.AddInfrastructure(builder.Configuration);
-    
-    // Background services
-    builder.Services.AddHostedService<LivestreamStatusBackgroundService>();
 }
 
 

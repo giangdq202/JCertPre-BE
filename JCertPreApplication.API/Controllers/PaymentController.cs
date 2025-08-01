@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Features.Payment;
+using JCertPreApplication.Application.Dtos.Payment;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -60,6 +61,84 @@ namespace JCertPreApplication.API.Controllers
                 HasSufficientCredit = hasSufficientCredit,
                 RequiredAmount = amount 
             });
+        }
+
+        /// <summary>
+        /// Tạo link thanh toán PayOS để nạp credit (rate 1:1)
+        /// </summary>
+        /// <param name="request">Yêu cầu tạo thanh toán credit</param>
+        /// <returns>Link thanh toán và thông tin đơn hàng</returns>
+        [HttpPost("create-credit-purchase")]
+        public async Task<IActionResult> CreateCreditPurchase([FromBody] CreateCreditPurchaseRequestDto request)
+        {
+            var result = await _paymentService.CreateCreditPurchaseAsync(request.UserId, request.CreditAmount);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Webhook endpoint cho PayOS - xử lý kết quả thanh toán
+        /// </summary>
+        /// <param name="webhookBody">Dữ liệu webhook từ PayOS</param>
+        /// <returns>200 OK response</returns>
+        [HttpPost("payos-webhook")]
+        public async Task<IActionResult> HandlePayOSWebhook([FromBody] WebhookTypeDto webhookBody)
+        {
+            try
+            {
+                await _paymentService.ProcessPayOSWebhookAsync(webhookBody);
+                return Ok(new { message = "Webhook processed successfully" });
+            }
+            catch (Exception ex)
+            {
+                // Log lỗi nhưng vẫn trả về 200 để PayOS không gửi lại
+                Console.WriteLine($"Error processing webhook: {ex.Message}");
+                return Ok(new { message = "Webhook received but processing failed" });
+            }
+        }
+
+        /// <summary>
+        /// Đăng ký webhook URL với PayOS (chỉ cần chạy 1 lần)
+        /// </summary>
+        /// <param name="request">URL webhook cần đăng ký</param>
+        /// <returns>Kết quả đăng ký</returns>
+        [HttpPost("confirm-webhook")]
+        public async Task<IActionResult> ConfirmWebhook([FromBody] ConfirmWebhookRequestDto request)
+        {
+            try
+            {
+                var result = await _paymentService.ConfirmPayOSWebhookAsync(request.WebhookUrl);
+                return Ok(new { message = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = $"Lỗi khi đăng ký webhook: {ex.Message}" });
+            }
+        }
+
+        /// <summary>
+        /// Handle payment return from PayOS (success callback)
+        /// </summary>
+        [HttpGet("return")]
+        [AllowAnonymous]
+        public async Task<IActionResult> HandlePaymentReturn([FromQuery] PaymentCallbackRequestDto request)
+        {
+            var result = await _paymentService.HandlePaymentReturnAsync(request);
+            
+            // Redirect đến frontend với kết quả
+            return Redirect(result.RedirectUrl);
+        }
+
+        /// <summary>
+        /// Handle payment cancellation from PayOS
+        /// </summary>
+        [HttpGet("cancel")]
+        [AllowAnonymous]
+        public async Task<IActionResult> HandlePaymentCancel([FromQuery] PaymentCallbackRequestDto request)
+        {
+            var result = await _paymentService.HandlePaymentCancelAsync(request);
+            
+            // Redirect đến frontend với kết quả
+            return Redirect(result.RedirectUrl);
         }
     }
 }

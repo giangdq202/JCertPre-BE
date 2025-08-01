@@ -1,7 +1,10 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
-namespace JCertPreApplication.API.Services
+namespace JCertPreApplication.Persistence.Services.BackgroudServices
 {
     public class LivestreamStatusBackgroundService : BackgroundService
     {
