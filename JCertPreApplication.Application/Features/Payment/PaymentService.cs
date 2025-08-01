@@ -3,7 +3,9 @@ using JCertPreApplication.Application.Dtos.Payment;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
+using JCertPreApplication.Domain.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace JCertPreApplication.Application.Features.Payment
 {
@@ -14,19 +16,22 @@ namespace JCertPreApplication.Application.Features.Payment
         private readonly IUserRepository _userRepository;
         private readonly ILogger<PaymentService> _logger;
         private readonly IPaymentGateway _paymentGateway;
+        private readonly FrontendConfiguration _frontendConfig;
 
         public PaymentService(
             IPaymentRepository paymentRepository,
             ICreditTransactionRepository creditTransactionRepository,
             IUserRepository userRepository,
             ILogger<PaymentService> logger,
-            IPaymentGateway paymentGateway)
+            IPaymentGateway paymentGateway,
+            IOptions<FrontendConfiguration> frontendConfig)
         {
             _paymentRepository = paymentRepository;
             _creditTransactionRepository = creditTransactionRepository;
             _userRepository = userRepository;
             _logger = logger;
             _paymentGateway = paymentGateway;
+            _frontendConfig = frontendConfig.Value;
         }
 
         public async Task<bool> HasSufficientCreditAsync(Guid userId, decimal requiredAmount)
@@ -270,7 +275,7 @@ namespace JCertPreApplication.Application.Features.Payment
         public async Task ProcessPayOSWebhookAsync(WebhookTypeDto webhookBody)
         {
             // 1. Log chi tiết webhook response
-            //LogPayOSWebhookDetails(webhookBody);
+            LogPayOSWebhookDetails(webhookBody);
 
             // 2. Xác thực webhook
             var verifiedData = _paymentGateway.VerifyPaymentWebhookData(webhookBody);
@@ -414,6 +419,187 @@ namespace JCertPreApplication.Application.Features.Payment
         public async Task<string> ConfirmPayOSWebhookAsync(string webhookUrl)
         {
             return await _paymentGateway.ConfirmWebhookAsync(webhookUrl);
+        }
+
+        /// <summary>
+        /// Xử lý khi user quay lại từ PayOS sau khi thanh toán thành công
+        /// </summary>
+        public async Task<PaymentCallbackResponseDto> HandlePaymentReturnAsync(PaymentCallbackRequestDto request)
+        {
+            _logger.LogInformation("Processing payment return for orderCode {OrderCode}", request.OrderCode);
+
+            try
+            {
+                // 1. Tìm payment theo orderCode
+                var payment = await _paymentRepository.GetByTransactionIdAsync(request.OrderCode.ToString());
+                if (payment == null)
+                {
+                    _logger.LogWarning("Payment not found for orderCode: {OrderCode}", request.OrderCode);
+                    return new PaymentCallbackResponseDto
+                    {
+                        Success = false,
+                        Message = "Payment not found",
+                        RedirectUrl = $"{_frontendConfig.PaymentErrorUrl}?reason=not-found"
+                    };
+                }
+
+                // 2. Kiểm tra trạng thái payment
+                if (payment.status == PaymentStatus.Completed)
+                {
+                    // Đã được xử lý bởi webhook - chuyển thẳng đến success
+                    _logger.LogInformation("Payment {PaymentId} already completed via webhook", payment.paymentId);
+                    return new PaymentCallbackResponseDto
+                    {
+                        Success = true,
+                        Message = "Payment completed successfully",
+                        RedirectUrl = $"{_frontendConfig.PaymentSuccessUrl}?orderId={request.OrderCode}"
+                    };
+                }
+
+                // 3. Nếu vẫn Pending, call PayOS API để verify trạng thái
+                var paymentInfo = await _paymentGateway.GetPaymentLinkInformationAsync(request.OrderCode);
+                
+                if (paymentInfo.Status == "PAID")
+                {
+                    // Process payment nếu chưa được webhook xử lý
+                    await ProcessReturnUrlPayment(payment, paymentInfo);
+                    
+                    return new PaymentCallbackResponseDto
+                    {
+                        Success = true,
+                        Message = "Payment processed successfully",
+                        RedirectUrl = $"{_frontendConfig.PaymentSuccessUrl}?orderId={request.OrderCode}"
+                    };
+                }
+                else
+                {
+                    // Chưa được thanh toán
+                    return new PaymentCallbackResponseDto
+                    {
+                        Success = false,
+                        Message = "Payment not completed yet",
+                        RedirectUrl = $"{_frontendConfig.PaymentPendingUrl}?orderId={request.OrderCode}"
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing payment return for orderCode {OrderCode}", request.OrderCode);
+                return new PaymentCallbackResponseDto
+                {
+                    Success = false,
+                    Message = "Internal server error",
+                    RedirectUrl = $"{_frontendConfig.PaymentErrorUrl}?reason=server-error"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Xử lý khi user cancel payment từ PayOS
+        /// </summary>
+        public async Task<PaymentCallbackResponseDto> HandlePaymentCancelAsync(PaymentCallbackRequestDto request)
+        {
+            _logger.LogInformation("Processing payment cancellation for orderCode {OrderCode}", request.OrderCode);
+
+            try
+            {
+                // 1. Tìm payment theo orderCode
+                var payment = await _paymentRepository.GetByTransactionIdAsync(request.OrderCode.ToString());
+                if (payment == null)
+                {
+                    _logger.LogWarning("Payment not found for orderCode: {OrderCode}", request.OrderCode);
+                    return new PaymentCallbackResponseDto
+                    {
+                        Success = true, // Still redirect to cancel page
+                        Message = "Payment not found",
+                        RedirectUrl = $"{_frontendConfig.PaymentCancelledUrl}?reason=not-found"
+                    };
+                }
+
+                // 2. Chỉ cancel nếu đang Pending
+                if (payment.status == PaymentStatus.Pending)
+                {
+                    // Cancel payment link trên PayOS (optional)
+                    try
+                    {
+                        await _paymentGateway.CancelPaymentLinkAsync(request.OrderCode);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to cancel PayOS payment link {OrderCode}", request.OrderCode);
+                        // Không fail toàn bộ process
+                    }
+
+                    // Update payment status
+                    payment.status = PaymentStatus.Failed;
+                    payment.description = $"{payment.description} - Cancelled by user at {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss}";
+                    
+                    await _paymentRepository.UpdateAsync(payment);
+                    await _paymentRepository.SaveChangesAsync();
+
+                    _logger.LogInformation("Payment {PaymentId} cancelled by user", payment.paymentId);
+                }
+
+                return new PaymentCallbackResponseDto
+                {
+                    Success = true,
+                    Message = "Payment cancelled successfully",
+                    RedirectUrl = $"{_frontendConfig.PaymentCancelledUrl}?orderId={request.OrderCode}"
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing payment cancellation for orderCode {OrderCode}", request.OrderCode);
+                return new PaymentCallbackResponseDto
+                {
+                    Success = true, // Still redirect even on error
+                    Message = "Payment cancelled with errors",
+                    RedirectUrl = $"{_frontendConfig.PaymentCancelledUrl}?reason=error"
+                };
+            }
+        }
+
+        /// <summary>
+        /// Xử lý payment từ return URL (tương tự webhook nhưng dành cho return callback)
+        /// </summary>
+        private async Task ProcessReturnUrlPayment(Domain.Entities.Payment payment, PaymentLinkInformationDto paymentInfo)
+        {
+            var user = await _userRepository.GetByIdAsync(payment.userId);
+            if (user == null)
+            {
+                _logger.LogError("User not found for payment {PaymentId}", payment.paymentId);
+                return;
+            }
+
+            var creditToAdd = (int)payment.amount;
+            var balanceBefore = user.credit;
+            var balanceAfter = balanceBefore + creditToAdd;
+
+            // Update user credit
+            user.credit = balanceAfter;
+            await _userRepository.UpdateAsync(user);
+
+            // Update payment status
+            payment.status = PaymentStatus.Completed;
+            await _paymentRepository.UpdateAsync(payment);
+
+            // Create credit transaction
+            var creditTransaction = new CreditTransaction
+            {
+                transaction_id = Guid.NewGuid(),
+                user_id = payment.userId,
+                amount = creditToAdd,
+                balance_before = balanceBefore,
+                balance_after = balanceAfter,
+                description = $"Nap {creditToAdd} credit qua PayOS Return - Order: {payment.transactionId}",
+                created_at = DateTime.UtcNow
+            };
+
+            await _creditTransactionRepository.InsertAsync(creditTransaction);
+            await _paymentRepository.SaveChangesAsync();
+
+            _logger.LogInformation("Payment {PaymentId} processed via return URL. Added {Credit} credit. Balance: {BalanceBefore} -> {BalanceAfter}",
+                payment.paymentId, creditToAdd, balanceBefore, balanceAfter);
         }
     }
 }

@@ -98,6 +98,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<CloudinaryConfiguration>(config.GetSection(CloudinaryConfiguration.SectionName));
     builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
+    builder.Services.Configure<FrontendConfiguration>(config.GetSection(FrontendConfiguration.SectionName));
 
     // Register and validate LiveKit configuration
     var liveKitConfig = new LiveKitConfiguration();

@@ -114,5 +114,31 @@ namespace JCertPreApplication.API.Controllers
                 return BadRequest(new { error = $"Lỗi khi đăng ký webhook: {ex.Message}" });
             }
         }
+
+        /// <summary>
+        /// Handle payment return from PayOS (success callback)
+        /// </summary>
+        [HttpGet("return")]
+        [AllowAnonymous]
+        public async Task<IActionResult> HandlePaymentReturn([FromQuery] PaymentCallbackRequestDto request)
+        {
+            var result = await _paymentService.HandlePaymentReturnAsync(request);
+            
+            // Redirect đến frontend với kết quả
+            return Redirect(result.RedirectUrl);
+        }
+
+        /// <summary>
+        /// Handle payment cancellation from PayOS
+        /// </summary>
+        [HttpGet("cancel")]
+        [AllowAnonymous]
+        public async Task<IActionResult> HandlePaymentCancel([FromQuery] PaymentCallbackRequestDto request)
+        {
+            var result = await _paymentService.HandlePaymentCancelAsync(request);
+            
+            // Redirect đến frontend với kết quả
+            return Redirect(result.RedirectUrl);
+        }
     }
 }

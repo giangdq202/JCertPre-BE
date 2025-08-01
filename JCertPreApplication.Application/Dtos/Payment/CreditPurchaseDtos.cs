@@ -18,4 +18,20 @@ namespace JCertPreApplication.Application.Dtos.Payment
     {
         public string WebhookUrl { get; set; } = string.Empty;
     }
+
+    public class PaymentCallbackRequestDto
+    {
+        public long OrderCode { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string? Code { get; set; }
+        public string? Cancel { get; set; }
+        public string? Id { get; set; }
+    }
+
+    public class PaymentCallbackResponseDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string RedirectUrl { get; set; } = string.Empty;
+    }
 }
