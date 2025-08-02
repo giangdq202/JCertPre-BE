@@ -25,4 +25,11 @@
     <ProjectReference Include="..\JCertPreApplication.Persistence\JCertPreApplication.Persistence.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="..\JCertPreApplication.Persistence\Templates\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <Link>Templates\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chào mừng đến với JCert Platform</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            margin: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            text-align: center;
+            padding: 40px 20px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .header .subtitle {
+            margin: 10px 0 0 0;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .welcome-message {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        .highlight {
+            color: #e74c3c;
+            font-weight: 600;
+        }
+        .features {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+        .features h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+            position: relative;
+            padding-left: 25px;
+        }
+        .feature-list li:last-child {
+            border-bottom: none;
+        }
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #28a745;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .cta-section {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            text-decoration: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.3s ease;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+        }
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            font-size: 14px;
+        }
+        .japanese-accent {
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+            }
+            .content {
+                padding: 30px 20px;
+            }
+            .header {
+                padding: 30px 20px;
+            }
+            .header h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Chào mừng đến với JCert!</h1>
+            <p class="subtitle">Hành trình chinh phục chứng chỉ tiếng Nhật bắt đầu từ đây</p>
+        </div>
+        
+        <div class="content">
+            <div class="welcome-message">
+                <p>Xin chào <span class="highlight">{{Name}}</span>,</p>
+                <p>Chào mừng bạn đến với <strong>JCert Platform</strong>! Chúng tôi rất vui mừng khi bạn tham gia cộng đồng học tiếng Nhật trực tuyến của chúng tôi.</p>
+                <p>Tài khoản của bạn đã được tạo thành công với email: <span class="highlight">{{Email}}</span></p>
+            </div>
+
+            <div class="features">
+                <h3>🚀 Những gì bạn có thể làm với JCert:</h3>
+                <ul class="feature-list">
+                    <li>Truy cập các khóa học luyện thi <span class="japanese-accent">JLPT N5 - N1</span></li>
+                    <li>Luyện tập với hàng ngàn câu hỏi thực tế</li>
+                    <li>Tham gia các buổi livestream với giáo viên chuyên nghiệp</li>
+                    <li>Theo dõi tiến độ học tập của bạn</li>
+                    <li>Thi thử mô phỏng kỳ thi thật</li>
+                    <li>Học từ vựng và ngữ pháp theo từng cấp độ</li>
+                    <li>Kết nối với cộng đồng học viên khác</li>
+                </ul>
+            </div>
+
+            <div class="cta-section">
+                <a href="{{PlatformUrl}}" class="cta-button">Bắt đầu học ngay</a>
+            </div>
+
+            <p>Nếu bạn có bất kỳ câu hỏi nào hoặc cần hỗ trợ, đội ngũ của chúng tôi luôn sẵn sàng giúp đỡ. Chỉ cần trả lời email này.</p>
+            
+            <p>Chúc bạn học tốt và thành công!</p>
+            <p><strong>Đội ngũ JCert</strong> 📚🎌</p>
+        </div>
+
+        <div class="footer">
+            <p>&copy; 2025 JCert Platform. Mọi quyền được bảo lưu.</p>
+            <p>Nền tảng học và luyện thi chứng chỉ tiếng Nhật trực tuyến hàng đầu</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -13,11 +13,13 @@ public class MailService : IMailService
 {
     private readonly SmtpConfiguration _smtpConfiguration;
     private readonly ILogger<MailService> _logger;
+    private readonly string _templatePath;
 
     public MailService(IOptions<SmtpConfiguration> smtpConfiguration, ILogger<MailService> logger)
     {
         _smtpConfiguration = smtpConfiguration.Value;
         _logger = logger;
+        _templatePath = Path.Combine(AppContext.BaseDirectory, "Templates");
     }
 
     public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
@@ -184,35 +186,73 @@ public class MailService : IMailService
 
     private async Task<EmailTemplate> LoadEmailTemplate(string templateName)
     {
-        // This is a simple implementation. In a real application, you might load templates from:
-        // - Database
-        // - File system
-        // - External service
-        
-        var templates = new Dictionary<string, EmailTemplate>
+        try
         {
-            ["welcome"] = new()
+            // Try to load from HTML file first
+            var htmlFilePath = Path.Combine(_templatePath, $"{templateName}-email.html");
+            
+            if (System.IO.File.Exists(htmlFilePath))
             {
-                Name = "welcome",
-                Subject = "Welcome to JCert Application, {{Name}}!",
-                HtmlBody = "<h1>Welcome {{Name}}!</h1><p>Thank you for joining our platform.</p>",
-                TextBody = "Welcome {{Name}}! Thank you for joining our platform."
-            },
-            ["password-reset"] = new()
-            {
-                Name = "password-reset",
-                Subject = "Reset Your Password",
-                HtmlBody = "<h1>Password Reset</h1><p>Click <a href='{{ResetLink}}'>here</a> to reset your password.</p>",
-                TextBody = "Password Reset: {{ResetLink}}"
+                var htmlContent = await System.IO.File.ReadAllTextAsync(htmlFilePath);
+                
+                var template = new EmailTemplate
+                {
+                    Name = templateName,
+                    HtmlBody = htmlContent,
+                    TextBody = ExtractTextFromHtml(htmlContent) // Simple text extraction
+                };
+
+                // Set subject based on template name
+                template.Subject = templateName switch
+                {
+                    "welcome" => "🎉 Welcome to JCert Platform, {{Name}}!",
+                    "password-reset" => "🔐 Reset Your JCert Password",
+                    _ => "JCert Platform Notification"
+                };
+
+                return template;
             }
-        };
 
-        if (templates.TryGetValue(templateName.ToLower(), out var template))
-        {
-            return await Task.FromResult(template);
+            // Fallback to hardcoded templates if file doesn't exist
+            var templates = new Dictionary<string, EmailTemplate>
+            {
+                ["welcome"] = new()
+                {
+                    Name = "welcome",
+                    Subject = "Welcome to JCert Application, {{Name}}!",
+                    HtmlBody = "<h1>Welcome {{Name}}!</h1><p>Thank you for joining our platform.</p><p>Your email: {{Email}}</p>",
+                    TextBody = "Welcome {{Name}}! Thank you for joining our platform. Your email: {{Email}}"
+                },
+                ["password-reset"] = new()
+                {
+                    Name = "password-reset",
+                    Subject = "Reset Your Password",
+                    HtmlBody = "<h1>Password Reset</h1><p>Click <a href='{{ResetLink}}'>here</a> to reset your password.</p>",
+                    TextBody = "Password Reset: {{ResetLink}}"
+                }
+            };
+
+            if (templates.TryGetValue(templateName.ToLower(), out var fallbackTemplate))
+            {
+                return fallbackTemplate;
+            }
+
+            throw new ArgumentException($"Email template '{templateName}' not found");
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load email template '{TemplateName}'", templateName);
+            throw;
+        }
+    }
 
-        throw new ArgumentException($"Email template '{templateName}' not found");
+    private static string ExtractTextFromHtml(string html)
+    {
+        // Simple HTML to text conversion - remove HTML tags
+        var text = Regex.Replace(html, "<.*?>", string.Empty);
+        // Clean up extra whitespace
+        text = Regex.Replace(text, @"\s+", " ").Trim();
+        return text;
     }
 
     private static string RenderTemplate(string template, object data)

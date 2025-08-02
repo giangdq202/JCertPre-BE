@@ -22,9 +22,10 @@ namespace JCertPreApplication.Application.Features.Auth
         private readonly IPasswordService _passwordService;
         private readonly ITokenCacheRepository _tokenCacheRepository;
         private readonly IFileService _fileService;
+        private readonly IMailService _mailService;
         private readonly JwtConfiguration _jwtConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, IFileService fileService, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, IFileService fileService, IMailService mailService, IOptions<JwtConfiguration> jwtConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
@@ -32,6 +33,7 @@ namespace JCertPreApplication.Application.Features.Auth
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
             _tokenCacheRepository = tokenCacheRepository ?? throw new ArgumentNullException(nameof(tokenCacheRepository));
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
+            _mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
         }
 
@@ -107,6 +109,9 @@ namespace JCertPreApplication.Application.Features.Auth
 
             await _userRepository.InsertAsync(user);
             await _userRepository.SaveChangesAsync();
+
+            // Send welcome email
+            await SendWelcomeEmailAsync(user.email, user.fullName);
 
             var (accessToken, refreshToken, userDto) = GenerateTokensAndUserDto(user);
             
@@ -265,6 +270,9 @@ namespace JCertPreApplication.Application.Features.Auth
 
                     await _userRepository.InsertAsync(user);
                     await _userRepository.SaveChangesAsync();
+
+                    // Send welcome email for new Firebase user
+                    await SendWelcomeEmailAsync(user.email, user.fullName);
                 }
                 else
                 {
@@ -513,6 +521,27 @@ namespace JCertPreApplication.Application.Features.Auth
             var newFileName = customFileName + extension;
 
             return new CustomFormFile(originalFile, newFileName);
+        }
+
+        private async Task SendWelcomeEmailAsync(string email, string fullName)
+        {
+            try
+            {
+                var templateData = new
+                {
+                    Name = fullName,
+                    Email = email,
+                    PlatformUrl = "http://localhost:3000" // You can make this configurable
+                };
+
+                await _mailService.SendTemplateEmailAsync(email, "welcome", templateData);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't throw - we don't want email failures to break registration
+                // You can inject ILogger<AuthService> if needed for better logging
+                Console.WriteLine($"Failed to send welcome email to {email}: {ex.Message}");
+            }
         }
 
         #endregion
