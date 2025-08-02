@@ -14,6 +14,9 @@ SetupServices(builder);
 
 var app = builder.Build();
 
+// Configure URLs from Api:Urls configuration
+ConfigureAppUrls(app);
+
 // Configure pipeline
 ConfigurePipeline(app);
 
@@ -224,6 +227,34 @@ static void ConfigurePipeline(WebApplication app)
     
     app.UseAuthorization();
     app.MapControllers();
+}
+
+static void ConfigureAppUrls(WebApplication app)
+{
+    // Ưu tiên: ASPNETCORE_URLS (Docker) > Api:Urls (Configuration) > Default
+    var apiUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") 
+                  ?? app.Configuration["Api:Urls"];
+                  
+    if (!string.IsNullOrEmpty(apiUrls))
+    {
+        app.Urls.Clear();
+        foreach (var url in apiUrls.Split(';'))
+        {
+            var trimmedUrl = url.Trim();
+            if (!string.IsNullOrEmpty(trimmedUrl))
+            {
+                app.Urls.Add(trimmedUrl);
+                Console.WriteLine($"✅ Configured URL: {trimmedUrl}");
+            }
+        }
+    }
+    else
+    {
+        // Fallback for production Docker containers
+        var fallbackUrl = "http://0.0.0.0:5001";
+        app.Urls.Add(fallbackUrl);
+        Console.WriteLine($"⚠️  Using fallback URL: {fallbackUrl}");
+    }
 }
 
 

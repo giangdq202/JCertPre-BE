@@ -10,7 +10,7 @@ namespace JCertPreApplication.API.Controllers
     /// <summary>
     /// Manages conversations between students and academic managers.
     /// </summary>
-    [Route("api/conversation")]
+    [Route("api/conversations")]
     [ApiController]
     [Tags("Conversations")]
     [Produces("application/json")]

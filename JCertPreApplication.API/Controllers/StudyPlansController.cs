@@ -9,7 +9,7 @@ namespace JCertPreApplication.API.Controllers
     /// Manages study plans for students.
     /// </summary>
     [ApiController]
-    [Route("api/study-plan")]
+    [Route("api/study-plans")]
     [Tags("Studyplans")]
     [Produces("application/json")]
     public class StudyPlansController : ControllerBase

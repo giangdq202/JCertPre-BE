@@ -7,7 +7,7 @@ namespace JCertPreApplication.API.Controllers
     /// Manages test template types.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/test-template-types")]
     [Tags("TestTemplateTypes")]
     [Produces("application/json")]
     public class TestTemplateTypeController : ControllerBase

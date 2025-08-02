@@ -204,7 +204,11 @@ namespace JCertPreApplication.Application.Features.Payment
             var amount = creditAmount;
 
             // 4. Tạo description ngắn gọn cho PayOS (tối đa 25 ký tự)
-            var shortDescription = CreatePayOSDescription(creditAmount);
+            var shortDescription = $"Nap {creditAmount} credit";
+            if (shortDescription.Length > 25)
+            {
+                shortDescription = "Nap credit";
+            }
 
             // 5. Tạo PaymentDataDto
             var paymentData = new PaymentDataDto
@@ -256,34 +260,18 @@ namespace JCertPreApplication.Application.Features.Payment
         }
 
         /// <summary>
-        /// Tạo description ngắn gọn cho PayOS (tối đa 25 ký tự)
+        /// Xử lý PayOS webhook - dùng như BACKUP mechanism khi return URL processing bị lỗi
+        /// Primary flow vẫn là HandlePaymentReturnAsync, webhook đảm bảo không miss payment nào
         /// </summary>
-        private static string CreatePayOSDescription(int creditAmount)
-        {
-            var description = $"Nap {creditAmount} credit";
-            
-            // Đảm bảo không vượt quá 25 ký tự
-            if (description.Length > 25)
-            {
-                // Nếu quá dài, rút ngắn thành "Nap credit"
-                description = "Nap credit";
-            }
-            
-            return description;
-        }
-
         public async Task ProcessPayOSWebhookAsync(WebhookTypeDto webhookBody)
         {
-            // 1. Log chi tiết webhook response
-            LogPayOSWebhookDetails(webhookBody);
-
-            // 2. Xác thực webhook
+            // 1. Xác thực webhook
             var verifiedData = _paymentGateway.VerifyPaymentWebhookData(webhookBody);
 
             _logger.LogInformation("Received PayOS webhook for orderCode {OrderCode} with status {Status}", 
                 verifiedData.OrderCode, webhookBody.Success ? "SUCCESS" : "FAILED");
 
-            // 3. Tìm payment theo transactionId (orderCode)
+            // 2. Tìm payment theo transactionId (orderCode)
             var payment = await _paymentRepository.GetByTransactionIdAsync(verifiedData.OrderCode.ToString());
             if (payment == null)
             {
@@ -291,7 +279,7 @@ namespace JCertPreApplication.Application.Features.Payment
                 return;
             }
 
-            // 4. Kiểm tra nếu đã xử lý rồi (idempotency)
+            // 3. Kiểm tra nếu đã xử lý rồi (idempotency)
             if (payment.status != PaymentStatus.Pending)
             {
                 _logger.LogInformation("Payment {PaymentId} already processed with status {Status}", 
@@ -299,59 +287,30 @@ namespace JCertPreApplication.Application.Features.Payment
                 return;
             }
 
-            // 5. Xử lý theo trạng thái webhook
+            // 4. Xử lý theo trạng thái webhook
             if (webhookBody.Success && verifiedData.Code == "00")
             {
                 // Thanh toán thành công
-                await ProcessSuccessfulPayment(payment, verifiedData);
+                await ProcessPaymentSuccessAsync(payment, verifiedData, $"Nap {(int)payment.amount} credit qua PayOS - Order: {verifiedData.OrderCode}");
             }
             else
             {
-                // Thanh toán thất bại
-                await ProcessFailedPayment(payment, webhookBody.Desc);
+                // Thanh toán thất bại - inline ProcessFailedPayment
+                payment.status = PaymentStatus.Failed;
+                payment.description = $"{payment.description} - Failed: {webhookBody.Desc}";
+                
+                await _paymentRepository.UpdateAsync(payment);
+                await _paymentRepository.SaveChangesAsync();
+
+                _logger.LogInformation("Payment {PaymentId} marked as failed. Reason: {Reason}",
+                    payment.paymentId, webhookBody.Desc);
             }
         }
 
         /// <summary>
-        /// Log chi tiết thông tin webhook từ PayOS để debug
+        /// Xử lý payment thành công - dùng chung cho webhook và return URL
         /// </summary>
-        private void LogPayOSWebhookDetails(WebhookTypeDto webhookBody)
-        {
-            _logger.LogInformation("=== PayOS Webhook Details ===");
-            _logger.LogInformation("Webhook Code: {Code}", webhookBody.Code);
-            _logger.LogInformation("Webhook Desc: {Desc}", webhookBody.Desc);
-            _logger.LogInformation("Webhook Success: {Success}", webhookBody.Success);
-            _logger.LogInformation("Webhook Signature: {Signature}", webhookBody.Signature);
-            
-            if (webhookBody.Data != null)
-            {
-                _logger.LogInformation("--- Webhook Data ---");
-                _logger.LogInformation("OrderCode: {OrderCode}", webhookBody.Data.OrderCode);
-                _logger.LogInformation("Amount: {Amount} VND", webhookBody.Data.Amount);
-                _logger.LogInformation("Description: {Description}", webhookBody.Data.Description);
-                _logger.LogInformation("AccountNumber: {AccountNumber}", webhookBody.Data.AccountNumber);
-                _logger.LogInformation("Reference: {Reference}", webhookBody.Data.Reference);
-                _logger.LogInformation("TransactionDateTime: {TransactionDateTime}", webhookBody.Data.TransactionDateTime);
-                _logger.LogInformation("Currency: {Currency}", webhookBody.Data.Currency);
-                _logger.LogInformation("PaymentLinkId: {PaymentLinkId}", webhookBody.Data.PaymentLinkId);
-                _logger.LogInformation("Data Code: {Code}", webhookBody.Data.Code);
-                _logger.LogInformation("Data Desc: {Desc}", webhookBody.Data.Desc);
-                _logger.LogInformation("CounterAccountBankId: {CounterAccountBankId}", webhookBody.Data.CounterAccountBankId);
-                _logger.LogInformation("CounterAccountBankName: {CounterAccountBankName}", webhookBody.Data.CounterAccountBankName);
-                _logger.LogInformation("CounterAccountName: {CounterAccountName}", webhookBody.Data.CounterAccountName);
-                _logger.LogInformation("CounterAccountNumber: {CounterAccountNumber}", webhookBody.Data.CounterAccountNumber);
-                _logger.LogInformation("VirtualAccountName: {VirtualAccountName}", webhookBody.Data.VirtualAccountName);
-                _logger.LogInformation("VirtualAccountNumber: {VirtualAccountNumber}", webhookBody.Data.VirtualAccountNumber);
-            }
-            else
-            {
-                _logger.LogWarning("Webhook Data is NULL");
-            }
-            
-            _logger.LogInformation("=== End PayOS Webhook Details ===");
-        }
-
-        private async Task ProcessSuccessfulPayment(Domain.Entities.Payment payment, WebhookDataDto verifiedData)
+        private async Task ProcessPaymentSuccessAsync(Domain.Entities.Payment payment, object paymentData, string transactionDescription)
         {
             // 1. Lấy thông tin user
             var user = await _userRepository.GetByIdAsync(payment.userId);
@@ -384,7 +343,7 @@ namespace JCertPreApplication.Application.Features.Payment
                     amount = creditToAdd, // Positive cho deposit
                     balance_before = balanceBefore,
                     balance_after = balanceAfter,
-                    description = $"Nap {creditToAdd} credit qua PayOS - Order: {verifiedData.OrderCode}",
+                    description = transactionDescription,
                     created_at = DateTime.UtcNow
                 };
 
@@ -403,26 +362,15 @@ namespace JCertPreApplication.Application.Features.Payment
             }
         }
 
-        private async Task ProcessFailedPayment(Domain.Entities.Payment payment, string reason)
-        {
-            // Cập nhật trạng thái thất bại
-            payment.status = PaymentStatus.Failed;
-            payment.description = $"{payment.description} - Failed: {reason}";
-            
-            await _paymentRepository.UpdateAsync(payment);
-            await _paymentRepository.SaveChangesAsync();
-
-            _logger.LogInformation("Payment {PaymentId} marked as failed. Reason: {Reason}",
-                payment.paymentId, reason);
-        }
-
         public async Task<string> ConfirmPayOSWebhookAsync(string webhookUrl)
         {
             return await _paymentGateway.ConfirmWebhookAsync(webhookUrl);
         }
 
         /// <summary>
-        /// Xử lý khi user quay lại từ PayOS sau khi thanh toán thành công
+        /// Xử lý khi user quay lại từ PayOS sau khi thanh toán - PRIMARY PAYMENT PROCESSING FLOW
+        /// Method này call PayOS API trực tiếp để verify và process payment real-time
+        /// Webhook sẽ serve như backup mechanism phòng trường hợp return URL processing bị lỗi
         /// </summary>
         public async Task<PaymentCallbackResponseDto> HandlePaymentReturnAsync(PaymentCallbackRequestDto request)
         {
@@ -446,8 +394,8 @@ namespace JCertPreApplication.Application.Features.Payment
                 // 2. Kiểm tra trạng thái payment
                 if (payment.status == PaymentStatus.Completed)
                 {
-                    // Đã được xử lý bởi webhook - chuyển thẳng đến success
-                    _logger.LogInformation("Payment {PaymentId} already completed via webhook", payment.paymentId);
+                    // Đã được xử lý rồi (có thể bởi webhook backup) - chuyển thẳng đến success
+                    _logger.LogInformation("Payment {PaymentId} already completed", payment.paymentId);
                     return new PaymentCallbackResponseDto
                     {
                         Success = true,
@@ -461,8 +409,8 @@ namespace JCertPreApplication.Application.Features.Payment
                 
                 if (paymentInfo.Status == "PAID")
                 {
-                    // Process payment nếu chưa được webhook xử lý
-                    await ProcessReturnUrlPayment(payment, paymentInfo);
+                    // Process payment - đây là primary processing flow
+                    await ProcessPaymentSuccessAsync(payment, paymentInfo, $"Nap {(int)payment.amount} credit qua PayOS Return - Order: {payment.transactionId}");
                     
                     return new PaymentCallbackResponseDto
                     {
@@ -557,49 +505,6 @@ namespace JCertPreApplication.Application.Features.Payment
                     RedirectUrl = $"{_frontendConfig.PaymentCancelledUrl}?reason=error"
                 };
             }
-        }
-
-        /// <summary>
-        /// Xử lý payment từ return URL (tương tự webhook nhưng dành cho return callback)
-        /// </summary>
-        private async Task ProcessReturnUrlPayment(Domain.Entities.Payment payment, PaymentLinkInformationDto paymentInfo)
-        {
-            var user = await _userRepository.GetByIdAsync(payment.userId);
-            if (user == null)
-            {
-                _logger.LogError("User not found for payment {PaymentId}", payment.paymentId);
-                return;
-            }
-
-            var creditToAdd = (int)payment.amount;
-            var balanceBefore = user.credit;
-            var balanceAfter = balanceBefore + creditToAdd;
-
-            // Update user credit
-            user.credit = balanceAfter;
-            await _userRepository.UpdateAsync(user);
-
-            // Update payment status
-            payment.status = PaymentStatus.Completed;
-            await _paymentRepository.UpdateAsync(payment);
-
-            // Create credit transaction
-            var creditTransaction = new CreditTransaction
-            {
-                transaction_id = Guid.NewGuid(),
-                user_id = payment.userId,
-                amount = creditToAdd,
-                balance_before = balanceBefore,
-                balance_after = balanceAfter,
-                description = $"Nap {creditToAdd} credit qua PayOS Return - Order: {payment.transactionId}",
-                created_at = DateTime.UtcNow
-            };
-
-            await _creditTransactionRepository.InsertAsync(creditTransaction);
-            await _paymentRepository.SaveChangesAsync();
-
-            _logger.LogInformation("Payment {PaymentId} processed via return URL. Added {Credit} credit. Balance: {BalanceBefore} -> {BalanceAfter}",
-                payment.paymentId, creditToAdd, balanceBefore, balanceAfter);
         }
     }
 }

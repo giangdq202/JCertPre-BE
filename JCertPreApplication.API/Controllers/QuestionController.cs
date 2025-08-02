@@ -13,7 +13,7 @@ namespace JCertPreApplication.API.Controllers
     /// Manages question entities.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/questions")]
     [Tags("Questions")]
     [Produces("application/json")]
     public class QuestionController : ControllerBase
