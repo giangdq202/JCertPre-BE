@@ -8,6 +8,7 @@ using JCertPreApplication.Persistence.Services.BackgroudServices;
 using JCertPreApplication.Persistence.Services.File;
 using JCertPreApplication.Persistence.Services.Firebase;
 using JCertPreApplication.Persistence.Services.LiveKit;
+using JCertPreApplication.Persistence.Services.Mail;
 using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -82,6 +83,10 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();
+
+            // Configure Mail Service
+            services.Configure<SmtpConfiguration>(configuration.GetSection("Smtp"));
+            services.AddScoped<IMailService, MailService>();
 
             // Configure PayOS
             services.Configure<PayOSConfiguration>(payOSConfig =>
