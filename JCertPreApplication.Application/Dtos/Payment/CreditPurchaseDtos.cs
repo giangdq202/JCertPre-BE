@@ -24,7 +24,7 @@ namespace JCertPreApplication.Application.Dtos.Payment
         public long OrderCode { get; set; }
         public string Status { get; set; } = string.Empty;
         public string? Code { get; set; }
-        public string? Cancel { get; set; }
+        public bool Cancel { get; set; }
         public string? Id { get; set; }
     }
 
