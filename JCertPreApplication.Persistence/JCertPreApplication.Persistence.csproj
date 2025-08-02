@@ -34,5 +34,11 @@
     <Folder Include="Helper\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Templates\**\*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 
 </Project>

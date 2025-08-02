@@ -49,6 +49,9 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 | `POST` | `/logout` | Revokes user tokens | `LogoutModel` |
 | `POST` | `/validate-access-token` | Validates access token | `ValidateAccessTokenModel` |
 | `POST` | `/validate-refresh-token` | Validates refresh token | `ValidateRefreshTokenModel` |
+| `POST` | `/forgot-password` | Initiates password reset process | `ForgotPasswordRequest` |
+| `POST` | `/reset-password` | Resets password using reset token | `ResetPasswordRequest` |
+| `GET` | `/validate-reset-token/{token}` | Validates password reset token | Path: `token` (string) |
 
 ---
 
@@ -195,12 +198,12 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ## 🎓 Enrollment Management APIs
 
-**Base Route:** `/api/enrollment`
+**Base Route:** `/api/enrollments`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `POST` | `/enroll` | Enrolls user in a course | Query: `userId`, `courseId` |
-| `POST` | `/enroll-self` | Self-enrollment in course (authenticated user) | Body: `SelfEnrollmentDto` |
+| `POST` | `/enroll` | Enrolls user in a course | Body: `EnrollmentRequestDto` |
+| `POST` | `/enroll-self` | Self-enrollment in course (authenticated user) | Body: `SelfEnrollmentRequestDto` |
 | `GET` | `/check/{courseId}` | Checks enrollment status for current user | Path: `courseId` |
 | `GET` | `/my-enrollments` | Gets all enrollments for current user | - |
 | `DELETE` | `/unenroll/{courseId}` | Unenrolls from course | Path: `courseId` |
@@ -271,7 +274,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ## 🎥 LiveKit Integration APIs
 
-**Base Route:** `/api/LiveKit`
+**Base Route:** `/api/livekit`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
@@ -514,10 +517,10 @@ Public endpoints (no authentication required):
 
 ## 📊 API Summary
 
-This documentation covers **27 controllers** with a total of **120+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
+This documentation covers **27 controllers** with a total of **123+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
 
 ### Controllers Covered:
-1. **AuthController** - Authentication & authorization (7 endpoints)
+1. **AuthController** - Authentication & authorization (10 endpoints)
 2. **UsersController** - User management (6 endpoints)
 3. **CoursesController** - Course management (12 endpoints)
 4. **LessonsController** - Lesson management (5 endpoints)
@@ -559,6 +562,7 @@ This documentation covers **27 controllers** with a total of **120+ API endpoint
 - **Content Management**: Hierarchical content structure with sub-contents
 
 ### New Features in This Version:
+- **Password Reset System**: Complete forgot/reset password flow with email notifications and secure token validation
 - **Payment System**: Full PayOS integration with webhook handling
 - **Enhanced File Management**: Separate file controller with health checks
 - **Improved Test System**: Score summaries and enhanced attempt tracking

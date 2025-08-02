@@ -64,5 +64,31 @@ namespace JCertPreApplication.Application.Features.Auth
         /// <param name="refreshToken">Refresh token to validate</param>
         /// <returns>True if token is valid and in whitelist, false otherwise</returns>
         Task<bool> ValidateRefreshTokenAsync(string refreshToken);
+
+        /// <summary>
+        /// Initiates password reset process by sending reset token via email
+        /// </summary>
+        /// <param name="email">User email address to send reset instructions</param>
+        /// <param name="ipAddress">IP address of the requester for security logging</param>
+        /// <returns>Success message (generic for security)</returns>
+        /// <exception cref="ApiException">Thrown when email is invalid or service errors occur</exception>
+        Task<string> ForgotPasswordAsync(string email, string? ipAddress = null);
+
+        /// <summary>
+        /// Resets user password using valid reset token from Redis cache
+        /// </summary>
+        /// <param name="token">Reset token received via email</param>
+        /// <param name="newPassword">New password to set</param>
+        /// <param name="ipAddress">IP address of the requester for security logging</param>
+        /// <returns>Success message</returns>
+        /// <exception cref="ApiException">Thrown when token is invalid, expired, used, or password validation fails</exception>
+        Task<string> ResetPasswordAsync(string token, string newPassword, string? ipAddress = null);
+
+        /// <summary>
+        /// Validates password reset token stored in Redis cache
+        /// </summary>
+        /// <param name="token">Reset token to validate</param>
+        /// <returns>True if token is valid and not used, false otherwise</returns>
+        Task<bool> ValidateResetTokenAsync(string token);
     }
 }
