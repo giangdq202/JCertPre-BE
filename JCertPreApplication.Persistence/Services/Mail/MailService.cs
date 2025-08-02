@@ -207,6 +207,7 @@ public class MailService : IMailService
                 {
                     "welcome" => "🎉 Welcome to JCert Platform, {{Name}}!",
                     "password-reset" => "🔐 Reset Your JCert Password",
+                    "password-changed" => "✅ Your JCert Password Has Been Changed",
                     _ => "JCert Platform Notification"
                 };
 
@@ -226,9 +227,101 @@ public class MailService : IMailService
                 ["password-reset"] = new()
                 {
                     Name = "password-reset",
-                    Subject = "Reset Your Password",
-                    HtmlBody = "<h1>Password Reset</h1><p>Click <a href='{{ResetLink}}'>here</a> to reset your password.</p>",
-                    TextBody = "Password Reset: {{ResetLink}}"
+                    Subject = "🔐 Đặt lại mật khẩu JCertPre",
+                    HtmlBody = @"
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <meta charset='UTF-8'>
+                            <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+                            <title>Password Reset</title>
+                        </head>
+                        <body style='margin: 0; padding: 0; background-color: #f4f4f4; font-family: Arial, sans-serif;'>
+                            <div style='max-width: 600px; margin: 0 auto; background-color: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);'>
+                                <!-- Header -->
+                                <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center;'>
+                                    <h1 style='color: white; margin: 0; font-size: 28px; font-weight: 600;'>🔐 Password Reset</h1>
+                                    <p style='color: #e0e7ff; margin: 10px 0 0 0; font-size: 16px;'>Secure your JCert account</p>
+                                </div>
+                                
+                                <!-- Content -->
+                                <div style='padding: 40px 30px;'>
+                                    <p style='font-size: 16px; color: #333; margin: 0 0 20px 0; line-height: 1.6;'>
+                                        Hi <strong>{{Name}}</strong>,
+                                    </p>
+                                    
+                                    <p style='font-size: 16px; color: #555; margin: 0 0 30px 0; line-height: 1.6;'>
+                                        We received a request to reset your password for your JCert account. Click the button below to set a new password:
+                                    </p>
+                                    
+                                    <!-- CTA Button -->
+                                    <div style='text-align: center; margin: 40px 0;'>
+                                        <a href='{{ResetLink}}' style='
+                                            display: inline-block;
+                                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                            color: white;
+                                            padding: 16px 32px;
+                                            text-decoration: none;
+                                            border-radius: 50px;
+                                            font-weight: 600;
+                                            font-size: 16px;
+                                            text-transform: uppercase;
+                                            letter-spacing: 1px;
+                                            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+                                            transition: all 0.3s ease;
+                                        '>
+                                            Reset My Password
+                                        </a>
+                                    </div>
+                                    
+                                    <!-- Security Info -->
+                                    <div style='background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 20px; margin: 30px 0;'>
+                                        <p style='color: #856404; margin: 0; font-size: 14px; line-height: 1.5;'>
+                                            ⏰ <strong>This link expires in {{ExpiryMinutes}} minutes</strong> for security reasons.<br>
+                                            🔒 The link can only be used once.
+                                        </p>
+                                    </div>
+                                    
+                                    <p style='font-size: 14px; color: #666; margin: 20px 0 0 0; line-height: 1.6;'>
+                                        If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
+                                    </p>
+                                    
+                                    <p style='font-size: 14px; color: #666; margin: 10px 0 0 0; line-height: 1.6;'>
+                                        If the button doesn't work, copy and paste this link into your browser:<br>
+                                        <a href='{{ResetLink}}' style='color: #667eea; word-break: break-all;'>{{ResetLink}}</a>
+                                    </p>
+                                </div>
+                                
+                                <!-- Footer -->
+                                <div style='background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;'>
+                                    <p style='color: #6c757d; margin: 0; font-size: 12px; line-height: 1.5;'>
+                                        This email was sent by JCert Platform<br>
+                                        If you have any questions, please contact our support team.
+                                    </p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>",
+                    TextBody = "Hi {{Name}}, click this link to reset your JCert password: {{ResetLink}} (expires in {{ExpiryMinutes}} minutes). If you didn't request this, please ignore this email."
+                },
+                ["password-changed"] = new()
+                {
+                    Name = "password-changed",
+                    Subject = "✅ Mật khẩu JCertPre đã được thay đổi",
+                    HtmlBody = @"
+                        <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;'>
+                            <h1 style='color: #28a745; text-align: center;'>✅ Password Successfully Changed</h1>
+                            <p>Hi {{Name}},</p>
+                            <p>Your JCert password has been successfully changed.</p>
+                            <p><strong>Details:</strong></p>
+                            <ul>
+                                <li>Time: {{ChangeTime}}</li>
+                                <li>IP Address: {{IpAddress}}</li>
+                            </ul>
+                            <p>If you didn't make this change, please contact our support team immediately.</p>
+                            <p>For security, all existing sessions have been logged out.</p>
+                        </div>",
+                    TextBody = "Hi {{Name}}, your password has been changed at {{ChangeTime}} from IP {{IpAddress}}. Contact support if this wasn't you."
                 }
             };
 

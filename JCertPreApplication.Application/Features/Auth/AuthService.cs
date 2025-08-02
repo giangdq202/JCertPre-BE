@@ -11,6 +11,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using System.Security.Cryptography;
 
 namespace JCertPreApplication.Application.Features.Auth
 {
@@ -21,20 +22,24 @@ namespace JCertPreApplication.Application.Features.Auth
         private readonly IFirebaseService _firebaseService;
         private readonly IPasswordService _passwordService;
         private readonly ITokenCacheRepository _tokenCacheRepository;
+        private readonly ICacheRepository _cacheRepository;
         private readonly IFileService _fileService;
         private readonly IMailService _mailService;
         private readonly JwtConfiguration _jwtConfig;
+        private readonly FrontendConfiguration _frontendConfig;
 
-        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, IFileService fileService, IMailService mailService, IOptions<JwtConfiguration> jwtConfig)
+        public AuthService(IUserRepository userRepository, IRoleRepository roleRepository, IFirebaseService firebaseService, IPasswordService passwordService, ITokenCacheRepository tokenCacheRepository, ICacheRepository cacheRepository, IFileService fileService, IMailService mailService, IOptions<JwtConfiguration> jwtConfig, IOptions<FrontendConfiguration> frontendConfig)
         {
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
             _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
             _firebaseService = firebaseService ?? throw new ArgumentNullException(nameof(firebaseService));
             _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
             _tokenCacheRepository = tokenCacheRepository ?? throw new ArgumentNullException(nameof(tokenCacheRepository));
+            _cacheRepository = cacheRepository ?? throw new ArgumentNullException(nameof(cacheRepository));
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
             _mailService = mailService ?? throw new ArgumentNullException(nameof(mailService));
             _jwtConfig = jwtConfig?.Value ?? throw new ArgumentNullException(nameof(jwtConfig));
+            _frontendConfig = frontendConfig?.Value ?? throw new ArgumentNullException(nameof(frontendConfig));
         }
 
         public async Task<(string AccessToken, string RefreshToken, AuthUserDto User)> LoginAsync(string email, string password)
@@ -531,7 +536,7 @@ namespace JCertPreApplication.Application.Features.Auth
                 {
                     Name = fullName,
                     Email = email,
-                    PlatformUrl = "http://localhost:3000" // You can make this configurable
+                    PlatformUrl = _frontendConfig.BaseUrl
                 };
 
                 await _mailService.SendTemplateEmailAsync(email, "welcome", templateData);
@@ -542,6 +547,186 @@ namespace JCertPreApplication.Application.Features.Auth
                 // You can inject ILogger<AuthService> if needed for better logging
                 Console.WriteLine($"Failed to send welcome email to {email}: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region Password Reset Operations
+
+        public async Task<string> ForgotPasswordAsync(string email, string? ipAddress = null)
+        {
+            try
+            {
+                // Validate email format
+                if (string.IsNullOrWhiteSpace(email))
+                    throw ApiException.BadRequest("INVALID_EMAIL", "Email address is required.");
+
+                // Check if user with this email exists
+                var user = await _userRepository.GetByEmailAsync(email);
+                
+                // For security reasons, always return success message even if email doesn't exist
+                // This prevents email enumeration attacks
+                if (user == null)
+                {
+                    // Still return success to prevent email enumeration
+                    return "If the email address exists in our system, you will receive password reset instructions.";
+                }
+
+                // Check if user account is active
+                if (user.status != UserStatus.Active)
+                    return "If the email address exists in our system, you will receive password reset instructions.";
+
+                // Generate secure reset token
+                var resetToken = GenerateSecureToken();
+                
+                // Create reset data to store in Redis
+                var resetData = new PasswordResetTokenData
+                {
+                    UserId = user.userId,
+                    Email = user.email,
+                    CreatedAt = DateTime.UtcNow,
+                    IpAddress = ipAddress,
+                    IsUsed = false
+                };
+
+                // Store token in Redis with 15-minute TTL
+                var cacheKey = $"password-reset:{resetToken}";
+                await _cacheRepository.SetAsync(cacheKey, resetData, TimeSpan.FromMinutes(15));
+
+                // Send reset email with token
+                var resetLink = $"{_frontendConfig.ResetPasswordUrl}?token={resetToken}";
+                await _mailService.SendTemplateEmailAsync(user.email, "password-reset", new 
+                { 
+                    Name = user.fullName, 
+                    ResetLink = resetLink,
+                    ExpiryMinutes = 15
+                });
+
+                return "Nếu địa chỉ email tồn tại trong hệ thống, bạn sẽ nhận được hướng dẫn đặt lại mật khẩu.";
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("FORGOT_PASSWORD_ERROR", 
+                    "Đã xảy ra lỗi khi xử lý yêu cầu đặt lại mật khẩu của bạn.");
+            }
+        }
+
+        public async Task<string> ResetPasswordAsync(string token, string newPassword, string? ipAddress = null)
+        {
+            try
+            {
+                // Validate inputs
+                if (string.IsNullOrWhiteSpace(token))
+                    throw ApiException.BadRequest("INVALID_TOKEN", "Token đặt lại mật khẩu là bắt buộc.");
+
+                if (string.IsNullOrWhiteSpace(newPassword))
+                    throw ApiException.BadRequest("INVALID_PASSWORD", "Mật khẩu mới là bắt buộc.");
+
+                if (newPassword.Length < 6)
+                    throw ApiException.BadRequest("WEAK_PASSWORD", "Mật khẩu phải có ít nhất 6 ký tự.");
+
+                // Retrieve reset data from Redis
+                var cacheKey = $"password-reset:{token}";
+                var resetData = await _cacheRepository.GetAsync<PasswordResetTokenData>(cacheKey);
+
+                if (resetData == null)
+                    throw ApiException.BadRequest("INVALID_OR_EXPIRED_TOKEN", 
+                        "Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu đặt lại mật khẩu mới.");
+
+                // Check if token has already been used
+                if (resetData.IsUsed)
+                    throw ApiException.BadRequest("TOKEN_ALREADY_USED", 
+                        "Token đặt lại này đã được sử dụng. Vui lòng yêu cầu đặt lại mật khẩu mới.");
+
+                // Get user from database
+                var user = await _userRepository.GetByIdAsync(resetData.UserId);
+                if (user == null)
+                    throw ApiException.NotFound("USER_NOT_FOUND", "User account not found.");
+
+                // Check if user account is still active
+                if (user.status != UserStatus.Active)
+                    throw ApiException.BadRequest("ACCOUNT_INACTIVE", "User account is not active.");
+
+                // Hash the new password
+                var hashedPassword = _passwordService.HashPassword(newPassword);
+
+                // Update user password
+                user.passwordHash = hashedPassword;
+                user.lastLogin = DateTime.UtcNow; // Update last login as security measure
+
+                await _userRepository.UpdateAsync(user);
+                await _userRepository.SaveChangesAsync();
+
+                // Mark token as used and update in Redis (keep for audit purposes until TTL expires)
+                resetData.IsUsed = true;
+                resetData.UsedAt = DateTime.UtcNow;
+                await _cacheRepository.SetAsync(cacheKey, resetData, TimeSpan.FromMinutes(15)); // Keep until original TTL
+
+                // Revoke all existing refresh tokens for security
+                await _tokenCacheRepository.RemoveAllRefreshTokensAsync(user.userId);
+
+                // Optional: Send confirmation email
+                try
+                {
+                    await _mailService.SendTemplateEmailAsync(user.email, "password-changed", new 
+                    { 
+                        Name = user.fullName,
+                        ChangeTime = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss UTC"),
+                        IpAddress = ipAddress ?? "Unknown",
+                        UserAgent = "N/A", // Có thể thêm từ HttpContext nếu cần
+                        LoginUrl = _frontendConfig.LoginUrl
+                    });
+                }
+                catch (Exception)
+                {
+                    // Don't fail the operation if email sending fails
+                }
+
+                return "Mật khẩu của bạn đã được đặt lại thành công. Tất cả phiên đăng nhập hiện tại đã được đăng xuất để đảm bảo bảo mật.";
+            }
+            catch (ApiException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("RESET_PASSWORD_ERROR", 
+                    "An error occurred while resetting your password.");
+            }
+        }
+
+        public async Task<bool> ValidateResetTokenAsync(string token)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    return false;
+
+                var cacheKey = $"password-reset:{token}";
+                var resetData = await _cacheRepository.GetAsync<PasswordResetTokenData>(cacheKey);
+
+                // Token is valid if it exists in Redis and hasn't been used
+                return resetData != null && !resetData.IsUsed;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Generates a cryptographically secure token for password reset
+        /// </summary>
+        private static string GenerateSecureToken()
+        {
+            using var rng = RandomNumberGenerator.Create();
+            var tokenBytes = new byte[32]; // 256 bits
+            rng.GetBytes(tokenBytes);
+            return Convert.ToBase64String(tokenBytes).Replace("+", "-").Replace("/", "_").Replace("=", "");
         }
 
         #endregion

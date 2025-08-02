@@ -112,5 +112,46 @@ namespace JCertPreApplication.API.Controllers
                 message = isValid ? "Refresh token is valid" : "Refresh token is invalid or not in whitelist"
             });
         }
+
+        /// <summary>
+        /// Initiates password reset process by sending reset token via email.
+        /// </summary>
+        /// <param name="model">The email address to send reset instructions to.</param>
+        /// <returns>Success message (generic for security).</returns>
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest model)
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var message = await _authService.ForgotPasswordAsync(model.Email, ipAddress);
+            return Ok(new { message });
+        }
+
+        /// <summary>
+        /// Resets user password using valid reset token from Redis cache.
+        /// </summary>
+        /// <param name="model">Reset token and new password information.</param>
+        /// <returns>Success message.</returns>
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest model)
+        {
+            var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
+            var message = await _authService.ResetPasswordAsync(model.Token, model.NewPassword, ipAddress);
+            return Ok(new { message });
+        }
+
+        /// <summary>
+        /// Validates a password reset token stored in Redis cache.
+        /// </summary>
+        /// <param name="token">The reset token to validate.</param>
+        /// <returns>The validation result.</returns>
+        [HttpGet("validate-reset-token/{token}")]
+        public async Task<IActionResult> ValidateResetToken(string token)
+        {
+            var isValid = await _authService.ValidateResetTokenAsync(token);
+            return Ok(new { 
+                isValid = isValid,
+                message = isValid ? "Token đặt lại mật khẩu hợp lệ" : "Token đặt lại mật khẩu không hợp lệ, đã hết hạn hoặc đã được sử dụng"
+            });
+        }
     }
 }
