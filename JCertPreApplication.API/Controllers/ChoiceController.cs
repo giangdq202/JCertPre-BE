@@ -8,7 +8,7 @@ namespace JCertPreApplication.API.Controllers
     /// Manages question choices and answers.
     /// </summary>
     [ApiController]
-    [Route("api/choice")]
+    [Route("api/choices")]
     [Tags("Choice")]
     [Produces("application/json")]
     public class ChoiceController : ControllerBase

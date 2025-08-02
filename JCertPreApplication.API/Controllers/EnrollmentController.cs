@@ -8,7 +8,7 @@ namespace JCertPreApplication.API.Controllers
     /// <summary>
     /// Handles course enrollment operations, including user enrollment, enrollment status checks, and enrollment management.
     /// </summary>
-    [Route("api/enrollment")]
+    [Route("api/enrollments")]
     [ApiController]
     [Tags("Enrollment")]
     [Produces("application/json")]

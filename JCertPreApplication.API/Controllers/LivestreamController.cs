@@ -9,7 +9,7 @@ namespace JCertPreApplication.API.Controllers
     /// Manages livestream operations.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/livestreams")]
     [Tags("Livestreams")]
     [Produces("application/json")]
     public class LivestreamController : ControllerBase

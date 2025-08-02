@@ -84,7 +84,23 @@ namespace JCertPreApplication.Persistence
             services.AddSingleton<IPasswordService, PasswordService>();
 
             // Configure PayOS
-            services.Configure<PayOSConfiguration>(configuration.GetSection(PayOSConfiguration.SectionName));
+            services.Configure<PayOSConfiguration>(payOSConfig =>
+            {
+                configuration.GetSection(PayOSConfiguration.SectionName).Bind(payOSConfig);
+                
+                // Inject BaseUrl từ ApiConfiguration
+                var apiConfig = configuration.GetSection(ApiConfiguration.SectionName).Get<ApiConfiguration>();
+                if (apiConfig != null && !string.IsNullOrEmpty(apiConfig.Urls))
+                {
+                    // Lấy URL đầu tiên từ danh sách URLs (có thể có nhiều URLs cách nhau bởi ;)
+                    var firstUrl = apiConfig.Urls.Split(';').FirstOrDefault()?.Trim();
+                    if (!string.IsNullOrEmpty(firstUrl))
+                    {
+                        payOSConfig.BaseUrl = firstUrl;
+                    }
+                }
+            });
+            
             services.AddScoped<IPaymentGateway>(provider =>
             {
                 var payOSConfig = configuration.GetSection(PayOSConfiguration.SectionName).Get<PayOSConfiguration>();
@@ -92,6 +108,18 @@ namespace JCertPreApplication.Persistence
                 {
                     throw new ArgumentException("PayOS configuration not found. Please configure PayOS section in appsettings.json");
                 }
+                
+                // Set BaseUrl từ ApiConfiguration
+                var apiConfig = configuration.GetSection(ApiConfiguration.SectionName).Get<ApiConfiguration>();
+                if (apiConfig != null && !string.IsNullOrEmpty(apiConfig.Urls))
+                {
+                    var firstUrl = apiConfig.Urls.Split(';').FirstOrDefault()?.Trim();
+                    if (!string.IsNullOrEmpty(firstUrl))
+                    {
+                        payOSConfig.BaseUrl = firstUrl;
+                    }
+                }
+                
                 return new PayOSService(payOSConfig.ClientId, payOSConfig.ApiKey, payOSConfig.ChecksumKey, 
                     payOSConfig.ReturnUrl, payOSConfig.CancelUrl);
             });

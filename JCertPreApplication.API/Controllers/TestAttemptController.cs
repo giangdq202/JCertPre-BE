@@ -7,7 +7,7 @@ namespace JCertPreApplication.API.Controllers
     /// Manages test attempts.
     /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/test-attempts")]
     [Tags("TestAttempts")]
     [Produces("application/json")]
     public class TestAttemptController : ControllerBase

@@ -9,7 +9,7 @@ namespace JCertPreApplication.API.Controllers;
 /// Manages LiveKit integration for real-time communication.
 /// </summary>
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/livekit")]
 [Tags("LiveKit")]
 [Produces("application/json")]
 public class LiveKitController : ControllerBase
