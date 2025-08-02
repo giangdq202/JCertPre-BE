@@ -84,6 +84,15 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
     firebaseConfig.Validate();
     
+    // Bind and validate LiveKit configuration
+    var liveKitConfig = new LiveKitConfiguration();
+    config.GetSection("LiveKit").Bind(liveKitConfig);
+    liveKitConfig.Validate();
+    
+    // Bind PayOS configuration
+    var payOSConfig = new PayOSConfiguration();
+    config.GetSection(PayOSConfiguration.SectionName).Bind(payOSConfig);
+    
     // Get API configuration to check if we should show debug info
     var apiConfig = new ApiConfiguration();
     config.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
@@ -102,11 +111,10 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
     builder.Services.Configure<FrontendConfiguration>(config.GetSection(FrontendConfiguration.SectionName));
+    builder.Services.Configure<PayOSConfiguration>(config.GetSection(PayOSConfiguration.SectionName));
+    builder.Services.Configure<RedisConfiguration>(config.GetSection("Redis"));
 
-    // Register and validate LiveKit configuration
-    var liveKitConfig = new LiveKitConfiguration();
-    config.GetSection("LiveKit").Bind(liveKitConfig);
-    liveKitConfig.Validate();
+    // Register LiveKit as singleton (already bound and validated above)
     builder.Services.AddSingleton(liveKitConfig);
 }
 
@@ -172,6 +180,18 @@ static void LogEnvironmentVariables(IConfiguration config)
     Console.WriteLine($"ApiKey: {MaskSensitiveData(config["LiveKit:ApiKey"])}");
     Console.WriteLine($"ApiSecret: {MaskSensitiveData(config["LiveKit:ApiSecret"])}");
     Console.WriteLine($"ServerUrl: {config["LiveKit:ServerUrl"]}");
+    
+    // PayOS Configuration
+    Console.WriteLine("\n[PayOS Configuration]");
+    Console.WriteLine($"ClientId: {MaskSensitiveData(config["PayOS:ClientId"])}");
+    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["PayOS:ApiKey"])}");
+    Console.WriteLine($"ChecksumKey: {MaskSensitiveData(config["PayOS:ChecksumKey"])}");
+    Console.WriteLine($"ReturnEndpoint: {config["PayOS:ReturnEndpoint"]}");
+    Console.WriteLine($"CancelEndpoint: {config["PayOS:CancelEndpoint"]}");
+    
+    // Frontend Configuration
+    Console.WriteLine("\n[Frontend Configuration]");
+    Console.WriteLine($"BaseUrl: {config["Frontend:BaseUrl"]}");
     
     Console.WriteLine("\n=== END ENVIRONMENT VARIABLES DEBUG ===\n");
 }
