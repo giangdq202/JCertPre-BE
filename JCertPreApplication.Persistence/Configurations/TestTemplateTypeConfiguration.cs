@@ -36,6 +36,12 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.createdAt)
                 .IsRequired();
 
+            builder.Property(x => x.totalTestScore)
+                .IsRequired();
+
+            builder.Property(x => x.totalPassPercentage)
+                .IsRequired();
+
             builder.HasOne(t => t.CreatedByUser)
                 .WithMany(u => u.TestTemplateTypes)
                 .HasForeignKey(t => t.userId)

@@ -13,5 +13,14 @@ namespace JCertPreApplication.Application.Contracts
         /// </summary>
         /// <returns>List of questions including choices and attachments.</returns>
         Task<IEnumerable<Question>> GetQuestionsWithDetailsAsync();
+
+        /// <summary>
+        /// Retrieves a specified number of random question IDs for a given sub-content.
+        /// </summary>
+        /// <param name="subContentId">The ID of the sub-content to retrieve questions for.</param>
+        /// <param name="questionCount">The number of random questions to retrieve.</param>
+        /// <param name="pointPerQuestion">The point value for each question.</param>
+        /// <returns>A list of GUIDs representing the IDs of the random questions.</returns>
+        Task<List<Guid>> GetRandomQuestionIdsAsync(Guid subContentId, int questionCount, int pointPerQuestion);
     }
 }
