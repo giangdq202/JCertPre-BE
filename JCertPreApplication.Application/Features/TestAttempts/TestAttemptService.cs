@@ -17,6 +17,8 @@ public class TestAttemptService : ITestAttemptService
     private readonly ILogger<TestAttemptService> _logger;
     private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
     private readonly ILessonRepository _lessonRepository;
+    private readonly ITestTemplateRepository _testTemplateRepository;
+    private readonly ITestTemplateConfigRepository _testTemplateConfigRepository;
 
     public TestAttemptService(
         ITestAttemptRepository testAttemptRepository,
@@ -28,7 +30,9 @@ public class TestAttemptService : ITestAttemptService
         ITestAttemptAutoSubmitController autoSubmitController,
         ILogger<TestAttemptService> logger,
         ITestScoreSummaryRepository testScoreSummaryRepository,
-        ILessonRepository lessonRepository)
+        ILessonRepository lessonRepository,
+        ITestTemplateRepository testTemplateRepository,
+        ITestTemplateConfigRepository testTemplateConfigRepository)
     {
         _testAttemptRepository = testAttemptRepository;
         _testRepository = testRepository;
@@ -40,6 +44,8 @@ public class TestAttemptService : ITestAttemptService
         _logger = logger;
         _testScoreSummaryRepository = testScoreSummaryRepository;
         _lessonRepository = lessonRepository;
+        _testTemplateRepository = testTemplateRepository;
+        _testTemplateConfigRepository = testTemplateConfigRepository;
     }
 
     /// <summary>
@@ -88,7 +94,7 @@ public class TestAttemptService : ITestAttemptService
                 userId = dto.UserId,
                 testId = dto.TestId,
                 startTime = now,
-                endTime = now.AddMinutes(test.durationMinutes + 1),
+                endTime = now.AddMinutes(test.durationMinutes + 1),//1 minunte system load
                 attemptNumber = userAttempts.Count + 1,
                 status = TestAttemptStatus.InProgress,
                 isPass = null
@@ -163,59 +169,125 @@ public class TestAttemptService : ITestAttemptService
             "Question,Question.SubContent"
         );
 
+        // Get max scores from TestScoreSummary (where TestAttemptId == null)
+        var maxSummary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
+            s => s.TestId == test.testId && s.TestAttemptId == null);
+
+        if (maxSummary == null)
+            throw ApiException.NotFound("TestScoreSummary", test.testId);
+
+        // Prepare new summary for this attempt
+        var grouped = answers
+            .Where(a => a.isCorrect && a.Question != null && a.Question.SubContent != null)
+            .GroupBy(a => a.Question.SubContent.ContentName)
+            .ToDictionary(g => g.Key, g => g.Sum(a => a.score));
+
+        var summary = new TestScoreSummary
+        {
+            TestScoreSummaryId = Guid.NewGuid(),
+            TestId = test.testId,
+            TestAttemptId = attempt.attemptId,
+            kanji_score = grouped.TryGetValue(ContentName.Kanji, out var kanji) ? kanji : 0,
+            vocab_score = grouped.TryGetValue(ContentName.Vocabulary, out var vocab) ? vocab : 0,
+            grammar_score = grouped.TryGetValue(ContentName.Grammar, out var grammar) ? grammar : 0,
+            reading_score = grouped.TryGetValue(ContentName.Reading, out var reading) ? reading : 0,
+            listening_score = grouped.TryGetValue(ContentName.Listening, out var listening) ? listening : 0,
+            kanji_max_score = maxSummary.kanji_max_score,
+            vocab_max_score = maxSummary.vocab_max_score,
+            grammar_max_score = maxSummary.grammar_max_score,
+            reading_max_score = maxSummary.reading_max_score,
+            listening_max_score = maxSummary.listening_max_score,
+            total_score = grouped.Values.Sum(),
+            total_max_score = maxSummary.total_max_score,
+            passing_percentage = maxSummary.passing_percentage
+        };
+
+        summary.percentage_score = summary.total_max_score > 0
+            ? Math.Round((decimal)summary.total_score * 100 / summary.total_max_score, 2)
+            : 0m;
+
+        bool isPass = false;
+
         if (test.testType == TestType.CustomManual)
         {
-            // Only sum scores for correct answers, grouped by content name
-            var grouped = answers
-                .Where(a => a.isCorrect && a.Question != null && a.Question.SubContent != null)
-                .GroupBy(a => a.Question.SubContent.ContentName)
-                .ToDictionary(g => g.Key, g => g.Sum(a => a.score));
-
-            // Get max scores from TestScoreSummary (where TestAttemptId == null)
-            var maxSummary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
-                s => s.TestId == test.testId && s.TestAttemptId == null);
-
-            if (maxSummary == null)
-                throw ApiException.NotFound("TestScoreSummary", test.testId);
-
-            // Prepare new summary for this attempt
-            var summary = new TestScoreSummary
-            {
-                TestScoreSummaryId = Guid.NewGuid(),
-                TestId = test.testId,
-                TestAttemptId = attempt.attemptId,
-                kanji_score = grouped.TryGetValue(ContentName.Kanji, out var kanji) ? kanji : 0,
-                vocab_score = grouped.TryGetValue(ContentName.Vocabulary, out var vocab) ? vocab : 0,
-                grammar_score = grouped.TryGetValue(ContentName.Grammar, out var grammar) ? grammar : 0,
-                reading_score = grouped.TryGetValue(ContentName.Reading, out var reading) ? reading : 0,
-                listening_score = grouped.TryGetValue(ContentName.Listening, out var listening) ? listening : 0,
-                kanji_max_score = maxSummary.kanji_max_score,
-                vocab_max_score = maxSummary.vocab_max_score,
-                grammar_max_score = maxSummary.grammar_max_score,
-                reading_max_score = maxSummary.reading_max_score,
-                listening_max_score = maxSummary.listening_max_score,
-                total_score = grouped.Values.Sum(),
-                total_max_score = maxSummary.total_max_score,
-                passing_percentage = maxSummary.passing_percentage
-            };
-
-            // Calculate percentage score
-            summary.percentage_score = summary.total_max_score > 0
-                ? Math.Round((decimal)summary.total_score * 100 / summary.total_max_score, 2)
-                : 0m;
-
-            // Update isPass field
-            attempt.isPass = summary.percentage_score >= summary.passing_percentage;
-
-            // Save summary
-            await _testScoreSummaryRepository.InsertAsync(summary);
-            await _testScoreSummaryRepository.SaveChangesAsync();
-
-            // Save attempt
-            await _testAttemptRepository.UpdateAsync(attempt);
-            await _testAttemptRepository.SaveChangesAsync();
+            isPass = summary.percentage_score >= summary.passing_percentage;
         }
-        // Other test types: implement as needed
+        else if (test.testType == TestType.JLPTAuto && test.TestTemplateTypeId.HasValue)
+        {
+            // For JLPTAuto-like logic: check each test template's toPassPercentage
+            var testTemplates = await _testTemplateRepository.GetAllAsync(
+                t => t.TestTemplateTypeId == test.TestTemplateTypeId.Value);
+
+            isPass = true; // Assume pass unless any template fails
+
+            foreach (var template in testTemplates)
+            {
+                var configs = await _testTemplateConfigRepository.GetAllAsync(
+                    c => c.templateId == template.templateId);
+
+                // Get all subContentIds for this template
+                var subContentIds = configs.Select(c => c.subContentId).ToHashSet();
+
+                // Map subContentId to ContentName
+                var subContentNames = new HashSet<ContentName>();
+                foreach (var subContentId in subContentIds)
+                {
+                    var subContent = await _questionRepository.GetFirstOrDefaultAsync(
+                        q => q.SubContentId == subContentId, "SubContent");
+                    if (subContent?.SubContent != null)
+                        subContentNames.Add(subContent.SubContent.ContentName);
+                }
+
+                // Sum max scores for this template
+                int templateMaxScore = 0;
+                int templateUserScore = 0;
+
+                foreach (var contentName in subContentNames)
+                {
+                    switch (contentName)
+                    {
+                        case ContentName.Kanji:
+                            templateMaxScore += maxSummary.kanji_max_score;
+                            templateUserScore += summary.kanji_score;
+                            break;
+                        case ContentName.Vocabulary:
+                            templateMaxScore += maxSummary.vocab_max_score;
+                            templateUserScore += summary.vocab_score;
+                            break;
+                        case ContentName.Grammar:
+                            templateMaxScore += maxSummary.grammar_max_score;
+                            templateUserScore += summary.grammar_score;
+                            break;
+                        case ContentName.Reading:
+                            templateMaxScore += maxSummary.reading_max_score;
+                            templateUserScore += summary.reading_score;
+                            break;
+                        case ContentName.Listening:
+                            templateMaxScore += maxSummary.listening_max_score;
+                            templateUserScore += summary.listening_score;
+                            break;
+                    }
+                }
+
+                decimal templatePercentage = templateMaxScore > 0
+                    ? Math.Round((decimal)templateUserScore * 100 / templateMaxScore, 2)
+                    : 0m;
+
+                if (templatePercentage < template.toPassPercentage)
+                {
+                    isPass = false;
+                    break;
+                }
+            }
+        }
+
+        attempt.isPass = isPass;
+
+        await _testScoreSummaryRepository.InsertAsync(summary);
+        await _testScoreSummaryRepository.SaveChangesAsync();
+
+        await _testAttemptRepository.UpdateAsync(attempt);
+        await _testAttemptRepository.SaveChangesAsync();
     }
 
     /// <summary>

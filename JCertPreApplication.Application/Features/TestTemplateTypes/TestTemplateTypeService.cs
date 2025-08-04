@@ -91,7 +91,9 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                 testType = dto.testType,
                 description = dto.description,
                 isActive = false,
-                createdAt = DateTime.UtcNow
+                createdAt = DateTime.UtcNow,
+                totalTestScore = dto.totalTestScore,
+                totalPassPercentage = dto.totalPassPercentage,
             };
             await _repo.InsertAsync(entity);
             await _repo.SaveChangesAsync();
@@ -138,6 +140,10 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                 entity.description = dto.description;
             if (dto.isActive.HasValue)
                 entity.isActive = dto.isActive.Value;
+            if (dto.totalTestScore.HasValue)
+                entity.totalTestScore = dto.totalTestScore.Value;
+            if (dto.totalPassPercentage.HasValue)
+                entity.totalPassPercentage = dto.totalPassPercentage.Value;
 
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();
@@ -201,13 +207,16 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                 if (!hasTestTemplate)
                     throw ApiException.BadRequest("NO_TEST_TEMPLATE", "Cannot activate: No test template belongs to this type.");
 
-                // Check if any TestTemplateConfig exists for any TestTemplate of this type
+
+                // With the following line:
+                var testTemplatesOfType = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == testTemplateTypeId);
+
+                var templateIds = testTemplatesOfType.Select(t => t.templateId).ToList();
+
                 var hasConfig = await _testTemplateConfigRepository.AnyAsync(
-                    c => _testTemplateRepository
-                            .GetAll()
-                            .Result
-                            .Any(t => t.TestTemplateTypeId == testTemplateTypeId && t.templateId == c.templateId)
+                    c => templateIds.Contains(c.templateId)
                 );
+
                 if (!hasConfig)
                     throw ApiException.BadRequest("NO_TEST_TEMPLATE_CONFIG", "Cannot activate: No test template config belongs to any test template of this type.");
             }
@@ -234,6 +243,8 @@ public class TestTemplateTypeService : ITestTemplateTypeService
         testType = t.testType,
         description = t.description,
         isActive = t.isActive,
-        createdAt = t.createdAt
+        createdAt = t.createdAt,
+        totalTestScore = t.totalTestScore,
+        totalPassPercentage = t.totalPassPercentage,
     };
 }

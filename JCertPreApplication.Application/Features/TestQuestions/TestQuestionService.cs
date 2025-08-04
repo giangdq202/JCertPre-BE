@@ -14,19 +14,28 @@ public class TestQuestionService : ITestQuestionService
     private readonly ITestAttemptRepository _testAttemptRepo;
     private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
     private readonly IQuestionRepository _questionRepository;
+    private readonly ITestTemplateTypeRepository _testTemplateTypeRepository;
+    private readonly ITestTemplateRepository _testTemplateRepository;
+    private readonly ITestTemplateConfigRepository _testTemplateConfigRepository;
 
     public TestQuestionService(
         ITestQuestionRepository testQuestionRepo,
         ITestRepository testRepo,
         ITestAttemptRepository testAttemptRepo,
         ITestScoreSummaryRepository testScoreSummaryRepository,
-        IQuestionRepository questionRepository)
+        IQuestionRepository questionRepository,
+        ITestTemplateTypeRepository testTemplateTypeRepository,
+        ITestTemplateRepository testTemplateRepository,
+        ITestTemplateConfigRepository testTemplateConfigRepository)
     {
         _testQuestionRepo = testQuestionRepo;
         _testRepo = testRepo;
         _testAttemptRepo = testAttemptRepo;
         _testScoreSummaryRepository = testScoreSummaryRepository;
         _questionRepository = questionRepository;
+        _testTemplateTypeRepository = testTemplateTypeRepository;
+        _testTemplateRepository = testTemplateRepository;
+        _testTemplateConfigRepository = testTemplateConfigRepository;
     }
 
     public async Task AddQuestionsCustomManualAsync(List<(Guid testId, Guid questionId)> testQuestionPairs)
@@ -287,5 +296,71 @@ public class TestQuestionService : ITestQuestionService
 
         await _testScoreSummaryRepository.UpdateAsync(summary);
         await _testScoreSummaryRepository.SaveChangesAsync();
+    }
+
+    public async Task AddQuestionsJLPTAutoAsync(Guid testId)
+    {
+        var test = await _testRepo.GetByIdAsync(testId)
+            ?? throw ApiException.NotFound("Test", testId);
+
+        if (!test.TestTemplateTypeId.HasValue)
+            throw ApiException.BadRequest("NO_TEMPLATE_TYPE", "TestTemplateTypeId is required for JLPTAuto.");
+
+        var templateType = await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
+            ?? throw ApiException.NotFound("TestTemplateType", test.TestTemplateTypeId.Value);
+
+        var summary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
+            s => s.TestId == testId && s.TestAttemptId == null);
+        if (summary == null)
+            throw ApiException.NotFound("TestScoreSummary", testId);
+
+        summary.total_score = templateType.totalTestScore;
+        summary.passing_percentage = templateType.totalPassPercentage;
+        await _testScoreSummaryRepository.UpdateAsync(summary);
+        await _testScoreSummaryRepository.SaveChangesAsync();
+
+        var testTemplates = await _testTemplateRepository.GetAllAsync(
+            t => t.TestTemplateTypeId == test.TestTemplateTypeId.Value);
+        var orderedTemplates = testTemplates.OrderBy(t => t.sequence).ToList();
+
+        int questionNumber = 1;
+        var testQuestionsToAdd = new List<TestQuestion>();
+
+        foreach (var template in orderedTemplates)
+        {
+            int partNumber = template.sequence;
+            int partDuration = template.durationMinutes;
+
+            var configs = await _testTemplateConfigRepository.GetAllAsync(
+                c => c.templateId == template.templateId);
+            var orderedConfigs = configs.OrderBy(c => c.sequence).ToList();
+
+            foreach (var config in orderedConfigs)
+            {
+                var randomIds = await _questionRepository.GetRandomQuestionIdsAsync(
+                    config.subContentId, config.questionCount, config.pointPerQuestion);
+
+                foreach (var qid in randomIds)
+                {
+                    testQuestionsToAdd.Add(new TestQuestion
+                    {
+                        testQuestionId = Guid.NewGuid(),
+                        testId = testId,
+                        questionId = qid,
+                        questionNumber = questionNumber++,
+                        partNumber = partNumber,
+                        partDurationMinutes = partDuration
+                    });
+                }
+            }
+        }
+
+        if (testQuestionsToAdd.Count == 0)
+            throw ApiException.BadRequest("NO_QUESTIONS_FOUND", "No questions found for JLPTAuto generation.");
+
+        await _testQuestionRepo.AddRangeAsync(testQuestionsToAdd);
+        await _testQuestionRepo.SaveChangesAsync();
+
+        await CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
     }
 }
