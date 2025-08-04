@@ -22,6 +22,10 @@ namespace JCertPreApplication.Persistence.Configurations
                 .IsRequired()
                 .HasConversion<string>();
 
+            builder.Property(t => t.courseLevel)
+                .IsRequired()
+                .HasConversion<string>();
+
             builder.Property(t => t.durationMinutes)
                 .IsRequired();
 

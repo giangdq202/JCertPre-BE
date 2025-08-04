@@ -11,10 +11,17 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
     public class TestTemplateConfigService : ITestTemplateConfigService
     {
         private readonly ITestTemplateConfigRepository _repo;
+        private readonly ITestTemplateRepository _templateRepo;
+        private readonly ITestTemplateTypeRepository _typeRepo;
 
-        public TestTemplateConfigService(ITestTemplateConfigRepository repo)
+        public TestTemplateConfigService(
+            ITestTemplateConfigRepository repo,
+            ITestTemplateRepository templateRepo,
+            ITestTemplateTypeRepository typeRepo)
         {
             _repo = repo;
+            _templateRepo = templateRepo;
+            _typeRepo = typeRepo;
         }
 
         public async Task<List<TestTemplateConfigDto>> GetAllByTemplateIdAsync(Guid templateId)
@@ -47,6 +54,19 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
         {
             try
             {
+                // Get template type id directly
+                var template = await _templateRepo.GetByIdAsync(templateId); // For create
+
+                if (template == null)
+                    throw ApiException.NotFound("TestTemplate", templateId);
+
+                var isTypeActive = await _typeRepo.AnyAsync(
+                    t => t.TestTemplateTypeId == template.TestTemplateTypeId && t.isActive
+                );
+
+                if (isTypeActive)
+                    throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot perform this operation because the test template type is active.");
+
                 var entity = new TestTemplateConfig
                 {
                     configId = Guid.NewGuid(),
@@ -78,6 +98,18 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 if (entity == null)
                     throw ApiException.NotFound("TestTemplateConfig", configId);
 
+                // For update/delete, use entity.templateId
+                var template = await _templateRepo.GetByIdAsync(entity.templateId);
+                if (template == null)
+                    throw ApiException.NotFound("TestTemplate", entity.templateId);
+
+                var isTypeActive = await _typeRepo.AnyAsync(
+                    t => t.TestTemplateTypeId == template.TestTemplateTypeId && t.isActive
+                );
+
+                if (isTypeActive)
+                    throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot perform this operation because the test template type is active.");
+
                 if (dto.questionCount.HasValue)
                     entity.questionCount = dto.questionCount.Value;
                 if (dto.pointPerQuestion.HasValue)
@@ -107,6 +139,18 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 var entity = await _repo.GetByIdAsync(configId);
                 if (entity == null)
                     throw ApiException.NotFound("TestTemplateConfig", configId);
+
+                // For update/delete, use entity.templateId
+                var template = await _templateRepo.GetByIdAsync(entity.templateId);
+                if (template == null)
+                    throw ApiException.NotFound("TestTemplate", entity.templateId);
+
+                var isTypeActive = await _typeRepo.AnyAsync(
+                    t => t.TestTemplateTypeId == template.TestTemplateTypeId && t.isActive
+                );
+
+                if (isTypeActive)
+                    throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot perform this operation because the test template type is active.");
 
                 await _repo.DeleteAsync(entity);
                 await _repo.SaveChangesAsync();
