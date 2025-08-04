@@ -103,7 +103,13 @@ namespace JCertPreApplication.Persistence.Repositories
             return await query.AsNoTracking().FirstOrDefaultAsync() ?? throw new InvalidOperationException("No entity found.");
         }
 
-        public async Task<Pagination<T>> GetPaginationAsync(Expression<Func<T, bool>>? predicate = null, string? includeProperties = null, int pageIndex = 1, int pageSize = 10)
+        public async Task<Pagination<T>> GetPaginationAsync(
+            Expression<Func<T, bool>>? predicate = null,
+            string? includeProperties = null,
+            int pageIndex = 1,
+            int pageSize = 10,
+            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null // <-- Add this
+        )
         {
             if (pageIndex < 1) throw new ArgumentException("PageIndex must be greater than 0.", nameof(pageIndex));
             if (pageSize < 1) throw new ArgumentException("PageSize must be greater than 0.", nameof(pageSize));
@@ -117,6 +123,9 @@ namespace JCertPreApplication.Persistence.Repositories
                     query = query.Include(includeProp.Trim());
                 }
             }
+
+            if (orderBy != null)
+                query = orderBy(query);
 
             var totalItems = await query.CountAsync();
             var items = await query
@@ -152,6 +161,11 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             if (entities == null) throw new ArgumentNullException(nameof(entities));
             await _dbSet.AddRangeAsync(entities);
+        }
+
+        public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
         }
     }
 }

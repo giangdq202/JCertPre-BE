@@ -4,6 +4,7 @@ using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -30,16 +31,27 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="searchTerm">Optional search term for test title.</param>
         /// <param name="pageIndex">Page number (default: 1).</param>
         /// <param name="pageSize">Items per page (default: 10).</param>
+        /// <param name="testType">Optional test type filter.</param>
+        /// <param name="courseLevel">Optional course level filter.</param>
         /// <returns>Paginated list of tests.</returns>
-        [HttpGet("by-user/{userId}")]
+        [HttpGet("user/{userId}")]
         public async Task<IActionResult> GetAllByUserId(
             Guid userId,
             [FromQuery] string? searchTerm,
             [FromQuery] int pageIndex = 1,
-            [FromQuery] int pageSize = 10)
+            [FromQuery] int pageSize = 10,
+            [FromQuery] TestType? testType = null,
+            [FromQuery] CourseLevel? courseLevel = null)
         {
-            var pagedDtos = await _testService.GetAllByUserIdAsync(userId, searchTerm, pageIndex, pageSize);
-            return Ok(pagedDtos);
+            var result = await _testService.GetAllByUserIdAsync(
+                userId,
+                searchTerm,
+                pageIndex,
+                pageSize,
+                testType,
+                courseLevel
+            );
+            return Ok(result);
         }
 
         /// <summary>

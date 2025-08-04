@@ -6,6 +6,7 @@ public class TestDto
     public string Title { get; set; } = null!;
     public string Description { get; set; } = null!;
     public TestType TestType { get; set; }
+    public CourseLevel CourseLevel { get; set; } // <-- Add this line
     public int DurationMinutes { get; set; }
     public Guid? LessonId { get; set; }
     public Guid CreatedByUserId { get; set; }
