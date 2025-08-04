@@ -94,7 +94,7 @@ public class TestAttemptService : ITestAttemptService
                 userId = dto.UserId,
                 testId = dto.TestId,
                 startTime = now,
-                endTime = now.AddMinutes(test.durationMinutes + 1),//1 minunte system load
+                endTime = now.AddMinutes(test.durationMinutes + 1), // 1 minute system load
                 attemptNumber = userAttempts.Count + 1,
                 status = TestAttemptStatus.InProgress,
                 isPass = null
