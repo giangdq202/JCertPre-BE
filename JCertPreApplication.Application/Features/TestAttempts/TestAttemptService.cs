@@ -229,14 +229,13 @@ public class TestAttemptService : ITestAttemptService
                 var subContentIds = configs.Select(c => c.subContentId).ToHashSet();
 
                 // Map subContentId to ContentName
-                var subContentNames = new HashSet<ContentName>();
-                foreach (var subContentId in subContentIds)
-                {
-                    var subContent = await _questionRepository.GetFirstOrDefaultAsync(
-                        q => q.SubContentId == subContentId, "SubContent");
-                    if (subContent?.SubContent != null)
-                        subContentNames.Add(subContent.SubContent.ContentName);
-                }
+                // Fetch all questions for these subContentIds in one query
+                var questions = await _questionRepository.GetAllAsync(
+                    q => subContentIds.Contains(q.SubContentId), "SubContent");
+                var subContentNames = questions
+                    .Where(q => q.SubContent != null)
+                    .Select(q => q.SubContent.ContentName)
+                    .ToHashSet();
 
                 // Sum max scores for this template
                 int templateMaxScore = 0;
