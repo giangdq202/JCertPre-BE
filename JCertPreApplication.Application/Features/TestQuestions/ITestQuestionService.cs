@@ -8,4 +8,5 @@ public interface ITestQuestionService
     Task<List<TestQuestionDto>> GetQuestionsByTestIdAsync(Guid testId);
     Task DeleteTestQuestionAsync(Guid testQuestionId);
     Task CalculateAndUpdateTestScoreSummaryMaxScoresAsync(Guid testId);
+    Task AddQuestionsJLPTAutoAsync(Guid testId);
 }
