@@ -79,19 +79,6 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         }
 
         /// <summary>
-        /// Generate token for admin/moderator với full permissions
-        /// </summary>
-        public string GenerateAdminToken(
-            string roomName,
-            string participantIdentity,
-            string participantName,
-            TimeSpan? ttl = null)
-        {
-            return GenerateToken(roomName, participantIdentity, participantName,
-                ParticipantRole.Admin, ttl);
-        }
-
-        /// <summary>
         /// Generate token for recording service
         /// </summary>
         public string GenerateRecordingToken(string roomName, TimeSpan? ttl = null)
@@ -346,6 +333,22 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             foreach (var track in audioTracks)
             {
                 await MuteTrackAsync(roomName, identity, track.Sid, true);
+            }
+        }
+
+        /// <summary>
+        /// Unmute participant audio tracks
+        /// </summary>
+        public async Task UnmuteParticipantAudioAsync(string roomName, string identity)
+        {
+            var participant = await GetParticipantAsync(roomName, identity);
+            var audioTracks = participant.Tracks
+                .Where(t => t.Type == TrackType.Audio)
+                .ToList();
+
+            foreach (var track in audioTracks)
+            {
+                await MuteTrackAsync(roomName, identity, track.Sid, false);
             }
         }
 
@@ -653,16 +656,6 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         {
             return role switch
             {
-                ParticipantRole.Admin => new VideoGrants
-                {
-                    RoomJoin = true,
-                    Room = roomName,
-                    CanPublish = true,
-                    CanPublishData = true,
-                    CanSubscribe = true,
-                    CanUpdateOwnMetadata = true,
-                    RoomAdmin = true
-                },
                 ParticipantRole.Instructor => new VideoGrants
                 {
                     RoomJoin = true,
@@ -670,7 +663,8 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
                     CanPublish = true,
                     CanPublishData = true,
                     CanSubscribe = true,
-                    CanUpdateOwnMetadata = true
+                    CanUpdateOwnMetadata = true,
+                    RoomAdmin = true  // Instructor có quyền admin trong room
                 },
                 ParticipantRole.Student => new VideoGrants
                 {

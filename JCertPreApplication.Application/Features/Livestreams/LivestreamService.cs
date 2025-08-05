@@ -277,12 +277,22 @@ namespace JCertPreApplication.Application.Features.Livestreams
                 // Determine participant role for LiveKit
                 var role = await DetermineParticipantRoleAsync(userId, livestream.courseId);
 
+                // Calculate dynamic TTL = remaining time + 15 minutes buffer
+                var endTime = livestream.scheduledDateTime.AddMinutes(livestream.durationMinutes);
+                var remainingTime = endTime - DateTime.UtcNow;
+                var tokenTtl = remainingTime.Add(TimeSpan.FromMinutes(15));
+
+                // Ensure minimum TTL of 30 minutes if livestream is ending soon
+                if (tokenTtl.TotalMinutes < 30)
+                    tokenTtl = TimeSpan.FromMinutes(30);
+
                 // Generate token using LiveKit service
                 var token = _liveKitService.GenerateToken(
                     roomName: GetRoomName(livestreamId),
                     participantIdentity: userId.ToString(),
                     participantName: user.fullName,
-                    role: role
+                    role: role,
+                    ttl: tokenTtl
                 );
 
                 return new LivestreamJoinDto
@@ -334,23 +344,40 @@ namespace JCertPreApplication.Application.Features.Livestreams
             }
         }
 
-        public Task<bool> CanInstructorStartLivestreamAsync(Guid userId, Guid livestreamId)
+        public async Task<bool> CanInstructorManageLivestreamAsync(Guid instructorId, Guid livestreamId)
         {
-            // This method is now deprecated as livestreams start automatically
-            // Keeping it for backwards compatibility but always returns false
-            return Task.FromResult(false);
+            try
+            {
+                var livestream = await _livestreamRepository.GetByIdAsync(livestreamId);
+                if (livestream == null) return false;
+
+                // Only allow managing LIVE livestreams
+                if (livestream.status != LivestreamStatus.LIVE) return false;
+
+                // Check if user is instructor of the course
+                return await _courseInstructorRepository.IsInstructorAssignedToCourse(livestream.courseId, instructorId);
+            }
+            catch
+            {
+                return false;
+            }
         }
 
-        [Obsolete("Livestreams are now started automatically by background service")]
-        public Task StartLivestreamAsync(Guid livestreamId)
+        public async Task MuteParticipantAsync(Guid livestreamId, string participantId, bool muted)
         {
-            throw ApiException.BadRequest("MANUAL_START_DISABLED", "Livestreams are started automatically 15 minutes before scheduled time");
-        }
+            try
+            {
+                var roomName = GetRoomName(livestreamId);
 
-        [Obsolete("Livestreams are now ended automatically by background service")]
-        public Task EndLivestreamAsync(Guid livestreamId)
-        {
-            throw ApiException.BadRequest("MANUAL_END_DISABLED", "Livestreams are ended automatically after scheduled duration");
+                if (muted)
+                    await _liveKitService.MuteParticipantAudioAsync(roomName, participantId);
+                else
+                    await _liveKitService.UnmuteParticipantAudioAsync(roomName, participantId);
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("MUTE_PARTICIPANT_ERROR", ex.Message);
+            }
         }
 
         public string GetDisplayTitle(LivestreamDto livestream)
