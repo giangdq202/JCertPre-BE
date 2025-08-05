@@ -13,6 +13,8 @@ namespace JCertPreApplication.Domain.Entities
         public string? thumbnailUrl { get; set; }
         public CourseStatus status { get; set; }
         public DateTime createdAt { get; set; }
+        public DateTime startDate { get; set; }  // New field
+        public DateTime endDate { get; set; }    // New field
 
         // Navigation properties
         public virtual ICollection<Lesson> Lessons { get; set; } = new List<Lesson>();

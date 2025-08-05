@@ -21,6 +21,8 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(c => c.thumbnailUrl).HasMaxLength(500);
             builder.Property(c => c.status).IsRequired().HasConversion<string>();
             builder.Property(c => c.createdAt).IsRequired();
+            builder.Property(c => c.startDate).IsRequired();
+            builder.Property(c => c.endDate).IsRequired();
 
             // Configure relationship with instructors through CourseInstructor
             builder.HasMany(c => c.CourseInstructors)

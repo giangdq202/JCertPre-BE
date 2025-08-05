@@ -76,5 +76,12 @@ namespace JCertPreApplication.Application.Dtos.Course
         /// </summary>
         /// <example>2</example>
         public int InstructorsCount { get; set; }
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// Course end date (UTC).
+        /// </summary>
+        /// <example>2024-06-20T00:00:00Z</example>
+        public DateTime EndDate { get; set; }
     }
 } 

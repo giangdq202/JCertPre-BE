@@ -64,5 +64,19 @@ namespace JCertPreApplication.Application.Dtos.Course
         /// <example>https://cdn.jcertpre.com/thumbnails/n5-course-thumb.jpg</example>
         [Url(ErrorMessage = "Please provide a valid URL for the thumbnail")]
         public string? ThumbnailUrl { get; set; }
+
+        /// <summary>
+        /// Course start date (UTC).
+        /// </summary>
+        /// <example>2024-01-20T00:00:00Z</example>
+        [Required(ErrorMessage = "Course start date is required")]
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// Course end date (UTC).
+        /// </summary>
+        /// <example>2024-06-20T00:00:00Z</example>
+        [Required(ErrorMessage = "Course end date is required")]
+        public DateTime EndDate { get; set; }
     }
-} 
+}
