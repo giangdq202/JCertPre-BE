@@ -142,6 +142,7 @@ namespace JCertPreApplication.Persistence
                 provider.GetRequiredService<TestAttemptAutoSubmitService>());
 
             services.AddHostedService<LivestreamStatusBackgroundService>();
+            services.AddHostedService<CourseStatusBackgroundService>();
 
             return services;
         }
