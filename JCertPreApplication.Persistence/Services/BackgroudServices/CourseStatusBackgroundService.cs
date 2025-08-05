@@ -10,7 +10,9 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<CourseStatusBackgroundService> _logger;
-        private readonly TimeSpan _interval = TimeSpan.FromHours(1); // Chạy mỗi giờ
+        //private readonly TimeSpan _interval = TimeSpan.FromHours(1); // Chạy mỗi giờ
+        private readonly TimeSpan _interval = TimeSpan.FromMinutes(2); // Chạy mỗi 2 phút
+
 
         public CourseStatusBackgroundService(
             IServiceProvider serviceProvider,
@@ -66,6 +68,8 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
                             course.courseId, course.title, course.endDate);
                     }
 
+                    // Save changes to database
+                    await courseRepository.SaveChangesAsync();
                     _logger.LogInformation("Successfully archived {Count} expired courses", expiredCourses.Count);
                 }
                 else
