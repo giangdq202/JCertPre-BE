@@ -66,5 +66,17 @@ namespace JCertPreApplication.Application.Dtos.Course
         /// </summary>
         /// <example>Published</example>
         public CourseStatus? Status { get; set; }
+
+        /// <summary>
+        /// Updated course start date (UTC).
+        /// </summary>
+        /// <example>2024-01-20T00:00:00Z</example>
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Updated course end date (UTC).
+        /// </summary>
+        /// <example>2024-06-20T00:00:00Z</example>
+        public DateTime? EndDate { get; set; }
     }
-} 
+}

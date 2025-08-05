@@ -88,5 +88,17 @@ namespace JCertPreApplication.Application.Dtos.Course
         /// List of instructors teaching this course.
         /// </summary>
         public List<AppUserDto> Instructors { get; set; } = new List<AppUserDto>();
+
+        /// <summary>
+        /// Course start date (UTC).
+        /// </summary>
+        /// <example>2024-01-20T00:00:00Z</example>
+        public DateTime StartDate { get; set; }
+
+        /// <summary>
+        /// Course end date (UTC).
+        /// </summary>
+        /// <example>2024-06-20T00:00:00Z</example>
+        public DateTime EndDate { get; set; }
     }
-} 
+}
