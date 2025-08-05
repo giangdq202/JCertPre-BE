@@ -34,5 +34,15 @@ namespace JCertPreApplication.Persistence.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        public async Task<List<Guid>> GetRandomQuestionIdsAsync(Guid subContentId, int questionCount, int pointPerQuestion)
+        {
+            return await _dbSet
+                .Where(q => q.SubContentId == subContentId && q.isActive && q.points == pointPerQuestion)
+                .OrderBy(q => Guid.NewGuid())
+                .Select(q => q.questionId)
+                .Take(questionCount)
+                .ToListAsync();
+        }
     }
 }

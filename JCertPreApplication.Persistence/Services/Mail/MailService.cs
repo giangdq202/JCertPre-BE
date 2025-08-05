@@ -3,13 +3,17 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Net.Mail;
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using JCertPreApplication.Domain.Configuration;
+using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Mail;
 
 namespace JCertPreApplication.Persistence.Services.Mail;
 
-public class MailService
+public class MailService : IMailService
 {
     private readonly SmtpConfiguration _smtpConfiguration;
     private readonly ILogger<MailService> _logger;
@@ -27,9 +31,9 @@ public class MailService
         try
         {
             var htmlFilePath = Path.Combine(_templatePath, $"{templateName}-email.html");
-            if (File.Exists(htmlFilePath))
+            if (System.IO.File.Exists(htmlFilePath))
             {
-                var htmlContent = await File.ReadAllTextAsync(htmlFilePath);
+                var htmlContent = await System.IO.File.ReadAllTextAsync(htmlFilePath);
                 var template = new EmailTemplate
                 {
                     Name = templateName,
@@ -85,6 +89,118 @@ public class MailService
         }
     }
 
+    // Implement IMailService methods
+    public async Task SendEmailAsync(string to, string subject, string body, bool isHtml = false)
+    {
+        await SendEmailAsync(to, subject, body, null, null, isHtml);
+    }
+
+    public async Task SendEmailAsync(string to, string subject, string body, IEnumerable<string>? cc = null, IEnumerable<string>? bcc = null, bool isHtml = false)
+    {
+        try
+        {
+            using var client = new SmtpClient(_smtpConfiguration.Host, _smtpConfiguration.Port)
+            {
+                Credentials = new NetworkCredential(_smtpConfiguration.Username, _smtpConfiguration.Password),
+                EnableSsl = _smtpConfiguration.EnableSsl
+            };
+
+            using var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpConfiguration.FromEmail, _smtpConfiguration.FromName),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = isHtml
+            };
+
+            mailMessage.To.Add(to);
+
+            if (cc != null)
+            {
+                foreach (var ccEmail in cc)
+                {
+                    mailMessage.CC.Add(ccEmail);
+                }
+            }
+
+            if (bcc != null)
+            {
+                foreach (var bccEmail in bcc)
+                {
+                    mailMessage.Bcc.Add(bccEmail);
+                }
+            }
+
+            await client.SendMailAsync(mailMessage);
+            _logger.LogInformation("Email sent successfully to {To}", to);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send email to {To}", to);
+            throw;
+        }
+    }
+
+    public async Task SendEmailWithAttachmentAsync(string to, string subject, string body, IEnumerable<JCertPreApplication.Application.Contracts.EmailAttachment> attachments, bool isHtml = false)
+    {
+        try
+        {
+            using var client = new SmtpClient(_smtpConfiguration.Host, _smtpConfiguration.Port)
+            {
+                Credentials = new NetworkCredential(_smtpConfiguration.Username, _smtpConfiguration.Password),
+                EnableSsl = _smtpConfiguration.EnableSsl
+            };
+
+            using var mailMessage = new MailMessage
+            {
+                From = new MailAddress(_smtpConfiguration.FromEmail, _smtpConfiguration.FromName),
+                Subject = subject,
+                Body = body,
+                IsBodyHtml = isHtml
+            };
+
+            mailMessage.To.Add(to);
+
+            foreach (var attachment in attachments)
+            {
+                var stream = new MemoryStream(attachment.Content);
+                var mailAttachment = new Attachment(stream, attachment.FileName, attachment.ContentType);
+                mailMessage.Attachments.Add(mailAttachment);
+            }
+
+            await client.SendMailAsync(mailMessage);
+            _logger.LogInformation("Email with attachments sent successfully to {To}", to);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send email with attachments to {To}", to);
+            throw;
+        }
+    }
+
+    public async Task SendBulkEmailAsync(IEnumerable<string> recipients, string subject, string body, bool isHtml = false)
+    {
+        var tasks = recipients.Select(recipient => SendEmailAsync(recipient, subject, body, isHtml));
+        await Task.WhenAll(tasks);
+    }
+
+    public async Task SendTemplateEmailAsync(string to, string templateName, object templateData)
+    {
+        try
+        {
+            var template = await LoadEmailTemplate(templateName);
+            var renderedSubject = RenderTemplate(template.Subject, templateData);
+            var renderedBody = RenderTemplate(template.HtmlBody, templateData);
+
+            await SendEmailAsync(to, renderedSubject, renderedBody, isHtml: true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to send template email '{TemplateName}' to {To}", templateName, to);
+            throw;
+        }
+    }
+
     private static string ExtractTextFromHtml(string html)
     {
         var text = Regex.Replace(html, "<.*?>", string.Empty);
@@ -103,12 +219,4 @@ public class MailService
         }
         return result;
     }
-}
-
-public class EmailTemplate
-{
-    public string Name { get; set; } = string.Empty;
-    public string Subject { get; set; } = string.Empty;
-    public string HtmlBody { get; set; } = string.Empty;
-    public string TextBody { get; set; } = string.Empty;
 }

@@ -12,10 +12,20 @@ using System.Linq.Expressions;
 public class TestTemplateTypeService : ITestTemplateTypeService
 {
     private readonly ITestTemplateTypeRepository _repo;
+    private readonly ITestRepository _testRepository;
+    private readonly IGenericRepository<TestTemplate> _testTemplateRepository;
+    private readonly IGenericRepository<TestTemplateConfig> _testTemplateConfigRepository;
 
-    public TestTemplateTypeService(ITestTemplateTypeRepository repo)
+    public TestTemplateTypeService(
+        ITestTemplateTypeRepository repo,
+        ITestRepository testRepository,
+        IGenericRepository<TestTemplate> testTemplateRepository,
+        IGenericRepository<TestTemplateConfig> testTemplateConfigRepository)
     {
         _repo = repo;
+        _testRepository = testRepository;
+        _testTemplateRepository = testTemplateRepository;
+        _testTemplateConfigRepository = testTemplateConfigRepository;
     }
 
     /// <summary>
@@ -35,7 +45,13 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                     && (!isActive.HasValue || t.isActive == isActive.Value);
             }
 
-            var paginated = await _repo.GetPaginationAsync(predicate, null, pageIndex, pageSize);
+            var paginated = await _repo.GetPaginationAsync(
+                predicate,
+                null,
+                pageIndex,
+                pageSize,
+                orderBy: q => q.OrderByDescending(t => t.createdAt)
+            );
 
             return new Pagination<TestTemplateTypeDto>
             {
@@ -59,6 +75,13 @@ public class TestTemplateTypeService : ITestTemplateTypeService
     {
         try
         {
+            // Check for existing testType and courseLevel
+            var existing = await _repo.GetFirstOrDefaultAsync(
+                t => t.testType == dto.testType && t.courseLevel == dto.courseLevel
+            );
+            if (existing != null)
+                throw ApiException.BadRequest("DUPLICATE_TEST_TEMPLATE_TYPE", "A test template type with the same test type and course level already exists.");
+
             var entity = new TestTemplateType
             {
                 TestTemplateTypeId = Guid.NewGuid(),
@@ -67,8 +90,10 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                 courseLevel = dto.courseLevel,
                 testType = dto.testType,
                 description = dto.description,
-                isActive = dto.isActive,
-                createdAt = DateTime.UtcNow
+                isActive = false,
+                createdAt = DateTime.UtcNow,
+                totalTestScore = dto.totalTestScore,
+                totalPassPercentage = dto.totalPassPercentage,
             };
             await _repo.InsertAsync(entity);
             await _repo.SaveChangesAsync();
@@ -92,6 +117,19 @@ public class TestTemplateTypeService : ITestTemplateTypeService
             if (entity == null)
                 throw ApiException.NotFound("TestTemplateType", testTemplateTypeId);
 
+            // Determine the new values to check for duplicates
+            var newTestType = dto.testType ?? entity.testType;
+            var newCourseLevel = dto.courseLevel ?? entity.courseLevel;
+
+            // Check for existing testType and courseLevel (excluding current entity)
+            var existing = await _repo.GetFirstOrDefaultAsync(
+                t => t.testType == newTestType
+                    && t.courseLevel == newCourseLevel
+                    && t.TestTemplateTypeId != testTemplateTypeId
+            );
+            if (existing != null)
+                throw ApiException.BadRequest("DUPLICATE_TEST_TEMPLATE_TYPE", "A test template type with the same test type and course level already exists.");
+
             if (dto.typeName != null)
                 entity.typeName = dto.typeName;
             if (dto.courseLevel.HasValue)
@@ -102,6 +140,10 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                 entity.description = dto.description;
             if (dto.isActive.HasValue)
                 entity.isActive = dto.isActive.Value;
+            if (dto.totalTestScore.HasValue)
+                entity.totalTestScore = dto.totalTestScore.Value;
+            if (dto.totalPassPercentage.HasValue)
+                entity.totalPassPercentage = dto.totalPassPercentage.Value;
 
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();
@@ -124,6 +166,17 @@ public class TestTemplateTypeService : ITestTemplateTypeService
             var entity = await _repo.GetByIdAsync(testTemplateTypeId);
             if (entity == null)
                 throw ApiException.NotFound("TestTemplateType", testTemplateTypeId);
+
+            // Prevent deletion if active and used in any open test
+            if (entity.isActive)
+            {
+                var existsInOpenTest = await _testRepository.AnyAsync(
+                    t => t.TestTemplateTypeId == testTemplateTypeId && t.status == TestStatus.Open
+                );
+                if (existsInOpenTest)
+                    throw ApiException.BadRequest("DELETE_NOT_ALLOWED", "Cannot delete an active template type that is used in any open test.");
+            }
+
             await _repo.DeleteAsync(entity);
             await _repo.SaveChangesAsync();
         }
@@ -144,6 +197,29 @@ public class TestTemplateTypeService : ITestTemplateTypeService
             var entity = await _repo.GetByIdAsync(testTemplateTypeId);
             if (entity == null)
                 throw ApiException.NotFound("TestTemplateType", testTemplateTypeId);
+
+            if (isActive)
+            {
+                // Check if any TestTemplate exists for this type
+                var hasTestTemplate = await _testTemplateRepository.AnyAsync(
+                    t => t.TestTemplateTypeId == testTemplateTypeId
+                );
+                if (!hasTestTemplate)
+                    throw ApiException.BadRequest("NO_TEST_TEMPLATE", "Cannot activate: No test template belongs to this type.");
+
+
+                // With the following line:
+                var testTemplatesOfType = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == testTemplateTypeId);
+
+                var templateIds = testTemplatesOfType.Select(t => t.templateId).ToList();
+
+                var hasConfig = await _testTemplateConfigRepository.AnyAsync(
+                    c => templateIds.Contains(c.templateId)
+                );
+
+                if (!hasConfig)
+                    throw ApiException.BadRequest("NO_TEST_TEMPLATE_CONFIG", "Cannot activate: No test template config belongs to any test template of this type.");
+            }
 
             entity.isActive = isActive;
 
@@ -167,6 +243,8 @@ public class TestTemplateTypeService : ITestTemplateTypeService
         testType = t.testType,
         description = t.description,
         isActive = t.isActive,
-        createdAt = t.createdAt
+        createdAt = t.createdAt,
+        totalTestScore = t.totalTestScore,
+        totalPassPercentage = t.totalPassPercentage,
     };
 }

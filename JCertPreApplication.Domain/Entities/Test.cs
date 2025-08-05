@@ -8,6 +8,7 @@ namespace JCertPreApplication.Domain.Entities
         public string title { get; set; } = null!;
         public string description { get; set; } = null!;
         public TestType testType { get; set; }
+        public CourseLevel courseLevel { get; set; }
         public int durationMinutes { get; set; }
         public Guid? lessonId { get; set; }
         public Guid createdByUserId { get; set; }

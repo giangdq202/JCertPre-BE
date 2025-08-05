@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Dtos.Test;
 using JCertPreApplication.Application.Utilities;
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Features.Tests
 {
@@ -12,7 +13,14 @@ namespace JCertPreApplication.Application.Features.Tests
         /// <summary>
         /// Get all tests by user id with paging and search by title.
         /// </summary>
-        Task<Pagination<TestDto>> GetAllByUserIdAsync(Guid userId, string? searchTerm, int pageIndex, int pageSize);
+        Task<Pagination<TestDto>> GetAllByUserIdAsync(
+            Guid userId,
+            string? searchTerm,
+            int pageIndex,
+            int pageSize,
+            TestType? testType = null,
+            CourseLevel? courseLevel = null
+        );
 
         /// <summary>
         /// Get a test by lesson id.

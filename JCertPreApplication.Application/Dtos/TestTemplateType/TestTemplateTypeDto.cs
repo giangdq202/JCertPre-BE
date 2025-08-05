@@ -10,4 +10,6 @@ public class TestTemplateTypeDto
     public string description { get; set; } = null!;
     public bool isActive { get; set; }
     public DateTime createdAt { get; set; }
+    public int totalTestScore { get; set; }
+    public decimal totalPassPercentage { get; set; }
 }

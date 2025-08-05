@@ -5,10 +5,12 @@ using JCertPreApplication.Domain.Entities;
 public class TestTemplateService : ITestTemplateService
 {
     private readonly ITestTemplateRepository _repo;
+    private readonly ITestTemplateTypeRepository _typeRepo;
 
-    public TestTemplateService(ITestTemplateRepository repo)
+    public TestTemplateService(ITestTemplateRepository repo, ITestTemplateTypeRepository typeRepo)
     {
         _repo = repo;
+        _typeRepo = typeRepo;
     }
 
     /// <summary>
@@ -35,6 +37,12 @@ public class TestTemplateService : ITestTemplateService
     {
         try
         {
+            var type = await _typeRepo.GetByIdAsync(dto.TestTemplateTypeId);
+            if (type == null)
+                throw ApiException.NotFound("TestTemplateType", dto.TestTemplateTypeId);
+            if (type.isActive)
+                throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot create a test template for an active test template type.");
+
             var entity = new TestTemplate
             {
                 templateId = Guid.NewGuid(),
@@ -66,6 +74,12 @@ public class TestTemplateService : ITestTemplateService
             var entity = await _repo.GetByIdAsync(templateId);
             if (entity == null)
                 throw ApiException.NotFound("TestTemplate", templateId);
+
+            var type = await _typeRepo.GetByIdAsync(entity.TestTemplateTypeId);
+            if (type == null)
+                throw ApiException.NotFound("TestTemplateType", entity.TestTemplateTypeId);
+            if (type.isActive)
+                throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot update a test template for an active test template type.");
 
             if (dto.templateName != null)
                 entity.templateName = dto.templateName;
@@ -99,6 +113,13 @@ public class TestTemplateService : ITestTemplateService
             var entity = await _repo.GetByIdAsync(templateId);
             if (entity == null)
                 throw ApiException.NotFound("TestTemplate", templateId);
+
+            var type = await _typeRepo.GetByIdAsync(entity.TestTemplateTypeId);
+            if (type == null)
+                throw ApiException.NotFound("TestTemplateType", entity.TestTemplateTypeId);
+            if (type.isActive)
+                throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot delete a test template for an active test template type.");
+
             await _repo.DeleteAsync(entity);
             await _repo.SaveChangesAsync();
         }

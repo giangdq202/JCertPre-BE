@@ -20,7 +20,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             var user = await _context.Users
              .Include(u => u.Role)
-             .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "Student");
+             .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "STUDENT");
             if (user == null) return null;
 
             var studentProfile = new StudentProfile
@@ -38,7 +38,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             var user = await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "Student");
+            .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "STUDENT");
             if (user == null) return null;
 
             return await _context.StudentProfiles
@@ -49,7 +49,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             var user = await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "Student");
+            .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "STUDENT");
             if (user == null) return null;
 
             var studentProfile = await _context.StudentProfiles
@@ -65,7 +65,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             var user = await _context.Users
             .Include(u => u.Role)
-            .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "Student");
+            .FirstOrDefaultAsync(u => u.userId == userId && u.Role.roleName == "STUDENT");
             if (user == null) return false;
 
             var studentProfile = await _context.StudentProfiles
