@@ -27,7 +27,7 @@ public class LiveKitController : ControllerBase
     /// <param name="roomName">The name of the room to join.</param>
     /// <param name="participantIdentity">The unique identifier of the participant (defaults to user's ID).</param>
     /// <param name="participantName">The display name of the participant (optional).</param>
-    /// <param name="role">The role of the participant (Student, Instructor, Admin).</param>
+    /// <param name="role">The role of the participant (Student, Instructor).</param>
     /// <returns>A JWT token that can be used to connect to LiveKit.</returns>
     [HttpGet("token")]
     public IActionResult GetToken(
@@ -58,24 +58,6 @@ public class LiveKitController : ControllerBase
     }
 
     /// <summary>
-    /// Generates an admin token with full permissions.
-    /// </summary>
-    [HttpGet("admin-token")]
-    public IActionResult GetAdminToken(
-        [FromQuery] [Required] string roomName,
-        [FromQuery] string? participantIdentity = null,
-        [FromQuery] string? participantName = null)
-    {
-        participantIdentity ??= User.Identity?.Name ?? 
-            throw ApiException.Unauthorized("User identity not found");
-        participantName ??= participantIdentity;
-
-        var token = _liveKitService.GenerateAdminToken(roomName, participantIdentity, participantName);
-
-        return Ok(new { token });
-    }
-
-    /// <summary>
     /// Creates a new room with specified settings.
     /// </summary>
     [HttpPost("rooms")]
@@ -93,6 +75,7 @@ public class LiveKitController : ControllerBase
         return Ok(room);
     }
 
+    /*
     /// <summary>
     /// Gets all active rooms.
     /// </summary>
@@ -102,6 +85,7 @@ public class LiveKitController : ControllerBase
         var rooms = await _liveKitService.ListRoomsAsync();
         return Ok(rooms);
     }
+    */
 
     /// <summary>
     /// Gets information about a specific room.
@@ -147,6 +131,7 @@ public class LiveKitController : ControllerBase
         return NoContent();
     }
 
+    /*
     /// <summary>
     /// Promotes a participant to instructor role.
     /// </summary>
@@ -166,6 +151,7 @@ public class LiveKitController : ControllerBase
         var participant = await _liveKitService.DemoteToStudentAsync(roomName, identity);
         return Ok(participant);
     }
+    */
 
     /// <summary>
     /// Mutes a participant's audio.
@@ -177,6 +163,17 @@ public class LiveKitController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Unmutes a participant's audio.
+    /// </summary>
+    [HttpPost("rooms/{roomName}/participants/{identity}/unmute")]
+    public async Task<IActionResult> UnmuteParticipant(string roomName, string identity)
+    {
+        await _liveKitService.UnmuteParticipantAudioAsync(roomName, identity);
+        return NoContent();
+    }
+
+    /*
     /// <summary>
     /// Sends a message to all participants in a room.
     /// </summary>
@@ -220,6 +217,7 @@ public class LiveKitController : ControllerBase
             return BadRequest($"Webhook processing failed: {ex.Message}");
         }
     }
+    */
 }
 
 // DTOs for API requests
