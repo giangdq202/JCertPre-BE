@@ -10,6 +10,8 @@ namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
     /// Manages course operations and instructor assignments.
+    /// Supports CourseType enum with values: Personal (0), Public (1).
+    /// Uses file upload for thumbnails, ThumbnailUrl is deprecated in create operations.
     /// </summary>
     [Route("api/course")]
     [ApiController]
@@ -27,6 +29,8 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets courses with filtering and pagination.
         /// </summary>
+        /// <param name="queryParameters">Query parameters for filtering courses by various criteria including CourseType (Personal=0, Public=1)</param>
+        /// <returns>Paginated list of courses</returns>
         [HttpGet]
         public async Task<IActionResult> GetCourses([FromQuery] CourseQueryParameters queryParameters)
         {
@@ -47,6 +51,8 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Creates a new course.
         /// </summary>
+        /// <param name="createCourseDto">Course creation data including CourseType (Personal=0, Public=1). Use ThumbnailFile for image upload, ThumbnailUrl is no longer supported.</param>
+        /// <returns>Created course details</returns>
         [HttpPost]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> CreateCourse([FromForm] CreateCourseDto createCourseDto)
@@ -61,6 +67,9 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Updates an existing course.
         /// </summary>
+        /// <param name="id">Course ID to update</param>
+        /// <param name="updateCourseDto">Course update data. CourseType can be changed to Personal=0 or Public=1. Use ThumbnailFile for new image upload.</param>
+        /// <returns>Updated course details</returns>
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UpdateCourse(Guid id, [FromForm] UpdateCourseDto updateCourseDto)
@@ -85,6 +94,9 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Updates course status.
         /// </summary>
+        /// <param name="id">Course ID to update</param>
+        /// <param name="status">New course status (Draft, Published, Archived)</param>
+        /// <returns>No content if successful</returns>
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateCourseStatus(Guid id, [FromBody] CourseStatus status)
         {
