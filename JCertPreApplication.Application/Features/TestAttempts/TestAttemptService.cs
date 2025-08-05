@@ -19,6 +19,7 @@ public class TestAttemptService : ITestAttemptService
     private readonly ILessonRepository _lessonRepository;
     private readonly ITestTemplateRepository _testTemplateRepository;
     private readonly ITestTemplateConfigRepository _testTemplateConfigRepository;
+    private readonly ISubContentRepository _subContentRepository;
 
     public TestAttemptService(
         ITestAttemptRepository testAttemptRepository,
@@ -32,7 +33,8 @@ public class TestAttemptService : ITestAttemptService
         ITestScoreSummaryRepository testScoreSummaryRepository,
         ILessonRepository lessonRepository,
         ITestTemplateRepository testTemplateRepository,
-        ITestTemplateConfigRepository testTemplateConfigRepository)
+        ITestTemplateConfigRepository testTemplateConfigRepository,
+        ISubContentRepository subContentRepository)
     {
         _testAttemptRepository = testAttemptRepository;
         _testRepository = testRepository;
@@ -46,6 +48,7 @@ public class TestAttemptService : ITestAttemptService
         _lessonRepository = lessonRepository;
         _testTemplateRepository = testTemplateRepository;
         _testTemplateConfigRepository = testTemplateConfigRepository;
+        _subContentRepository = subContentRepository;
     }
 
     /// <summary>
@@ -229,13 +232,13 @@ public class TestAttemptService : ITestAttemptService
                 var subContentIds = configs.Select(c => c.subContentId).ToHashSet();
 
                 // Map subContentId to ContentName
-                // Fetch all questions for these subContentIds in one query
-                var questions = await _questionRepository.GetAllAsync(
-                    q => subContentIds.Contains(q.SubContentId), "SubContent");
-                var subContentNames = questions
-                    .Where(q => q.SubContent != null)
-                    .Select(q => q.SubContent.ContentName)
-                    .ToHashSet();
+                var subContentNames = new HashSet<ContentName>();
+                foreach (var subContentId in subContentIds)
+                {
+                    var subContentEntity = await _subContentRepository.GetByIdAsync(subContentId);
+                    if (subContentEntity != null)
+                        subContentNames.Add(subContentEntity.ContentName);
+                }
 
                 // Sum max scores for this template
                 int templateMaxScore = 0;
