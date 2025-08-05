@@ -93,16 +93,11 @@ namespace JCertPreApplication.Persistence
             {
                 configuration.GetSection(PayOSConfiguration.SectionName).Bind(payOSConfig);
                 
-                // Inject BaseUrl từ ApiConfiguration
+                // Inject BaseUrl từ ApiConfiguration.PublicUrl cho external callbacks
                 var apiConfig = configuration.GetSection(ApiConfiguration.SectionName).Get<ApiConfiguration>();
-                if (apiConfig != null && !string.IsNullOrEmpty(apiConfig.Urls))
+                if (apiConfig != null && !string.IsNullOrEmpty(apiConfig.PublicUrl))
                 {
-                    // Lấy URL đầu tiên từ danh sách URLs (có thể có nhiều URLs cách nhau bởi ;)
-                    var firstUrl = apiConfig.Urls.Split(';').FirstOrDefault()?.Trim();
-                    if (!string.IsNullOrEmpty(firstUrl))
-                    {
-                        payOSConfig.BaseUrl = firstUrl;
-                    }
+                    payOSConfig.BaseUrl = apiConfig.PublicUrl.TrimEnd('/');
                 }
             });
             
@@ -114,15 +109,11 @@ namespace JCertPreApplication.Persistence
                     throw new ArgumentException("PayOS configuration not found. Please configure PayOS section in appsettings.json");
                 }
                 
-                // Set BaseUrl từ ApiConfiguration
+                // Set BaseUrl từ ApiConfiguration.PublicUrl cho external callbacks
                 var apiConfig = configuration.GetSection(ApiConfiguration.SectionName).Get<ApiConfiguration>();
-                if (apiConfig != null && !string.IsNullOrEmpty(apiConfig.Urls))
+                if (apiConfig != null && !string.IsNullOrEmpty(apiConfig.PublicUrl))
                 {
-                    var firstUrl = apiConfig.Urls.Split(';').FirstOrDefault()?.Trim();
-                    if (!string.IsNullOrEmpty(firstUrl))
-                    {
-                        payOSConfig.BaseUrl = firstUrl;
-                    }
+                    payOSConfig.BaseUrl = apiConfig.PublicUrl.TrimEnd('/');
                 }
                 
                 return new PayOSService(payOSConfig.ClientId, payOSConfig.ApiKey, payOSConfig.ChecksumKey, 
