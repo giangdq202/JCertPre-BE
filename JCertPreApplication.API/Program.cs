@@ -141,6 +141,7 @@ static void LogEnvironmentVariables(IConfiguration config)
     Console.WriteLine("\n[API Configuration]");
     Console.WriteLine($"Environment: {config["Api:Environment"]}");
     Console.WriteLine($"Urls: {config["Api:Urls"]}");
+    Console.WriteLine($"PublicUrl: {config["Api:PublicUrl"]}");
     Console.WriteLine($"ShowConfigurationStatus: {config["Api:ShowConfigurationStatus"]}");
     
     // CORS Configuration
