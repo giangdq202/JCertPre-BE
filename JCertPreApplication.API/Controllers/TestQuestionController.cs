@@ -73,4 +73,16 @@ namespace JCertPreApplication.API.Controllers
         await _service.CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
         return NoContent();
     }
+
+    /// <summary>
+    /// Add JLPT auto-generated questions to a test.
+    /// </summary>
+    /// <param name="testId">The ID of the test to add questions to.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    [HttpPost("jlpt-auto/{testId}")]
+    public async Task<IActionResult> AddQuestionsJLPTAuto(Guid testId)
+    {
+        await _service.AddQuestionsJLPTAutoAsync(testId);
+        return Ok(new { message = "JLPT Auto questions added successfully." });
+    }
 }}

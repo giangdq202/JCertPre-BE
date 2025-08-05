@@ -10,7 +10,7 @@ public class PayOSConfiguration
     public string ReturnEndpoint { get; set; } = string.Empty;
     public string CancelEndpoint { get; set; } = string.Empty;
     
-    // BaseUrl sẽ được inject từ ApiConfiguration
+    // BaseUrl sẽ được inject từ ApiConfiguration.PublicUrl (external URL for callbacks)
     private string? _baseUrl;
     public string BaseUrl 
     { 

@@ -59,8 +59,10 @@ namespace JCertPreApplication.Application.Features.Course
                     courseType = createCourseDto.CourseType,
                     price = createCourseDto.Price,
                     thumbnailUrl = thumbnailUrl,
-                    status = CourseStatus.Draft, // Default status
-                    createdAt = DateTime.UtcNow
+                    status = CourseStatus.Draft,
+                    createdAt = DateTime.UtcNow,
+                    startDate = createCourseDto.StartDate,    // Add new field
+                    endDate = createCourseDto.EndDate         // Add new field
                 };
 
                 await _courseRepository.InsertAsync(course);
@@ -92,7 +94,21 @@ namespace JCertPreApplication.Application.Features.Course
         public async Task<Pagination<CourseListDto>> GetCoursesWithPaginationAsync(CourseQueryParameters queryParameters)
         {
             var paginatedCourses = await _courseRepository.GetCoursesWithPaginationAsync(queryParameters);
-            
+
+            // Filter by start and end date if provided
+            if (queryParameters.StartDate.HasValue)
+            {
+                paginatedCourses.Items = paginatedCourses.Items
+                    .Where(c => c.startDate >= queryParameters.StartDate.Value)
+                    .ToList();
+            }
+            if (queryParameters.EndDate.HasValue)
+            {
+                paginatedCourses.Items = paginatedCourses.Items
+                    .Where(c => c.endDate <= queryParameters.EndDate.Value)
+                    .ToList();
+            }
+
             return new Pagination<CourseListDto>
             {
                 Items = paginatedCourses.Items.Select(MapToCourseListDto).ToList(),
@@ -165,6 +181,12 @@ namespace JCertPreApplication.Application.Features.Course
                     course.price = updateCourseDto.Price.Value;
                 if (updateCourseDto.Status.HasValue)
                     course.status = updateCourseDto.Status.Value;
+
+                // Update date fields if provided
+                if (updateCourseDto.StartDate.HasValue)
+                    course.startDate = updateCourseDto.StartDate.Value;
+                if (updateCourseDto.EndDate.HasValue)
+                    course.endDate = updateCourseDto.EndDate.Value;
 
                 await _courseRepository.UpdateAsync(course);
                 await _courseRepository.SaveChangesAsync();
@@ -307,6 +329,8 @@ namespace JCertPreApplication.Application.Features.Course
                 ThumbnailUrl = course.thumbnailUrl,
                 Status = course.status,
                 CreatedAt = course.createdAt,
+                StartDate = course.startDate,    // Added
+                EndDate = course.endDate,        // Added
                 LessonsCount = course.Lessons?.Count ?? 0,
                 EnrollmentsCount = course.Enrollments?.Count ?? 0,
                 Instructors = course.CourseInstructors?
@@ -329,6 +353,8 @@ namespace JCertPreApplication.Application.Features.Course
                 ThumbnailUrl = course.thumbnailUrl,
                 Status = course.status,
                 CreatedAt = course.createdAt,
+                StartDate = course.startDate,    // Added
+                EndDate = course.endDate,        // Added
                 EnrollmentsCount = course.Enrollments?.Count ?? 0,
                 InstructorsCount = course.CourseInstructors?.Count(ci => ci.IsActive) ?? 0
             };
