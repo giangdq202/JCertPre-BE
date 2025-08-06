@@ -61,19 +61,6 @@ namespace JCertPreApplication.API.Controllers
         await _service.DeleteTestQuestionAsync(testQuestionId);
         return NoContent();
     }
-
-    /// <summary>
-    /// Calculate and update max scores for test score summary.
-    /// </summary>
-    /// <param name="testId">Test ID.</param>
-    /// <returns>No content on success.</returns>
-    [HttpPost("{testId}/calculate-max-score")]
-    public async Task<IActionResult> CalculateMaxScore(Guid testId)
-    {
-        await _service.CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
-        return NoContent();
-    }
-
     /// <summary>
     /// Add JLPT auto-generated questions to a test.
     /// </summary>

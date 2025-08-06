@@ -65,16 +65,6 @@ namespace JCertPreApplication.Persistence.Configurations
                 .IsRequired()
                 .HasDefaultValue(0);
 
-            builder.Property(tss => tss.percentage_score)
-                .HasColumnType("decimal(5,2)")
-                .IsRequired()
-                .HasDefaultValue(0m);
-
-            builder.Property(tss => tss.passing_percentage)
-                .HasColumnType("decimal(5,2)")
-                .IsRequired()
-                .HasDefaultValue(0m);
-
             builder.HasOne(tss => tss.Test)
                 .WithMany(t => t.TestScoreSummaries)
                 .HasForeignKey(tss => tss.TestId)

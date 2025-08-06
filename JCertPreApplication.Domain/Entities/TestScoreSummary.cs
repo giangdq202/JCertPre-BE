@@ -25,8 +25,7 @@ namespace JCertPreApplication.Domain.Entities
         public int listening_max_score { get; set; } = 0;
         public int total_score { get; set; } = 0;
         public int total_max_score { get; set; } = 0;
-        public decimal percentage_score { get; set; } = 0m;
-        public decimal passing_percentage { get; set; } = 0m;
+        
 
         // Navigation properties
         public virtual Test Test { get; set; } = null!;
