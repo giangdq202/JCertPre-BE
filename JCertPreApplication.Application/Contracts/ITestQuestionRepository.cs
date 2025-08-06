@@ -7,6 +7,5 @@ namespace JCertPreApplication.Application.Contracts
 {
     public interface ITestQuestionRepository : IGenericRepository<TestQuestion>
     {
-        Task<bool> AnyAsync(Expression<Func<TestQuestion, bool>> predicate);
     }
 }

@@ -16,6 +16,7 @@ namespace JCertPreApplication.Domain.Entities
         public DateTime? availableFrom { get; set; }
         public DateTime? availableTo { get; set; }
         public int maxAttempts { get; set; }
+        public decimal passing_percentage { get; set; } = 0m;
         public TestStatus status { get; set; } 
 
         public virtual Lesson? Lesson { get; set; } = null!;

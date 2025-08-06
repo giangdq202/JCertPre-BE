@@ -80,18 +80,7 @@ public class TestQuestionService : ITestQuestionService
                 await _testQuestionRepo.AddRangeAsync(entities);
                 await _testQuestionRepo.SaveChangesAsync();
 
-                // If only one question is added, update only the relevant field
-                if (entities.Count == 1)
-                {
-                    var (point, contentName) = await GetQuestionPointAndContentNameByQuestionIdAsync(entities[0].questionId)
-                        ?? throw ApiException.NotFound("Question", entities[0].questionId);
-                    await UpdateTestScoreSummaryFieldAsync(testId, point, contentName, true);
-                }
-                else
-                {
-                    // Recalculate max scores for this test
-                    await CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
-                }
+                
             }
         }
         catch (ApiException) { throw; }
@@ -106,7 +95,10 @@ public class TestQuestionService : ITestQuestionService
         try
         {
             var testQuestions = await _testQuestionRepo.GetAllAsync(tq => tq.testId == testId);
-            return testQuestions.Select(MapToTestQuestionDto).ToList();
+            return testQuestions
+                .OrderBy(q => q.questionNumber)
+                .Select(MapToTestQuestionDto)
+                .ToList();
         }
         catch (ApiException) { throw; }
         catch (Exception ex)
@@ -142,11 +134,6 @@ public class TestQuestionService : ITestQuestionService
             await _testQuestionRepo.DeleteAsync(testQuestion);
             await _testQuestionRepo.SaveChangesAsync();
 
-            var (point, contentName) = await GetQuestionPointAndContentNameByQuestionIdAsync(testQuestion.questionId)
-                ?? throw ApiException.NotFound("Question", testQuestion.questionId);
-            await UpdateTestScoreSummaryFieldAsync(testQuestion.testId, point, contentName, false);
-
-            // Reorder question numbers after deletion
             await ReorderTestQuestionNumbersAsync(testQuestion.testId);
         }
         catch (ApiException) { throw; }
@@ -193,111 +180,6 @@ public class TestQuestionService : ITestQuestionService
         };
     }
 
-    public async Task CalculateAndUpdateTestScoreSummaryMaxScoresAsync(Guid testId)
-    {
-        // Get all test questions for the test, including Question and SubContent
-        var testQuestions = await _testQuestionRepo.GetAllAsync(
-            tq => tq.testId == testId,
-            "Question,Question.SubContent"
-        );
-
-        // Group and sum points by ContentName
-        int kanjiMax = testQuestions
-            .Where(q => q.Question?.SubContent?.ContentName == ContentName.Kanji)
-            .Sum(q => q.Question?.points ?? 0);
-
-        int vocabMax = testQuestions
-            .Where(q => q.Question?.SubContent?.ContentName == ContentName.Vocabulary)
-            .Sum(q => q.Question?.points ?? 0);
-
-        int grammarMax = testQuestions
-            .Where(q => q.Question?.SubContent?.ContentName == ContentName.Grammar)
-            .Sum(q => q.Question?.points ?? 0);
-
-        int readingMax = testQuestions
-            .Where(q => q.Question?.SubContent?.ContentName == ContentName.Reading)
-            .Sum(q => q.Question?.points ?? 0);
-
-        int listeningMax = testQuestions
-            .Where(q => q.Question?.SubContent?.ContentName == ContentName.Listening)
-            .Sum(q => q.Question?.points ?? 0);
-
-        int totalMax = kanjiMax + vocabMax + grammarMax + readingMax + listeningMax;
-
-        // Get the test score summary for this test (where TestAttemptId == null)
-        var summary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
-            s => s.TestId == testId && s.TestAttemptId == null);
-
-        if (summary == null)
-            throw ApiException.NotFound("TestScoreSummary", testId);
-
-        // Update max score fields
-        summary.kanji_max_score = kanjiMax;
-        summary.vocab_max_score = vocabMax;
-        summary.grammar_max_score = grammarMax;
-        summary.reading_max_score = readingMax;
-        summary.listening_max_score = listeningMax;
-        summary.total_max_score = totalMax;
-
-        await _testScoreSummaryRepository.UpdateAsync(summary);
-        await _testScoreSummaryRepository.SaveChangesAsync();
-    }
-
-    // 1. Get question point and content name by question id
-    public async Task<(int Point, ContentName ContentName)?> GetQuestionPointAndContentNameByQuestionIdAsync(Guid questionId)
-    {
-        var question = await _testQuestionRepo.GetFirstOrDefaultAsync(
-            tq => tq.questionId == questionId,
-            "Question,Question.SubContent"
-        );
-        if (question?.Question == null || question.Question.SubContent == null)
-            return null;
-
-        return (question.Question.points, question.Question.SubContent.ContentName);
-    }
-
-    public async Task UpdateTestScoreSummaryFieldAsync(Guid testId, int questionPoint, ContentName contentName, bool isAdd)
-    {
-        var summary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
-            s => s.TestId == testId && s.TestAttemptId == null);
-
-        if (summary == null)
-            throw ApiException.NotFound("TestScoreSummary", testId);
-
-        int delta = isAdd ? questionPoint : -questionPoint;
-
-        switch (contentName)
-        {
-            case ContentName.Kanji:
-                summary.kanji_max_score = Math.Max(0, summary.kanji_max_score + delta);
-                break;
-            case ContentName.Vocabulary:
-                summary.vocab_max_score = Math.Max(0, summary.vocab_max_score + delta);
-                break;
-            case ContentName.Grammar:
-                summary.grammar_max_score = Math.Max(0, summary.grammar_max_score + delta);
-                break;
-            case ContentName.Reading:
-                summary.reading_max_score = Math.Max(0, summary.reading_max_score + delta);
-                break;
-            case ContentName.Listening:
-                summary.listening_max_score = Math.Max(0, summary.listening_max_score + delta);
-                break;
-            default:
-                throw ApiException.BadRequest("INVALID_CONTENT_NAME", $"ContentName {contentName} is not supported.");
-        }
-
-        summary.total_max_score = Math.Max(0,
-            summary.kanji_max_score +
-            summary.vocab_max_score +
-            summary.grammar_max_score +
-            summary.reading_max_score +
-            summary.listening_max_score);
-
-        await _testScoreSummaryRepository.UpdateAsync(summary);
-        await _testScoreSummaryRepository.SaveChangesAsync();
-    }
-
     public async Task AddQuestionsJLPTAutoAsync(Guid testId)
     {
         var test = await _testRepo.GetByIdAsync(testId)
@@ -308,16 +190,6 @@ public class TestQuestionService : ITestQuestionService
 
         var templateType = await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
             ?? throw ApiException.NotFound("TestTemplateType", test.TestTemplateTypeId.Value);
-
-        var summary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
-            s => s.TestId == testId && s.TestAttemptId == null);
-        if (summary == null)
-            throw ApiException.NotFound("TestScoreSummary", testId);
-
-        summary.total_score = templateType.totalTestScore;
-        summary.passing_percentage = templateType.totalPassPercentage;
-        await _testScoreSummaryRepository.UpdateAsync(summary);
-        await _testScoreSummaryRepository.SaveChangesAsync();
 
         var testTemplates = await _testTemplateRepository.GetAllAsync(
             t => t.TestTemplateTypeId == test.TestTemplateTypeId.Value);
@@ -360,7 +232,5 @@ public class TestQuestionService : ITestQuestionService
 
         await _testQuestionRepo.AddRangeAsync(testQuestionsToAdd);
         await _testQuestionRepo.SaveChangesAsync();
-
-        await CalculateAndUpdateTestScoreSummaryMaxScoresAsync(testId);
     }
 }
