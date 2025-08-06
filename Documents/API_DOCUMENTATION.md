@@ -269,6 +269,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 | `GET` | `/` | Gets livestreams with comprehensive filtering | Query: `courseId`, `userId`, `startDate`, `endDate`, `timetableFormat`, `pageIndex`, `pageSize` |
 | `GET` | `/{id}/join-token` | Generates join token for livestream | Path: `id`, Query: `userId` |
 | `GET` | `/{id}/can-join` | Checks if user can join livestream | Path: `id`, Query: `userId` |
+| `POST` | `/{id}/participants/{participantId}/mute` | Mute or unmute a participant (Instructor only) | Path: `id`, `participantId`, Body: `MuteParticipantDto` |
 
 **Note:** The GET `/` endpoint supports multiple modes:
 - If `userId` and `timetableFormat=true`: Returns user's timetable format
@@ -552,13 +553,14 @@ Public endpoints (no authentication required):
 
 ## 📊 API Summary
 
-This documentation covers **27 controllers** with a total of **123+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
+This documentation covers **27 controllers** with a total of **124+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
 
 ### Recent Updates (August 5, 2025):
 - **CourseType Enum Updated**: Now supports `Personal (0)` and `Public (1)` values only
 - **Course Creation Enhanced**: Removed deprecated `ThumbnailUrl` field, now uses `ThumbnailFile` exclusively
 - **Swagger Integration**: CourseType enum now displays explicit values in API documentation
 - **Code Cleanup**: Removed unused `MediaType` enum to reduce technical debt
+- **Livestream Management Enhanced**: Added participant mute/unmute functionality for instructors
 
 ### Controllers Covered:
 1. **AuthController** - Authentication & authorization (10 endpoints)
@@ -575,7 +577,7 @@ This documentation covers **27 controllers** with a total of **123+ API endpoint
 12. **InstructorProfileController** - Instructor profiles (4 endpoints)
 13. **StudentProfileController** - Student profiles (4 endpoints)
 14. **ConversationController** - Chat/messaging (5 endpoints)
-15. **LivestreamController** - Live streaming (7 endpoints)
+15. **LivestreamController** - Live streaming (8 endpoints)
 16. **LiveKitController** - Video conferencing (14 endpoints)
 17. **TestsController** - Test management (7 endpoints)
 18. **QuestionController** - Question management (7 endpoints)
