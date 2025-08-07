@@ -12,7 +12,6 @@ public class TestQuestionService : ITestQuestionService
     private readonly ITestQuestionRepository _testQuestionRepo;
     private readonly ITestRepository _testRepo;
     private readonly ITestAttemptRepository _testAttemptRepo;
-    private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
     private readonly IQuestionRepository _questionRepository;
     private readonly ITestTemplateTypeRepository _testTemplateTypeRepository;
     private readonly ITestTemplateRepository _testTemplateRepository;
@@ -22,20 +21,18 @@ public class TestQuestionService : ITestQuestionService
         ITestQuestionRepository testQuestionRepo,
         ITestRepository testRepo,
         ITestAttemptRepository testAttemptRepo,
-        ITestScoreSummaryRepository testScoreSummaryRepository,
         IQuestionRepository questionRepository,
-        ITestTemplateTypeRepository testTemplateTypeRepository,
-        ITestTemplateRepository testTemplateRepository,
-        ITestTemplateConfigRepository testTemplateConfigRepository)
+        ITestTemplateTypeRepository testTemplateTypeRepo,
+        ITestTemplateRepository testTemplateRepo,
+        ITestTemplateConfigRepository testTemplateConfigRepo)
     {
         _testQuestionRepo = testQuestionRepo;
         _testRepo = testRepo;
         _testAttemptRepo = testAttemptRepo;
-        _testScoreSummaryRepository = testScoreSummaryRepository;
         _questionRepository = questionRepository;
-        _testTemplateTypeRepository = testTemplateTypeRepository;
-        _testTemplateRepository = testTemplateRepository;
-        _testTemplateConfigRepository = testTemplateConfigRepository;
+        _testTemplateTypeRepository = testTemplateTypeRepo;
+        _testTemplateRepository = testTemplateRepo;
+        _testTemplateConfigRepository = testTemplateConfigRepo;
     }
 
     public async Task AddQuestionsCustomManualAsync(List<(Guid testId, Guid questionId)> testQuestionPairs)
@@ -54,12 +51,19 @@ public class TestQuestionService : ITestQuestionService
                 if (test == null)
                     throw ApiException.NotFound("Test", testId);
 
+                // Get all existing questionIds for this test
                 var existingQuestions = await _testQuestionRepo.GetAllAsync(tq => tq.testId == testId);
+                var existingQuestionIds = existingQuestions.Select(q => q.questionId).ToHashSet();
+
                 int startNumber = existingQuestions.Count + 1;
 
                 var entities = new List<TestQuestion>();
                 foreach (var pair in group)
                 {
+                    // Skip if questionId already exists in this test
+                    if (existingQuestionIds.Contains(pair.questionId))
+                        continue;
+
                     // Use question repo for faster isActive check
                     var question = await _questionRepository.GetByIdAsync(pair.questionId);
                     if (question == null || !question.isActive)
@@ -72,15 +76,16 @@ public class TestQuestionService : ITestQuestionService
                         questionId = pair.questionId,
                         questionNumber = startNumber++
                     });
+
+                    // Add to set to prevent duplicates in the same batch
+                    existingQuestionIds.Add(pair.questionId);
                 }
 
                 if (entities.Count == 0)
-                    continue; // No active questions to add for this test
+                    continue; // No active or unique questions to add for this test
 
                 await _testQuestionRepo.AddRangeAsync(entities);
                 await _testQuestionRepo.SaveChangesAsync();
-
-                
             }
         }
         catch (ApiException) { throw; }
@@ -143,6 +148,41 @@ public class TestQuestionService : ITestQuestionService
         }
     }
 
+    public async Task DeleteAllTestQuestionsAsync(Guid testId)
+    {
+        try
+        {
+            var test = await _testRepo.GetByIdAsync(testId);
+            if (test == null)
+                throw ApiException.NotFound("Test", testId);
+
+            if (test.status != TestStatus.Close)
+                throw ApiException.BadRequest("DELETE_NOT_ALLOWED", "Can only delete questions if the test status is closed.");
+
+            var now = DateTime.UtcNow;
+            var activeAttemptExists = await _testAttemptRepo.AnyAsync(
+                ta => ta.testId == testId && ta.startTime <= now && ta.endTime >= now);
+
+            if (activeAttemptExists)
+                throw ApiException.BadRequest("DELETE_NOT_ALLOWED", "Cannot delete questions during an active test attempt window.");
+
+            var testQuestions = await _testQuestionRepo.GetAllAsync(tq => tq.testId == testId);
+            if (!testQuestions.Any())
+                return;
+
+            foreach (var tq in testQuestions)
+            {
+                await _testQuestionRepo.DeleteAsync(tq);
+            }
+            await _testQuestionRepo.SaveChangesAsync();
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("TEST_QUESTION_SERVICE_ERROR", $"An error occurred while deleting all test questions: {ex.Message}");
+        }
+    }
+
     public async Task ReorderTestQuestionNumbersAsync(Guid testId)
     {
         try
@@ -186,7 +226,7 @@ public class TestQuestionService : ITestQuestionService
             ?? throw ApiException.NotFound("Test", testId);
 
         if (!test.TestTemplateTypeId.HasValue)
-            throw ApiException.BadRequest("NO_TEMPLATE_TYPE", "TestTemplateTypeId is required for JLPTAuto.");
+            throw ApiException.BadRequest("NO_TEMPLATE_TYPE", "TestTemplateTypeId is required.");
 
         var templateType = await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
             ?? throw ApiException.NotFound("TestTemplateType", test.TestTemplateTypeId.Value);
@@ -209,6 +249,7 @@ public class TestQuestionService : ITestQuestionService
 
             foreach (var config in orderedConfigs)
             {
+                // Use the new repo method to get unique random question IDs
                 var randomIds = await _questionRepository.GetRandomQuestionIdsAsync(
                     config.subContentId, config.questionCount, config.pointPerQuestion);
 

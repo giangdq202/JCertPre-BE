@@ -14,26 +14,26 @@ namespace JCertPreApplication.Application.Features.Tests
         private readonly ILessonRepository _lessonRepository;
         private readonly ITestTemplateRepository _testTemplateRepository;
         private readonly ITestQuestionRepository _testQuestionRepository;
-        private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
         private readonly ITestAttemptRepository _testAttemptRepository;
         private readonly ITestTemplateTypeRepository _testTemplateTypeRepository;
+        private readonly ITestQuestionService _testQuestionService;
 
         public TestService(
             ITestRepository testRepository,
             ILessonRepository lessonRepository,
             ITestTemplateRepository testTemplateRepository,
             ITestQuestionRepository testQuestionRepository,
-            ITestScoreSummaryRepository testScoreSummaryRepository,
             ITestAttemptRepository testAttemptRepository,
-            ITestTemplateTypeRepository testTemplateTypeRepository)
+            ITestTemplateTypeRepository testTemplateTypeRepository,
+            ITestQuestionService testQuestionService)
         {
             _testRepository = testRepository;
             _lessonRepository = lessonRepository;
             _testTemplateRepository = testTemplateRepository;
             _testQuestionRepository = testQuestionRepository;
-            _testScoreSummaryRepository = testScoreSummaryRepository;
             _testAttemptRepository = testAttemptRepository;
             _testTemplateTypeRepository = testTemplateTypeRepository;
+            _testQuestionService = testQuestionService;
         }
 
         /// <summary>
@@ -167,7 +167,18 @@ namespace JCertPreApplication.Application.Features.Tests
                         testTemplateTypeId = customAutoType.TestTemplateTypeId;
                         durationMinutes = 0;
                         break;
+
+                    case TestType.EntryAuto:
+                        // Add logic for EntryAuto if needed, similar to JLPTAuto
+                        break;
                 }
+
+                // Set passing_percentage to 0 for JLPTAuto, EntryAuto, or CustomAuto
+                decimal passingPercentage = (dto.TestType == TestType.JLPTAuto ||
+                                             dto.TestType == TestType.EntryAuto ||
+                                             dto.TestType == TestType.CustomAuto)
+                    ? 0m
+                    : dto.PassingPercentage;
 
                 var test = new Test
                 {
@@ -182,7 +193,7 @@ namespace JCertPreApplication.Application.Features.Tests
                     availableFrom = dto.AvailableFrom,
                     availableTo = dto.AvailableTo,
                     maxAttempts = dto.MaxAttempts,
-                    passing_percentage = dto.PassingPercentage,
+                    passing_percentage = passingPercentage,
                     status = TestStatus.Close,
                     TestTemplateTypeId = testTemplateTypeId
                 };
@@ -241,9 +252,11 @@ namespace JCertPreApplication.Application.Features.Tests
                 if (dto.MaxAttempts.HasValue)
                     test.maxAttempts = dto.MaxAttempts.Value;
 
+                var newType = dto.TestType ?? test.testType;
+
                 if (dto.CourseLevel.HasValue)
                 {
-                    var newType = dto.TestType ?? test.testType;
+                    
                     if (newType == TestType.CustomManual)
                     {
                         test.courseLevel = dto.CourseLevel.Value;
@@ -266,6 +279,8 @@ namespace JCertPreApplication.Application.Features.Tests
 
                 if (dto.PassingPercentage.HasValue)
                 {
+                    if (newType == TestType.JLPTAuto || newType == TestType.EntryAuto || newType == TestType.CustomAuto)
+                        throw ApiException.BadRequest("UPDATE_PASSING_PERCENTAGE_NOT_ALLOWED", "Cannot update PassingPercentage for JLPTAuto, EntryAuto, or CustomAuto test types.");
                     if (test.status != TestStatus.Close)
                         throw ApiException.BadRequest("UPDATE_PASSING_PERCENTAGE_NOT_ALLOWED", "Can only update PassingPercentage if the test is closed.");
                     test.passing_percentage = dto.PassingPercentage.Value;
@@ -397,6 +412,68 @@ namespace JCertPreApplication.Application.Features.Tests
             if (type == null)
                 throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", $"No active test template type found for the provided course level and {testType} type.");
             return type;
+        }
+
+        public async Task<CreateAutoTestResult> CreateAutoTestAndAddQuestionsAsync(CreateAutoTestInput input, Guid userId)
+        {
+            // 1. Find TestTemplateType
+            var templateType = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
+                t => t.courseLevel == input.CourseLevel
+                    && t.isActive
+                    && t.testType == input.TestType
+            );
+            if (templateType == null)
+                throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", "No active test template type found for the provided course level and test type.");
+
+            // 2. Get all templates for this type to sum duration
+            var templates = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == templateType.TestTemplateTypeId);
+            if (templates == null || templates.Count == 0)
+                throw ApiException.BadRequest("NO_TEMPLATES_FOUND", "No test templates found for the provided template type.");
+
+            int durationMinutes = templates.Sum(t => t.durationMinutes);
+
+            // 3. Create test entity
+            var now = DateTime.UtcNow;
+            var test = new Test
+            {
+                testId = Guid.NewGuid(),
+                title = $"{templateType.typeName} {input.CourseLevel} Auto Test",
+                description = $"Auto-generated test for {templateType.typeName} {input.CourseLevel}",
+                testType = input.TestType,
+                courseLevel = input.CourseLevel,
+                durationMinutes = durationMinutes,
+                lessonId = null,
+                createdByUserId = userId,
+                availableFrom = now,
+                availableTo = now.AddYears(5),
+                maxAttempts = 1,
+                passing_percentage = templateType.totalPassPercentage,
+                status = TestStatus.Close,
+                TestTemplateTypeId = templateType.TestTemplateTypeId
+            };
+
+            await _testRepository.InsertAsync(test);
+            await _testRepository.SaveChangesAsync();
+
+            // 4. Add questions
+            await _testQuestionService.AddQuestionsJLPTAutoAsync(test.testId);
+
+            // 5. Change test status to Open
+            test.status = TestStatus.Open;
+            await _testRepository.UpdateAsync(test);
+            await _testRepository.SaveChangesAsync();
+
+            // 6. Return result
+            return new CreateAutoTestResult
+            {
+                TestId = test.testId,
+                Title = test.title,
+                Description = test.description,
+                DurationMinutes = test.durationMinutes,
+                TestTemplateTypeId = test.TestTemplateTypeId ?? Guid.Empty,
+                PassingPercentage = test.passing_percentage,
+                Status = test.status
+            };
         }
     }
 }

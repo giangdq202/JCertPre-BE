@@ -46,5 +46,10 @@ namespace JCertPreApplication.Application.Features.Tests
         /// Delete a test by test id.
         /// </summary>
         Task DeleteAsync(Guid testId);
+
+        /// <summary>
+        /// Create an auto test (JLPTAuto or EntryAuto) and add questions automatically.
+        /// </summary>
+        Task<CreateAutoTestResult> CreateAutoTestAndAddQuestionsAsync(CreateAutoTestInput input, Guid userId);
     }
 }
