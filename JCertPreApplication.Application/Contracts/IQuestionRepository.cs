@@ -1,4 +1,7 @@
-﻿using JCertPreApplication.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Contracts
 {
@@ -22,5 +25,6 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="pointPerQuestion">The point value for each question.</param>
         /// <returns>A list of GUIDs representing the IDs of the random questions.</returns>
         Task<List<Guid>> GetRandomQuestionIdsAsync(Guid subContentId, int questionCount, int pointPerQuestion);
+
     }
 }

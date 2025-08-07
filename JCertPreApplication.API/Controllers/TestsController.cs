@@ -1,9 +1,6 @@
 using JCertPreApplication.Application.Dtos.Test;
 using JCertPreApplication.Application.Features.Tests;
-using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.API.Controllers
@@ -130,6 +127,19 @@ namespace JCertPreApplication.API.Controllers
             if (dto == null)
                 return NotFound();
             return Ok(dto);
+        }
+
+        /// <summary>
+        /// Creates an auto test (JLPTAuto or EntryAuto) and adds questions automatically.
+        /// </summary>
+        /// <param name="input">Test type and course level.</param>
+        /// <param name="userId">User ID.</param>
+        /// <returns>Created test info.</returns>
+        [HttpPost("auto-create")]
+        public async Task<IActionResult> CreateAutoTestAndAddQuestions([FromBody] CreateAutoTestInput input, [FromQuery] Guid userId)
+        {
+            var result = await _testService.CreateAutoTestAndAddQuestionsAsync(input, userId);
+            return Ok(result);
         }
     }
 }
