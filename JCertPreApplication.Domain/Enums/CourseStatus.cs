@@ -4,7 +4,6 @@ namespace JCertPreApplication.Domain.Enums
     {
         Draft,
         Published,
-        Archived,
-        Suspended
+        Archived
     }
 } 

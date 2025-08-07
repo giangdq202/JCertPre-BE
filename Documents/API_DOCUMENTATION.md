@@ -76,18 +76,24 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `GET` | `/` | Gets courses with filtering and pagination | Query: `CourseQueryParameters` |
+| `GET` | `/` | Gets courses with filtering and pagination | Query: `CourseQueryParameters` (supports CourseType: Personal=0, Public=1) |
 | `GET` | `/{id}` | Gets course by ID | Path: `id` (Guid) |
-| `POST` | `/` | Creates a new course | Body: `CreateCourseDto` (multipart/form-data) |
-| `PUT` | `/{id}` | Updates an existing course | Path: `id`, Body: `UpdateCourseDto` (multipart/form-data) |
+| `POST` | `/` | Creates a new course | Body: `CreateCourseDto` (multipart/form-data) - CourseType: Personal=0, Public=1. Uses ThumbnailFile, ThumbnailUrl deprecated |
+| `PUT` | `/{id}` | Updates an existing course | Path: `id`, Body: `UpdateCourseDto` (multipart/form-data) - CourseType can be changed |
 | `DELETE` | `/{id}` | Deletes a course | Path: `id` (Guid) |
-| `PATCH` | `/{id}/status` | Updates course status | Path: `id`, Body: `CourseStatus` |
+| `PATCH` | `/{id}/status` | Updates course status | Path: `id`, Body: `CourseStatus` (Draft, Published, Archived) |
 | `POST` | `/{courseId}/instructors/{instructorId}` | Assigns instructor to course | Path: `courseId`, `instructorId` |
 | `DELETE` | `/{courseId}/instructors/{instructorId}` | Removes instructor from course | Path: `courseId`, `instructorId` |
 | `GET` | `/{courseId}/instructors` | Gets all instructors for a course | Path: `courseId` |
 | `GET` | `/{courseId}/instructors/history` | Gets instructor assignment history | Path: `courseId` |
 | `GET` | `/instructor/{instructorId}` | Gets courses taught by instructor | Path: `instructorId` |
 | `GET` | `/student/{studentId}` | Gets courses enrolled by student | Path: `studentId` |
+
+**CourseType Values:**
+- `Personal = 0`: Personal course for individual learning
+- `Public = 1`: Public course open for public enrollment
+
+**Note:** CreateCourse now only accepts `ThumbnailFile` for image uploads. The `ThumbnailUrl` field has been removed from course creation.
 
 ---
 
@@ -263,6 +269,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 | `GET` | `/` | Gets livestreams with comprehensive filtering | Query: `courseId`, `userId`, `startDate`, `endDate`, `timetableFormat`, `pageIndex`, `pageSize` |
 | `GET` | `/{id}/join-token` | Generates join token for livestream | Path: `id`, Query: `userId` |
 | `GET` | `/{id}/can-join` | Checks if user can join livestream | Path: `id`, Query: `userId` |
+| `POST` | `/{id}/participants/{participantId}/mute` | Mute or unmute a participant (Instructor only) | Path: `id`, `participantId`, Body: `MuteParticipantDto` |
 
 **Note:** The GET `/` endpoint supports multiple modes:
 - If `userId` and `timetableFormat=true`: Returns user's timetable format
@@ -507,9 +514,38 @@ Public endpoints (no authentication required):
 - **File Management**: Supports multiple file types with optimized upload for videos using chunked upload
 - **Test System**: Complete test creation, attempt, and automatic grading system with score summaries
 
+### 🏷️ Enum Values Reference
+
+#### CourseType
+- `Personal = 0`: Personal course for individual learning
+- `Public = 1`: Public course open for public enrollment
+
+#### CourseStatus
+- `Draft`: Course is being developed
+- `Published`: Course is available for enrollment
+- `Archived`: Course is no longer active
+
+#### CourseLevel
+- `N5`: Beginner level
+- `N4`: Elementary level  
+- `N3`: Intermediate level
+- `N2`: Pre-advanced level
+- `N1`: Advanced level
+
+#### TestStatus
+- `Draft`: Test is being developed
+- `Published`: Test is available for attempts
+- `Archived`: Test is no longer active
+
+#### TestType
+- `JLPTAuto`: Automatically generated JLPT test
+- `EntryAuto`: Automatically generated entry test
+- `CustomManual`: Manually created custom test
+- `CustomAuto`: Automatically generated custom test
+
 ---
 
-**Last Updated:** August 2, 2025  
+**Last Updated:** August 5, 2025  
 **API Version:** 1.0  
 **Base URL:** `https://your-api-domain.com`
 
@@ -517,7 +553,14 @@ Public endpoints (no authentication required):
 
 ## 📊 API Summary
 
-This documentation covers **27 controllers** with a total of **123+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
+This documentation covers **27 controllers** with a total of **124+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
+
+### Recent Updates (August 5, 2025):
+- **CourseType Enum Updated**: Now supports `Personal (0)` and `Public (1)` values only
+- **Course Creation Enhanced**: Removed deprecated `ThumbnailUrl` field, now uses `ThumbnailFile` exclusively
+- **Swagger Integration**: CourseType enum now displays explicit values in API documentation
+- **Code Cleanup**: Removed unused `MediaType` enum to reduce technical debt
+- **Livestream Management Enhanced**: Added participant mute/unmute functionality for instructors
 
 ### Controllers Covered:
 1. **AuthController** - Authentication & authorization (10 endpoints)
@@ -534,7 +577,7 @@ This documentation covers **27 controllers** with a total of **123+ API endpoint
 12. **InstructorProfileController** - Instructor profiles (4 endpoints)
 13. **StudentProfileController** - Student profiles (4 endpoints)
 14. **ConversationController** - Chat/messaging (5 endpoints)
-15. **LivestreamController** - Live streaming (7 endpoints)
+15. **LivestreamController** - Live streaming (8 endpoints)
 16. **LiveKitController** - Video conferencing (14 endpoints)
 17. **TestsController** - Test management (7 endpoints)
 18. **QuestionController** - Question management (7 endpoints)

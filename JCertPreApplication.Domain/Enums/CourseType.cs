@@ -2,8 +2,7 @@
 {
     public enum CourseType
     {
-        Learn,
-        Train,
-        LearnAndTrain
+        Personal = 0,
+        Public = 1
     }
 }

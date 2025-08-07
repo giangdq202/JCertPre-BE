@@ -14,9 +14,5 @@ namespace JCertPreApplication.Persistence.Repositories
     {
         public TestQuestionRepository(JCertPreDatabaseContext context) : base(context) { }
 
-        public async Task<bool> AnyAsync(Expression<Func<TestQuestion, bool>> predicate)
-        {
-            return await _dbSet.AnyAsync(predicate);
-        }
     }
 }

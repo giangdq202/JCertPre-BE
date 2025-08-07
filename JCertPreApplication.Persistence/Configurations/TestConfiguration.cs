@@ -47,6 +47,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.maxAttempts)
                 .IsRequired();
 
+            builder.Property(t => t.passing_percentage)
+                .HasColumnType("decimal(5,2)")
+                .IsRequired()
+                .HasDefaultValue(0m);
+
             builder.Property(t => t.status)
                 .IsRequired()
                 .HasConversion<string>();

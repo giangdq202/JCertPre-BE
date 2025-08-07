@@ -58,14 +58,6 @@ namespace JCertPreApplication.Application.Dtos.Course
         public IFormFile? ThumbnailFile { get; set; }
 
         /// <summary>
-        /// URL to the course thumbnail image. Optional field.
-        /// This field is deprecated in favor of ThumbnailFile.
-        /// </summary>
-        /// <example>https://cdn.jcertpre.com/thumbnails/n5-course-thumb.jpg</example>
-        [Url(ErrorMessage = "Please provide a valid URL for the thumbnail")]
-        public string? ThumbnailUrl { get; set; }
-
-        /// <summary>
         /// Course start date (UTC).
         /// </summary>
         /// <example>2024-01-20T00:00:00Z</example>

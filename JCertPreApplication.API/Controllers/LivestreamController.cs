@@ -2,6 +2,7 @@ using JCertPreApplication.Application.Dtos.Livestream;
 using JCertPreApplication.Application.Features.Livestreams;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -132,6 +133,34 @@ namespace JCertPreApplication.API.Controllers
         {
             var canJoin = await _livestreamService.CanUserJoinLivestreamAsync(userId, id);
             return Ok(new { canJoin });
+        }
+
+        /// <summary>
+        /// Mute or unmute a participant in livestream (Instructor only).
+        /// </summary>
+        [HttpPost("{id}/participants/{participantId}/mute")]
+        [Authorize]
+        public async Task<IActionResult> MuteParticipant(
+            Guid id, 
+            string participantId, 
+            [FromBody] MuteParticipantDto muteDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var instructorId = GetCurrentUserId();
+            
+            // Check if current user is instructor and can manage this livestream
+            if (!await _livestreamService.CanInstructorManageLivestreamAsync(instructorId, id))
+                return Forbid("Only instructors can mute participants in their livestreams");
+                
+            await _livestreamService.MuteParticipantAsync(id, participantId, muteDto.Muted);
+            
+            return Ok(new { 
+                message = muteDto.Muted ? "Participant muted successfully" : "Participant unmuted successfully",
+                participantId,
+                muted = muteDto.Muted 
+            });
         }
 
         private Guid GetCurrentUserId()
