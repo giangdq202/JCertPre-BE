@@ -48,19 +48,20 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Uploads a video file using chunked upload for large files.
+        /// Uploads a video or audio file using chunked upload for large files.
         /// </summary>
-        /// <param name="file">The video file to upload (MP4, AVI, MOV, WMV, FLV, WebM, MKV, 3GP).</param>
+        /// <param name="file">The video or audio file to upload (MP4, AVI, MOV, WMV, FLV, WebM, MKV, 3GP, MP3, WAV, AAC, OGG, FLAC, M4A, WMA, AMR).</param>
         /// <returns>Upload result with public ID and URL.</returns>
         [HttpPost("upload/video")]
         [Consumes("multipart/form-data")]
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
             var result = await _fileService.UploadVideoAsync(file);
+            var fileType = file.ContentType?.StartsWith("audio/") == true ? "Audio" : "Video";
             return Ok(new
             {
                 success = true,
-                message = "Video uploaded successfully",
+                message = $"{fileType} uploaded successfully",
                 data = new
                 {
                     publicId = result.PublicId,
@@ -122,7 +123,7 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
-        /// Deletes a video by public ID.
+        /// Deletes a video or audio file by public ID.
         /// </summary>
         /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
@@ -133,7 +134,7 @@ namespace JCertPreApplication.API.Controllers
             return Ok(new
             {
                 success = true,
-                message = "Video deleted successfully",
+                message = "Video/Audio deleted successfully",
                 data = new
                 {
                     publicId = request.PublicId,
