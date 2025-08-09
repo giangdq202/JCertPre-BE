@@ -39,18 +39,18 @@ namespace JCertPreApplication.API.Controllers
         [HttpPost("send-messages/{conversationId}")]
         public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] MessageRequest model)
         {
-            var senderIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(senderIdStr) || !Guid.TryParse(senderIdStr, out var senderId))
-            {
-                return Unauthorized(new ApiErrorResponse
-                {
-                    StatusCode = 401,
-                    ErrorCode = "INVALID_TOKEN",
-                    Message = "Invalid user token or user not authenticated."
-                });
-            }
+            //var senderIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //if (string.IsNullOrEmpty(senderIdStr) || !Guid.TryParse(senderIdStr, out var senderId))
+            //{
+            //    return Unauthorized(new ApiErrorResponse
+            //    {
+            //        StatusCode = 401,
+            //        ErrorCode = "INVALID_TOKEN",
+            //        Message = "Invalid user token or user not authenticated."
+            //    });
+            //}
 
-            var messageDto = await _conversationService.SendMessageAsync(conversationId, senderId, model);
+            var messageDto = await _conversationService.SendMessageAsync(conversationId, model);
             return Ok(messageDto);
         }
 
@@ -77,20 +77,9 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets all conversations for the user.
         /// </summary>
-        [HttpGet("my-conversations")]
-        public async Task<IActionResult> GetMyConversations()
+        [HttpGet("my-conversations/{userId}")]
+        public async Task<IActionResult> GetMyConversations([FromRoute] Guid userId)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized(new ApiErrorResponse
-                {
-                    StatusCode = 401,
-                    ErrorCode = "INVALID_TOKEN",
-                    Message = "Invalid user token or user not authenticated."
-                });
-            }
-
             var conversations = await _conversationService.GetConversationsForUserAsync(userId);
             return Ok(conversations);
         }
