@@ -49,14 +49,12 @@ namespace JCertPreApplication.Application.Features.Tests
         {
             try
             {
-                // Build predicate for filtering
                 Expression<Func<Test, bool>> predicate = t =>
                     t.createdByUserId == userId &&
                     (string.IsNullOrEmpty(searchTerm) || t.title.ToLower().Contains(searchTerm.ToLower())) &&
                     (!testType.HasValue || t.testType == testType.Value) &&
                     (!courseLevel.HasValue || t.courseLevel == courseLevel.Value);
 
-                // Get paginated and ordered results
                 var paged = await _testRepository.GetPaginationAsync(
                     predicate,
                     "TestTemplateType",
@@ -73,10 +71,7 @@ namespace JCertPreApplication.Application.Features.Tests
                     Items = paged.Items.Select(MapToTestDto).ToList()
                 };
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while retrieving tests: {ex.Message}");
@@ -96,10 +91,7 @@ namespace JCertPreApplication.Application.Features.Tests
 
                 return MapToTestDto(test);
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while retrieving the test: {ex.Message}");
@@ -118,10 +110,7 @@ namespace JCertPreApplication.Application.Features.Tests
                     return null;
                 return MapToTestDto(test);
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while retrieving the test: {ex.Message}");
@@ -169,11 +158,9 @@ namespace JCertPreApplication.Application.Features.Tests
                         break;
 
                     case TestType.EntryAuto:
-                        // Add logic for EntryAuto if needed, similar to JLPTAuto
                         break;
                 }
 
-                // Set passing_percentage to 0 for JLPTAuto, EntryAuto, or CustomAuto
                 decimal passingPercentage = (dto.TestType == TestType.JLPTAuto ||
                                              dto.TestType == TestType.EntryAuto ||
                                              dto.TestType == TestType.CustomAuto)
@@ -201,7 +188,6 @@ namespace JCertPreApplication.Application.Features.Tests
                 await _testRepository.InsertAsync(test);
                 await _testRepository.SaveChangesAsync();
 
-
                 var createdTest = await _testRepository.GetByIdAsync(test.testId);
                 if (createdTest != null && createdTest.TestTemplateTypeId.HasValue && templates != null)
                     createdTest.TestTemplateType = templates.FirstOrDefault()?.TestTemplateType;
@@ -214,7 +200,6 @@ namespace JCertPreApplication.Application.Features.Tests
                 throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while creating the test: {ex.Message}");
             }
         }
-
 
         /// <summary>
         /// Update a test by test id.
@@ -256,7 +241,6 @@ namespace JCertPreApplication.Application.Features.Tests
 
                 if (dto.CourseLevel.HasValue)
                 {
-                    
                     if (newType == TestType.CustomManual)
                     {
                         test.courseLevel = dto.CourseLevel.Value;
@@ -287,7 +271,6 @@ namespace JCertPreApplication.Application.Features.Tests
                 }
                 await _testRepository.UpdateAsync(test);
                 await _testRepository.SaveChangesAsync();
-               
 
                 var updatedTest = await _testRepository.GetFirstOrDefaultAsync(t => t.testId == testId, "TestTemplateType");
                 return MapToTestDto(updatedTest ?? test);
@@ -331,10 +314,7 @@ namespace JCertPreApplication.Application.Features.Tests
                 await _testRepository.DeleteAsync(test);
                 await _testRepository.SaveChangesAsync();
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while deleting the test: {ex.Message}");
@@ -367,10 +347,7 @@ namespace JCertPreApplication.Application.Features.Tests
 
                 return MapToTestDto(test);
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while updating test status: {ex.Message}");
@@ -382,98 +359,115 @@ namespace JCertPreApplication.Application.Features.Tests
         /// </summary>
         private TestDto MapToTestDto(Test test)
         {
-            return new TestDto
+            try
             {
-                TestId = test.testId,
-                Title = test.title,
-                Description = test.description,
-                TestType = test.testType,
-                CourseLevel = test.courseLevel,
-                DurationMinutes = test.durationMinutes,
-                LessonId = test.lessonId,
-                CreatedByUserId = test.createdByUserId,
-                AvailableFrom = test.availableFrom,
-                AvailableTo = test.availableTo,
-                MaxAttempts = test.maxAttempts,
-                Status = test.status,
-                TestTemplateTypeId = test.TestTemplateTypeId,
-                TestTemplateTypeName = test.TestTemplateType != null ? test.TestTemplateType.typeName : null
-            };
+                return new TestDto
+                {
+                    TestId = test.testId,
+                    Title = test.title,
+                    Description = test.description,
+                    TestType = test.testType,
+                    CourseLevel = test.courseLevel,
+                    DurationMinutes = test.durationMinutes,
+                    LessonId = test.lessonId,
+                    CreatedByUserId = test.createdByUserId,
+                    AvailableFrom = test.availableFrom,
+                    AvailableTo = test.availableTo,
+                    MaxAttempts = test.maxAttempts,
+                    Status = test.status,
+                    TestTemplateTypeId = test.TestTemplateTypeId,
+                    TestTemplateTypeName = test.TestTemplateType != null ? test.TestTemplateType.typeName : null
+                };
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while mapping test to DTO: {ex.Message}");
+            }
         }
 
         // Helper method for finding active TestTemplateType
         private async Task<TestTemplateType> FindActiveTemplateType(CourseLevel courseLevel, TestType testType)
         {
-            var type = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
-                t => t.courseLevel == courseLevel
-                    && t.isActive
-                    && t.testType == testType
-            );
-            if (type == null)
-                throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", $"No active test template type found for the provided course level and {testType} type.");
-            return type;
+            try
+            {
+                var type = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
+                    t => t.courseLevel == courseLevel
+                        && t.isActive
+                        && t.testType == testType
+                );
+                if (type == null)
+                    throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", $"No active test template type found for the provided course level and {testType} type.");
+                return type;
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while finding active template type: {ex.Message}");
+            }
         }
 
         public async Task<CreateAutoTestResult> CreateAutoTestAndAddQuestionsAsync(CreateAutoTestInput input, Guid userId)
         {
-            // 1. Find TestTemplateType
-            var templateType = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
-                t => t.courseLevel == input.CourseLevel
-                    && t.isActive
-                    && t.testType == input.TestType
-            );
-            if (templateType == null)
-                throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", "No active test template type found for the provided course level and test type.");
-
-            // 2. Get all templates for this type to sum duration
-            var templates = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == templateType.TestTemplateTypeId);
-            if (templates == null || templates.Count == 0)
-                throw ApiException.BadRequest("NO_TEMPLATES_FOUND", "No test templates found for the provided template type.");
-
-            int durationMinutes = templates.Sum(t => t.durationMinutes);
-
-            // 3. Create test entity
-            var now = DateTime.UtcNow;
-            var test = new Test
+            try
             {
-                testId = Guid.NewGuid(),
-                title = $"{templateType.typeName} {input.CourseLevel} Auto Test",
-                description = $"Auto-generated test for {templateType.typeName} {input.CourseLevel}",
-                testType = input.TestType,
-                courseLevel = input.CourseLevel,
-                durationMinutes = durationMinutes,
-                lessonId = null,
-                createdByUserId = userId,
-                availableFrom = now,
-                availableTo = now.AddYears(5),
-                maxAttempts = 1,
-                passing_percentage = templateType.totalPassPercentage,
-                status = TestStatus.Close,
-                TestTemplateTypeId = templateType.TestTemplateTypeId
-            };
+                var templateType = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
+                    t => t.courseLevel == input.CourseLevel
+                        && t.isActive
+                        && t.testType == input.TestType
+                );
+                if (templateType == null)
+                    throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", "No active test template type found for the provided course level and test type.");
 
-            await _testRepository.InsertAsync(test);
-            await _testRepository.SaveChangesAsync();
+                var templates = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == templateType.TestTemplateTypeId);
+                if (templates == null || templates.Count == 0)
+                    throw ApiException.BadRequest("NO_TEMPLATES_FOUND", "No test templates found for the provided template type.");
 
-            // 4. Add questions
-            await _testQuestionService.AddQuestionsJLPTAutoAsync(test.testId);
+                int durationMinutes = templates.Sum(t => t.durationMinutes);
 
-            // 5. Change test status to Open
-            test.status = TestStatus.Open;
-            await _testRepository.UpdateAsync(test);
-            await _testRepository.SaveChangesAsync();
+                var now = DateTime.UtcNow;
+                var test = new Test
+                {
+                    testId = Guid.NewGuid(),
+                    title = $"{templateType.typeName} {input.CourseLevel} Auto Test",
+                    description = $"Auto-generated test for {templateType.typeName} {input.CourseLevel}",
+                    testType = input.TestType,
+                    courseLevel = input.CourseLevel,
+                    durationMinutes = durationMinutes,
+                    lessonId = null,
+                    createdByUserId = userId,
+                    availableFrom = now,
+                    availableTo = now.AddYears(5),
+                    maxAttempts = 1,
+                    passing_percentage = templateType.totalPassPercentage,
+                    status = TestStatus.Close,
+                    TestTemplateTypeId = templateType.TestTemplateTypeId
+                };
 
-            // 6. Return result
-            return new CreateAutoTestResult
+                await _testRepository.InsertAsync(test);
+                await _testRepository.SaveChangesAsync();
+
+                await _testQuestionService.AddQuestionsJLPTAutoAsync(test.testId);
+
+                test.status = TestStatus.Open;
+                await _testRepository.UpdateAsync(test);
+                await _testRepository.SaveChangesAsync();
+
+                return new CreateAutoTestResult
+                {
+                    TestId = test.testId,
+                    Title = test.title,
+                    Description = test.description,
+                    DurationMinutes = test.durationMinutes,
+                    TestTemplateTypeId = test.TestTemplateTypeId ?? Guid.Empty,
+                    PassingPercentage = test.passing_percentage,
+                    Status = test.status
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
             {
-                TestId = test.testId,
-                Title = test.title,
-                Description = test.description,
-                DurationMinutes = test.durationMinutes,
-                TestTemplateTypeId = test.TestTemplateTypeId ?? Guid.Empty,
-                PassingPercentage = test.passing_percentage,
-                Status = test.status
-            };
+                throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while creating auto test and adding questions: {ex.Message}");
+            }
         }
     }
 }

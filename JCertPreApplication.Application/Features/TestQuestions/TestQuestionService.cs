@@ -222,56 +222,63 @@ public class TestQuestionService : ITestQuestionService
 
     public async Task AddQuestionsJLPTAutoAsync(Guid testId)
     {
-        var test = await _testRepo.GetByIdAsync(testId)
-            ?? throw ApiException.NotFound("Test", testId);
-
-        if (!test.TestTemplateTypeId.HasValue)
-            throw ApiException.BadRequest("NO_TEMPLATE_TYPE", "TestTemplateTypeId is required.");
-
-        var templateType = await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
-            ?? throw ApiException.NotFound("TestTemplateType", test.TestTemplateTypeId.Value);
-
-        var testTemplates = await _testTemplateRepository.GetAllAsync(
-            t => t.TestTemplateTypeId == test.TestTemplateTypeId.Value);
-        var orderedTemplates = testTemplates.OrderBy(t => t.sequence).ToList();
-
-        int questionNumber = 1;
-        var testQuestionsToAdd = new List<TestQuestion>();
-
-        foreach (var template in orderedTemplates)
+        try
         {
-            int partNumber = template.sequence;
-            int partDuration = template.durationMinutes;
+            var test = await _testRepo.GetByIdAsync(testId)
+                ?? throw ApiException.NotFound("Test", testId);
 
-            var configs = await _testTemplateConfigRepository.GetAllAsync(
-                c => c.templateId == template.templateId);
-            var orderedConfigs = configs.OrderBy(c => c.sequence).ToList();
+            if (!test.TestTemplateTypeId.HasValue)
+                throw ApiException.BadRequest("NO_TEMPLATE_TYPE", "TestTemplateTypeId is required.");
 
-            foreach (var config in orderedConfigs)
+            var templateType = await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
+                ?? throw ApiException.NotFound("TestTemplateType", test.TestTemplateTypeId.Value);
+
+            var testTemplates = await _testTemplateRepository.GetAllAsync(
+                t => t.TestTemplateTypeId == test.TestTemplateTypeId.Value);
+            var orderedTemplates = testTemplates.OrderBy(t => t.sequence).ToList();
+
+            int questionNumber = 1;
+            var testQuestionsToAdd = new List<TestQuestion>();
+
+            foreach (var template in orderedTemplates)
             {
-                // Use the new repo method to get unique random question IDs
-                var randomIds = await _questionRepository.GetRandomQuestionIdsAsync(
-                    config.subContentId, config.questionCount, config.pointPerQuestion);
+                int partNumber = template.sequence;
+                int partDuration = template.durationMinutes;
 
-                foreach (var qid in randomIds)
+                var configs = await _testTemplateConfigRepository.GetAllAsync(
+                    c => c.templateId == template.templateId);
+                var orderedConfigs = configs.OrderBy(c => c.sequence).ToList();
+
+                foreach (var config in orderedConfigs)
                 {
-                    testQuestionsToAdd.Add(new TestQuestion
+                    var randomIds = await _questionRepository.GetRandomQuestionIdsAsync(
+                        config.subContentId, config.questionCount, config.pointPerQuestion);
+
+                    foreach (var qid in randomIds)
                     {
-                        testQuestionId = Guid.NewGuid(),
-                        testId = testId,
-                        questionId = qid,
-                        questionNumber = questionNumber++,
-                        partNumber = partNumber,
-                        partDurationMinutes = partDuration
-                    });
+                        testQuestionsToAdd.Add(new TestQuestion
+                        {
+                            testQuestionId = Guid.NewGuid(),
+                            testId = testId,
+                            questionId = qid,
+                            questionNumber = questionNumber++,
+                            partNumber = partNumber,
+                            partDurationMinutes = partDuration
+                        });
+                    }
                 }
             }
+
+            if (testQuestionsToAdd.Count == 0)
+                throw ApiException.BadRequest("NO_QUESTIONS_FOUND", "No questions found for JLPTAuto generation.");
+
+            await _testQuestionRepo.AddRangeAsync(testQuestionsToAdd);
+            await _testQuestionRepo.SaveChangesAsync();
         }
-
-        if (testQuestionsToAdd.Count == 0)
-            throw ApiException.BadRequest("NO_QUESTIONS_FOUND", "No questions found for JLPTAuto generation.");
-
-        await _testQuestionRepo.AddRangeAsync(testQuestionsToAdd);
-        await _testQuestionRepo.SaveChangesAsync();
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("TEST_QUESTION_SERVICE_ERROR", $"An error occurred while adding JLPTAuto questions: {ex.Message}");
+        }
     }
 }

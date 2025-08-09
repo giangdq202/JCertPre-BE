@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using JCertPreApplication.Domain.Entities;
 
@@ -26,5 +27,11 @@ namespace JCertPreApplication.Application.Contracts
         /// <returns>A list of GUIDs representing the IDs of the random questions.</returns>
         Task<List<Guid>> GetRandomQuestionIdsAsync(Guid subContentId, int questionCount, int pointPerQuestion);
 
+        /// <summary>
+        /// Efficiently count questions matching a predicate.
+        /// </summary>
+        /// <param name="predicate">The condition to be satisfied.</param>
+        /// <returns>The number of questions that satisfy the condition.</returns>
+        Task<int> CountAsync(Expression<Func<Question, bool>> predicate);
     }
 }
