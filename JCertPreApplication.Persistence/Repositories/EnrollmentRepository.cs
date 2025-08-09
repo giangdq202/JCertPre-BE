@@ -47,5 +47,10 @@ namespace JCertPreApplication.Persistence.Repositories
             return await _dbSet
                 .AnyAsync(e => e.userId == userId && e.courseId == courseId);
         }
+
+        public async Task<long> GetTotalEnrollmentsCountAsync()
+        {
+            return await _context.Enrollments.LongCountAsync();
+        }
     }
 } 

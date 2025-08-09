@@ -37,5 +37,21 @@ namespace JCertPreApplication.API.Controllers
             var totalRevenue = await _adminDashboardService.GetTotalRevenueAsync();
             return Ok(totalRevenue);
         }
+
+        /// <summary>
+        /// Get total number of course enrollments.
+        /// Returns the total count of all course enrollments in the system.
+        /// </summary>
+        /// <returns>Total enrollments information including count and calculation timestamp</returns>
+        /// <response code="200">Returns the total enrollments data</response>
+        /// <response code="500">If there was an internal server error</response>
+        [HttpGet("enrollments/total")]
+        [ProducesResponseType(typeof(Application.Dtos.AdminDashboard.TotalEnrollmentsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetTotalEnrollments()
+        {
+            var totalEnrollments = await _adminDashboardService.GetTotalEnrollmentsAsync();
+            return Ok(totalEnrollments);
+        }
     }
 }

@@ -11,10 +11,14 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
     public class AdminDashboardService : IAdminDashboardService
     {
         private readonly IPaymentRepository _paymentRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
 
-        public AdminDashboardService(IPaymentRepository paymentRepository)
+        public AdminDashboardService(
+            IPaymentRepository paymentRepository,
+            IEnrollmentRepository enrollmentRepository)
         {
             _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
+            _enrollmentRepository = enrollmentRepository ?? throw new ArgumentNullException(nameof(enrollmentRepository));
         }
 
         /// <summary>
@@ -50,6 +54,33 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
                 throw ApiException.InternalServerError(
                     "REVENUE_CALCULATION_ERROR",
                     "An error occurred while calculating total revenue. Please try again later."
+                );
+            }
+        }
+
+        /// <summary>
+        /// Get total number of course enrollments
+        /// </summary>
+        /// <returns>Total enrollments information</returns>
+        public async Task<TotalEnrollmentsDto> GetTotalEnrollmentsAsync()
+        {
+            try
+            {
+                // Get total count of all enrollments
+                var totalCount = await _enrollmentRepository.GetTotalEnrollmentsCountAsync();
+
+                return new TotalEnrollmentsDto
+                {
+                    TotalCount = totalCount,
+                    CalculatedAt = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                // Log the exception (you can inject ILogger here if needed)
+                throw ApiException.InternalServerError(
+                    "ENROLLMENTS_COUNT_ERROR",
+                    "An error occurred while calculating total enrollments. Please try again later."
                 );
             }
         }
