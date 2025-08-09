@@ -69,5 +69,53 @@ namespace JCertPreApplication.API.Controllers
             var enrollmentsByMonth = await _adminDashboardService.GetEnrollmentsByMonthAsync();
             return Ok(enrollmentsByMonth);
         }
+
+        /// <summary>
+        /// Get current month enrollments count.
+        /// Returns the number of enrollments in the current month.
+        /// </summary>
+        /// <returns>Current month enrollments information including count and month</returns>
+        /// <response code="200">Returns the current month enrollments data</response>
+        /// <response code="500">If there was an internal server error</response>
+        [HttpGet("enrollments/current-month")]
+        [ProducesResponseType(typeof(Application.Dtos.AdminDashboard.CurrentMonthEnrollmentsDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCurrentMonthEnrollments()
+        {
+            var currentMonthEnrollments = await _adminDashboardService.GetCurrentMonthEnrollmentsAsync();
+            return Ok(currentMonthEnrollments);
+        }
+
+        /// <summary>
+        /// Get current month revenue amount.
+        /// Returns the total revenue from money deposits in the current month.
+        /// </summary>
+        /// <returns>Current month revenue information including amount, currency and month</returns>
+        /// <response code="200">Returns the current month revenue data</response>
+        /// <response code="500">If there was an internal server error</response>
+        [HttpGet("revenue/current-month")]
+        [ProducesResponseType(typeof(Application.Dtos.AdminDashboard.CurrentMonthRevenueDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetCurrentMonthRevenue()
+        {
+            var currentMonthRevenue = await _adminDashboardService.GetCurrentMonthRevenueAsync();
+            return Ok(currentMonthRevenue);
+        }
+
+        /// <summary>
+        /// Get revenue statistics by month for the last 12 months.
+        /// Returns revenue amounts grouped by month in MM/yyyy format.
+        /// </summary>
+        /// <returns>Revenue by month data as a dictionary with MM/yyyy keys and amount values</returns>
+        /// <response code="200">Returns the revenue by month data</response>
+        /// <response code="500">If there was an internal server error</response>
+        [HttpGet("revenue/by-month")]
+        [ProducesResponseType(typeof(Application.Dtos.AdminDashboard.RevenueByMonthDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetRevenueByMonth()
+        {
+            var revenueByMonth = await _adminDashboardService.GetRevenueByMonthAsync();
+            return Ok(revenueByMonth);
+        }
     }
 }

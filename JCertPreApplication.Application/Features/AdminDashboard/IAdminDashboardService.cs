@@ -24,5 +24,23 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
         /// </summary>
         /// <returns>Enrollments by month data</returns>
         Task<EnrollmentsByMonthDto> GetEnrollmentsByMonthAsync();
+
+        /// <summary>
+        /// Get current month enrollments count
+        /// </summary>
+        /// <returns>Current month enrollments information</returns>
+        Task<CurrentMonthEnrollmentsDto> GetCurrentMonthEnrollmentsAsync();
+
+        /// <summary>
+        /// Get current month revenue amount
+        /// </summary>
+        /// <returns>Current month revenue information</returns>
+        Task<CurrentMonthRevenueDto> GetCurrentMonthRevenueAsync();
+
+        /// <summary>
+        /// Get revenue statistics by month for the last 12 months
+        /// </summary>
+        /// <returns>Revenue by month data</returns>
+        Task<RevenueByMonthDto> GetRevenueByMonthAsync();
     }
 }

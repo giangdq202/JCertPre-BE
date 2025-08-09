@@ -62,5 +62,12 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Select(g => new MonthlyCount(g.Key.Year, g.Key.Month, g.LongCount()))
                 .ToListAsync();
         }
+
+        public async Task<long> CountByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Enrollments
+                .Where(e => e.enrollDate >= startDate && e.enrollDate < endDate)
+                .LongCountAsync();
+        }
     }
 } 

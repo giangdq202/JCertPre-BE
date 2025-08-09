@@ -136,5 +136,124 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
                 );
             }
         }
+
+        /// <summary>
+        /// Get current month enrollments count
+        /// </summary>
+        /// <returns>Current month enrollments information</returns>
+        public async Task<CurrentMonthEnrollmentsDto> GetCurrentMonthEnrollmentsAsync()
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                // Calculate start of current month
+                var startOfMonth = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
+                // Calculate start of next month
+                var startOfNextMonth = DateTime.SpecifyKind(startOfMonth.AddMonths(1), DateTimeKind.Utc);
+
+                // Get enrollment count for current month
+                var count = await _enrollmentRepository.CountByDateRangeAsync(startOfMonth, startOfNextMonth);
+
+                return new CurrentMonthEnrollmentsDto
+                {
+                    Count = count,
+                    Month = now.ToString("MM/yyyy"),
+                    CalculatedAt = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                throw ApiException.InternalServerError(
+                    "CURRENT_MONTH_ENROLLMENTS_ERROR",
+                    "An error occurred while calculating current month enrollments. Please try again later."
+                );
+            }
+        }
+
+        /// <summary>
+        /// Get current month revenue amount
+        /// </summary>
+        /// <returns>Current month revenue information</returns>
+        public async Task<CurrentMonthRevenueDto> GetCurrentMonthRevenueAsync()
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                // Calculate start of current month
+                var startOfMonth = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1), DateTimeKind.Utc);
+                // Calculate start of next month
+                var startOfNextMonth = DateTime.SpecifyKind(startOfMonth.AddMonths(1), DateTimeKind.Utc);
+
+                // Get revenue amount for current month
+                var totalAmount = await _paymentRepository.GetTotalRevenueByDateRangeAsync(startOfMonth, startOfNextMonth);
+
+                return new CurrentMonthRevenueDto
+                {
+                    TotalAmount = totalAmount,
+                    Currency = "VND",
+                    Month = now.ToString("MM/yyyy"),
+                    CalculatedAt = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                throw ApiException.InternalServerError(
+                    "CURRENT_MONTH_REVENUE_ERROR",
+                    "An error occurred while calculating current month revenue. Please try again later."
+                );
+            }
+        }
+
+        /// <summary>
+        /// Get revenue statistics by month for the last 12 months
+        /// </summary>
+        /// <returns>Revenue by month data</returns>
+        public async Task<RevenueByMonthDto> GetRevenueByMonthAsync()
+        {
+            try
+            {
+                var now = DateTime.UtcNow;
+                // Calculate start date (12 months ago from the beginning of current month)
+                var startDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1).AddMonths(-11), DateTimeKind.Utc);
+                // End date is the beginning of next month
+                var endDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1).AddMonths(1), DateTimeKind.Utc);
+
+                // Get revenue data by month from repository
+                var monthlyData = await _paymentRepository.GetRevenueByMonthAsync(startDate, endDate);
+
+                // Create a dictionary to store results
+                var result = new Dictionary<string, decimal>();
+
+                // Initialize all 12 months with 0 amount
+                var currentMonth = startDate;
+                for (int i = 0; i < 12; i++)
+                {
+                    var monthKey = currentMonth.ToString("MM/yyyy");
+                    result[monthKey] = 0m;
+                    currentMonth = currentMonth.AddMonths(1);
+                }
+
+                // Update with actual data from repository
+                foreach (var monthData in monthlyData)
+                {
+                    var monthKey = $"{monthData.Month:D2}/{monthData.Year}";
+                    result[monthKey] = monthData.TotalAmount;
+                }
+
+                return new RevenueByMonthDto
+                {
+                    Data = result,
+                    Currency = "VND",
+                    CalculatedAt = DateTime.UtcNow
+                };
+            }
+            catch (Exception ex) when (!(ex is ApiException))
+            {
+                throw ApiException.InternalServerError(
+                    "REVENUE_BY_MONTH_ERROR",
+                    "An error occurred while calculating revenue by month. Please try again later."
+                );
+            }
+        }
     }
 }

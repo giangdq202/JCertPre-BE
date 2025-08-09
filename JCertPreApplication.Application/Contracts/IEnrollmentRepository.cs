@@ -12,5 +12,6 @@ namespace JCertPreApplication.Application.Contracts
         Task<bool> IsUserEnrolledInCourseAsync(Guid userId, Guid courseId);
         Task<long> GetTotalEnrollmentsCountAsync();
         Task<IEnumerable<MonthlyCount>> GetEnrollmentCountsByMonthAsync(DateTime startDate, DateTime endDate);
+        Task<long> CountByDateRangeAsync(DateTime startDate, DateTime endDate);
     }
 } 

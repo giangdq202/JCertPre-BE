@@ -1,3 +1,4 @@
+using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Contracts
@@ -40,5 +41,21 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="paymentType">Payment type</param>
         /// <returns>List of payments with specific type</returns>
         Task<IEnumerable<Payment>> GetPaymentsByTypeAsync(Domain.Enums.PaymentType paymentType);
+
+        /// <summary>
+        /// Get total revenue amount by date range for money deposits
+        /// </summary>
+        /// <param name="startDate">Start date</param>
+        /// <param name="endDate">End date</param>
+        /// <returns>Total revenue amount</returns>
+        Task<decimal> GetTotalRevenueByDateRangeAsync(DateTime startDate, DateTime endDate);
+
+        /// <summary>
+        /// Get revenue by month for money deposits
+        /// </summary>
+        /// <param name="startDate">Start date</param>
+        /// <param name="endDate">End date</param>
+        /// <returns>List of monthly revenue data</returns>
+        Task<IEnumerable<MonthlyRevenue>> GetRevenueByMonthAsync(DateTime startDate, DateTime endDate);
     }
 }
