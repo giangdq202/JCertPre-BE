@@ -47,5 +47,14 @@ namespace JCertPreApplication.Persistence.Repositories
                 .OrderByDescending(p => p.createdAt)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Payment>> GetPaymentsByTypeAsync(PaymentType paymentType)
+        {
+            return await _context.Payments
+                .Include(p => p.User)
+                .Where(p => p.PaymentType == paymentType)
+                .OrderByDescending(p => p.createdAt)
+                .ToListAsync();
+        }
     }
 }

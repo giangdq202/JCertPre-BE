@@ -33,5 +33,12 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="toDate">To date</param>
         /// <returns>List of payments in date range</returns>
         Task<IEnumerable<Payment>> GetUserPaymentsByDateRangeAsync(Guid userId, DateTime fromDate, DateTime toDate);
+
+        /// <summary>
+        /// Get all payments by payment type
+        /// </summary>
+        /// <param name="paymentType">Payment type</param>
+        /// <returns>List of payments with specific type</returns>
+        Task<IEnumerable<Payment>> GetPaymentsByTypeAsync(Domain.Enums.PaymentType paymentType);
     }
 }

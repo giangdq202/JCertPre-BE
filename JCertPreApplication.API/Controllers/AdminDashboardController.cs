@@ -1,0 +1,41 @@
+using JCertPreApplication.Application.Features.AdminDashboard;
+using JCertPreApplication.Application.Exceptions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace JCertPreApplication.API.Controllers
+{
+    /// <summary>
+    /// Handles admin dashboard operations including analytics and statistics.
+    /// </summary>
+    [Route("api/admin-dashboard")]
+    [ApiController]
+    [Tags("Admin Dashboard")]
+    [Produces("application/json")]
+    // [Authorize(Roles = "Admin")] // Uncomment this if you want to restrict access to admin only
+    public class AdminDashboardController : ControllerBase
+    {
+        private readonly IAdminDashboardService _adminDashboardService;
+
+        public AdminDashboardController(IAdminDashboardService adminDashboardService)
+        {
+            _adminDashboardService = adminDashboardService ?? throw new ArgumentNullException(nameof(adminDashboardService));
+        }
+
+        /// <summary>
+        /// Get total revenue from money deposit transactions.
+        /// Returns the total amount of money deposited into the system through payment transactions.
+        /// </summary>
+        /// <returns>Total revenue information including amount, currency, and transaction count</returns>
+        /// <response code="200">Returns the total revenue data</response>
+        /// <response code="500">If there was an internal server error</response>
+        [HttpGet("revenue/total")]
+        [ProducesResponseType(typeof(Application.Dtos.AdminDashboard.TotalRevenueDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetTotalRevenue()
+        {
+            var totalRevenue = await _adminDashboardService.GetTotalRevenueAsync();
+            return Ok(totalRevenue);
+        }
+    }
+}
