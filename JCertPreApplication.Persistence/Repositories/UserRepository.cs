@@ -14,7 +14,7 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             return await _dbSet
                 .Include(u => u.Role)
-                .Where(u => u.Role != null && u.Role.roleName == "Academic Manager")
+                .Where(u => u.Role != null && u.Role.roleName == "ACADEMIC_MANAGER")
                 .ToListAsync();
         }
         public async Task<User?> GetByIdAsync(Guid userId)
