@@ -94,7 +94,15 @@ namespace JCertPreApplication.Application.Features.Auth
 
                 // Upload avatar to file service
                 var uploadResult = await _fileService.UploadImageAsync(customFormFile);
-                avatarUrl = uploadResult.SecureUrl.ToString();
+                
+                if (uploadResult.Success && !string.IsNullOrEmpty(uploadResult.Url))
+                {
+                    avatarUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to upload avatar: {uploadResult.ErrorMessage}");
+                }
             }
 
             var user = new User

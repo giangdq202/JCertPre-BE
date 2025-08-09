@@ -30,6 +30,16 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             var result = await _fileService.UploadImageAsync(file);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.ErrorMessage ?? "Image upload failed"
+                });
+            }
+            
             return Ok(new
             {
                 success = true,
@@ -37,12 +47,11 @@ namespace JCertPreApplication.API.Controllers
                 data = new
                 {
                     publicId = result.PublicId,
-                    url = result.SecureUrl?.ToString() ?? result.Url?.ToString(),
-                    width = result.Width,
-                    height = result.Height,
+                    url = result.SecureUrl ?? result.Url,
                     format = result.Format,
                     bytes = result.Bytes,
-                    createdAt = result.CreatedAt
+                    createdAt = result.CreatedAt,
+                    metadata = result.Metadata
                 }
             });
         }
@@ -57,6 +66,16 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
             var result = await _fileService.UploadVideoAsync(file);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.ErrorMessage ?? "Video upload failed"
+                });
+            }
+            
             var fileType = file.ContentType?.StartsWith("audio/") == true ? "Audio" : "Video";
             return Ok(new
             {
@@ -65,93 +84,70 @@ namespace JCertPreApplication.API.Controllers
                 data = new
                 {
                     publicId = result.PublicId,
-                    url = result.SecureUrl?.ToString() ?? result.Url?.ToString(),
-                    width = result.Width,
-                    height = result.Height,
+                    url = result.SecureUrl ?? result.Url,
                     format = result.Format,
-                    duration = result.Duration,
                     bytes = result.Bytes,
-                    createdAt = result.CreatedAt
+                    createdAt = result.CreatedAt,
+                    metadata = result.Metadata
                 }
             });
         }
 
         /// <summary>
-        /// Uploads a raw file (documents, archives, etc.).
+        /// Uploads a document file.
         /// </summary>
-        /// <param name="file">The raw file to upload.</param>
+        /// <param name="file">The document file to upload.</param>
         /// <returns>Upload result with public ID and URL.</returns>
-        [HttpPost("upload/file")]
+        [HttpPost("upload/document")]
         [Consumes("multipart/form-data")]
-        public async Task<IActionResult> UploadRawFile(IFormFile file)
+        public async Task<IActionResult> UploadDocument(IFormFile file)
         {
-            var result = await _fileService.UploadRawFileAsync(file);
+            var result = await _fileService.UploadDocumentAsync(file);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.ErrorMessage ?? "Document upload failed"
+                });
+            }
+            
             return Ok(new
             {
                 success = true,
-                message = "File uploaded successfully",
+                message = "Document uploaded successfully",
                 data = new
                 {
                     publicId = result.PublicId,
-                    url = result.SecureUrl?.ToString() ?? result.Url?.ToString(),
+                    url = result.SecureUrl ?? result.Url,
                     format = result.Format,
                     bytes = result.Bytes,
-                    createdAt = result.CreatedAt
+                    createdAt = result.CreatedAt,
+                    metadata = result.Metadata
                 }
             });
         }
 
         /// <summary>
-        /// Deletes an image by public ID.
+        /// Deletes a file by public ID.
         /// </summary>
         /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
-        [HttpDelete("delete/image")]
-        public async Task<IActionResult> DeleteImage([FromBody] DeleteResourceDto request)
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteFile([FromBody] DeleteResourceDto request)
         {
-            var result = await _fileService.DeleteImageAsync(request.PublicId);
-            return Ok(new
+            var result = await _fileService.DeleteFileAsync(request.PublicId);
+            
+            if (!result.Success)
             {
-                success = true,
-                message = "Image deleted successfully",
-                data = new
+                return BadRequest(new
                 {
-                    publicId = request.PublicId,
-                    result = result.Result
-                }
-            });
-        }
-
-        /// <summary>
-        /// Deletes a video or audio file by public ID.
-        /// </summary>
-        /// <param name="request">Delete request containing the public ID.</param>
-        /// <returns>Deletion result.</returns>
-        [HttpDelete("delete/video")]
-        public async Task<IActionResult> DeleteVideo([FromBody] DeleteResourceDto request)
-        {
-            var result = await _fileService.DeleteVideoAsync(request.PublicId);
-            return Ok(new
-            {
-                success = true,
-                message = "Video/Audio deleted successfully",
-                data = new
-                {
-                    publicId = request.PublicId,
-                    result = result.Result
-                }
-            });
-        }
-
-        /// <summary>
-        /// Deletes a raw file by public ID.
-        /// </summary>
-        /// <param name="request">Delete request containing the public ID.</param>
-        /// <returns>Deletion result.</returns>
-        [HttpDelete("delete/file")]
-        public async Task<IActionResult> DeleteRawFile([FromBody] DeleteResourceDto request)
-        {
-            var result = await _fileService.DeleteRawFileAsync(request.PublicId);
+                    success = false,
+                    message = result.ErrorMessage ?? "File deletion failed"
+                });
+            }
+            
             return Ok(new
             {
                 success = true,

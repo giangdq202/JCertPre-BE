@@ -1,61 +1,55 @@
-using CloudinaryDotNet.Actions;
 using JCertPreApplication.Application.Dtos.File;
 using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Contracts
 {
+    /// <summary>
+    /// Generic file service interface that abstracts file storage operations.
+    /// Supports multiple storage providers (Appwrite, AWS S3, Azure Blob, etc.) 
+    /// without coupling to any specific implementation.
+    /// </summary>
     public interface IFileService
     {
         /// <summary>
-        /// Tải lên một tệp hình ảnh.
+        /// Uploads an image file to the configured storage provider.
         /// </summary>
-        /// <param name="file">Tệp từ request.</param>
-        /// <returns>Kết quả tải lên từ Cloudinary.</returns>
-        Task<ImageUploadResult> UploadImageAsync(IFormFile file);
+        /// <param name="file">The file from the HTTP request.</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>Generic file upload result containing file URL and metadata.</returns>
+        Task<FileUploadResult> UploadImageAsync(IFormFile file, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Tải lên một tệp video hoặc audio. Sẽ tự động dùng phương thức UploadLarge.
+        /// Uploads a video or audio file to the configured storage provider.
         /// </summary>
-        /// <param name="file">Tệp từ request.</param>
-        /// <returns>Kết quả tải lên từ Cloudinary.</returns>
-        Task<VideoUploadResult> UploadVideoAsync(IFormFile file);
+        /// <param name="file">The file from the HTTP request.</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>Generic file upload result containing file URL and metadata.</returns>
+        Task<FileUploadResult> UploadVideoAsync(IFormFile file, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Tải lên một tệp thô (document, zip, v.v.).
+        /// Uploads a document or raw file to the configured storage provider.
         /// </summary>
-        /// <param name="file">Tệp từ request.</param>
-        /// <returns>Kết quả tải lên từ Cloudinary.</returns>
-        Task<RawUploadResult> UploadRawFileAsync(IFormFile file);
+        /// <param name="file">The file from the HTTP request.</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>Generic file upload result containing file URL and metadata.</returns>
+        Task<FileUploadResult> UploadDocumentAsync(IFormFile file, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Xóa một tệp hình ảnh từ Cloudinary bằng public ID.
+        /// Deletes a file from the storage provider using its public ID.
         /// </summary>
-        /// <param name="publicId">Public ID của tệp cần xóa.</param>
-        /// <returns>Kết quả xóa từ Cloudinary.</returns>
-        Task<DeletionResult> DeleteImageAsync(string publicId);
+        /// <param name="publicId">The public ID/identifier of the file to delete.</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>Result indicating success or failure of the deletion operation.</returns>
+        Task<FileDeletionResult> DeleteFileAsync(string publicId, CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Xóa một tệp video hoặc audio từ Cloudinary bằng public ID.
+        /// Retrieves a paginated list of files from the storage provider.
         /// </summary>
-        /// <param name="publicId">Public ID của tệp cần xóa.</param>
-        /// <returns>Kết quả xóa từ Cloudinary.</returns>
-        Task<DeletionResult> DeleteVideoAsync(string publicId);
-
-        /// <summary>
-        /// Xóa một tệp raw từ Cloudinary bằng public ID.
-        /// </summary>
-        /// <param name="publicId">Public ID của tệp cần xóa.</param>
-        /// <returns>Kết quả xóa từ Cloudinary.</returns>
-        Task<DeletionResult> DeleteRawFileAsync(string publicId);
-
-        /// <summary>
-        /// Lấy một trang resources từ Cloudinary với hỗ trợ cursor-based pagination.
-        /// Cho phép client yêu cầu các trang tùy ý và nhận cursor cho trang tiếp theo.
-        /// </summary>
-        /// <param name="maxResults">Số lượng tối đa items mỗi trang (1-500)</param>
-        /// <param name="nextCursor">Cursor trả về từ trang trước; null cho trang đầu tiên</param>
-        /// <param name="resourceType">Loại resource cần lọc: "image" (mặc định), "video", "audio", hoặc "raw"</param>
-        /// <returns>Một trang resources và cursor cho trang tiếp theo (nếu có)</returns>
-        Task<FileResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image");
+        /// <param name="maxResults">Maximum number of items per page (1-500).</param>
+        /// <param name="nextCursor">Cursor from previous page; null for first page.</param>
+        /// <param name="resourceType">Type of resource to filter: "image", "video", "audio", or "document".</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>A page of file resources with cursor for next page (if available).</returns>
+        Task<FileResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image", CancellationToken cancellationToken = default);
     }
 }

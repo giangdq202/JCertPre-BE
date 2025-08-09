@@ -14,8 +14,8 @@ SetupServices(builder);
 
 var app = builder.Build();
 
-// Configure URLs from Api:Urls configuration
-ConfigureAppUrls(app);
+// Configure URLs from environment variables or configuration (removed since ASP.NET Core handles this automatically)
+// ConfigureAppUrls(app);
 
 // Configure pipeline
 ConfigurePipeline(app);
@@ -61,11 +61,6 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     config.GetSection(JwtConfiguration.SectionName).Bind(jwtConfig);
     jwtConfig.Validate();
     
-    // Bind and validate Cloudinary config
-    var cloudinaryConfig = new CloudinaryConfiguration();
-    config.GetSection(CloudinaryConfiguration.SectionName).Bind(cloudinaryConfig);
-    cloudinaryConfig.Validate();
-    
     // Bind and validate Appwrite config
     var appwriteConfig = new AppwriteConfiguration();
     config.GetSection(AppwriteConfiguration.SectionName).Bind(appwriteConfig);
@@ -107,7 +102,6 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
     builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
     builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
-    builder.Services.Configure<CloudinaryConfiguration>(config.GetSection(CloudinaryConfiguration.SectionName));
     builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
     builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
     builder.Services.Configure<FrontendConfiguration>(config.GetSection(FrontendConfiguration.SectionName));
@@ -147,13 +141,6 @@ static void LogEnvironmentVariables(IConfiguration config)
     // CORS Configuration
     Console.WriteLine("\n[CORS Configuration]");
     Console.WriteLine($"AllowedOrigins: {config["Cors:AllowedOrigins"]}");
-    
-    // Cloudinary Configuration
-    Console.WriteLine("\n[Cloudinary Configuration]");
-    Console.WriteLine($"CloudName: {config["Cloudinary:CloudName"]}");
-    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["Cloudinary:ApiKey"])}");
-    Console.WriteLine($"ApiSecret: {MaskSensitiveData(config["Cloudinary:ApiSecret"])}");
-    Console.WriteLine($"Secure: {config["Cloudinary:Secure"]}");
     
     // Appwrite Configuration
     Console.WriteLine("\n[Appwrite Configuration]");
@@ -249,34 +236,5 @@ static void ConfigurePipeline(WebApplication app)
     app.UseAuthorization();
     app.MapControllers();
 }
-
-static void ConfigureAppUrls(WebApplication app)
-{
-    // Ưu tiên: ASPNETCORE_URLS (Docker) > Api:Urls (Configuration) > Default
-    var apiUrls = Environment.GetEnvironmentVariable("ASPNETCORE_URLS") 
-                  ?? app.Configuration["Api:Urls"];
-                  
-    if (!string.IsNullOrEmpty(apiUrls))
-    {
-        app.Urls.Clear();
-        foreach (var url in apiUrls.Split(';'))
-        {
-            var trimmedUrl = url.Trim();
-            if (!string.IsNullOrEmpty(trimmedUrl))
-            {
-                app.Urls.Add(trimmedUrl);
-                Console.WriteLine($"✅ Configured URL: {trimmedUrl}");
-            }
-        }
-    }
-    else
-    {
-        // Fallback for production Docker containers
-        var fallbackUrl = "http://0.0.0.0:5001";
-        app.Urls.Add(fallbackUrl);
-        Console.WriteLine($"⚠️  Using fallback URL: {fallbackUrl}");
-    }
-}
-
 
 #endregion

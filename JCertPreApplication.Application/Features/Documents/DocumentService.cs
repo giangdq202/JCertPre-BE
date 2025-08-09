@@ -87,9 +87,9 @@ namespace JCertPreApplication.Application.Features.Documents
                 // Upload image file
                 var uploadResult = await _fileService.UploadImageAsync(file);
 
-                if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
+                if (!uploadResult.Success || string.IsNullOrEmpty(uploadResult.Url) || string.IsNullOrEmpty(uploadResult.PublicId))
                 {
-                    throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload image to cloud storage");
+                    throw ApiException.InternalServerError("UPLOAD_FAILED", $"Failed to upload image: {uploadResult.ErrorMessage}");
                 }
 
                 // Create Document entity
@@ -98,7 +98,7 @@ namespace JCertPreApplication.Application.Features.Documents
                     documentId = Guid.NewGuid(),
                     lessonId = createDocumentDto.lessonId,
                     documentName = uploadResult.PublicId,
-                    fileUrl = uploadResult.SecureUrl.ToString(),
+                    fileUrl = uploadResult.SecureUrl ?? uploadResult.Url,
                     uploadedAt = DateTime.UtcNow
                 };
 
@@ -149,9 +149,9 @@ namespace JCertPreApplication.Application.Features.Documents
                 // Upload video file
                 var uploadResult = await _fileService.UploadVideoAsync(file);
 
-                if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
+                if (!uploadResult.Success || string.IsNullOrEmpty(uploadResult.Url) || string.IsNullOrEmpty(uploadResult.PublicId))
                 {
-                    throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload video to cloud storage");
+                    throw ApiException.InternalServerError("UPLOAD_FAILED", $"Failed to upload video: {uploadResult.ErrorMessage}");
                 }
 
                 // Create Document entity
@@ -160,7 +160,7 @@ namespace JCertPreApplication.Application.Features.Documents
                     documentId = Guid.NewGuid(),
                     lessonId = createDocumentDto.lessonId,
                     documentName = uploadResult.PublicId,
-                    fileUrl = uploadResult.SecureUrl.ToString(),
+                    fileUrl = uploadResult.SecureUrl ?? uploadResult.Url,
                     uploadedAt = DateTime.UtcNow
                 };
 
@@ -208,12 +208,12 @@ namespace JCertPreApplication.Application.Features.Documents
 
             try
             {
-                // Upload raw document file
-                var uploadResult = await _fileService.UploadRawFileAsync(file);
+                // Upload document file
+                var uploadResult = await _fileService.UploadDocumentAsync(file);
 
-                if (uploadResult == null || string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()) || string.IsNullOrEmpty(uploadResult.PublicId))
+                if (!uploadResult.Success || string.IsNullOrEmpty(uploadResult.Url) || string.IsNullOrEmpty(uploadResult.PublicId))
                 {
-                    throw ApiException.InternalServerError("UPLOAD_FAILED", "Failed to upload document to cloud storage");
+                    throw ApiException.InternalServerError("UPLOAD_FAILED", $"Failed to upload document: {uploadResult.ErrorMessage}");
                 }
 
                 // Create Document entity
@@ -222,7 +222,7 @@ namespace JCertPreApplication.Application.Features.Documents
                     documentId = Guid.NewGuid(),
                     lessonId = createDocumentDto.lessonId,
                     documentName = uploadResult.PublicId,
-                    fileUrl = uploadResult.SecureUrl.ToString(),
+                    fileUrl = uploadResult.SecureUrl ?? uploadResult.Url,
                     uploadedAt = DateTime.UtcNow
                 };
 
@@ -268,7 +268,7 @@ namespace JCertPreApplication.Application.Features.Documents
                 // Delete file from cloud storage using publicId
                 if (!string.IsNullOrEmpty(document.documentName))
                 {
-                    await _fileService.DeleteRawFileAsync(document.documentName);
+                    await _fileService.DeleteFileAsync(document.documentName);
                 }
 
                 // Delete document from database

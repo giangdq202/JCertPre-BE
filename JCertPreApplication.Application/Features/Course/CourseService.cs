@@ -43,9 +43,13 @@ namespace JCertPreApplication.Application.Features.Course
                     // Upload thumbnail to file service
                     var uploadResult = await _fileService.UploadImageAsync(customFormFile);
                     
-                    if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                    if (uploadResult.Success && !string.IsNullOrEmpty(uploadResult.Url))
                     {
-                        thumbnailUrl = uploadResult.SecureUrl.ToString();
+                        thumbnailUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Failed to upload thumbnail: {uploadResult.ErrorMessage}");
                     }
                 }
 
@@ -144,13 +148,13 @@ namespace JCertPreApplication.Application.Features.Course
                             var oldPublicId = ExtractCloudinaryPublicId(course.thumbnailUrl);
                             if (!string.IsNullOrWhiteSpace(oldPublicId))
                             {
-                                await _fileService.DeleteImageAsync(oldPublicId);
+                                await _fileService.DeleteFileAsync(oldPublicId);
                             }
                         }
                         catch (Exception ex)
                         {
                             // Log warning but don't fail the update if old image deletion fails
-                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old Cloudinary thumbnail: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old thumbnail: {ex.Message}");
                         }
                     }
 
@@ -158,9 +162,13 @@ namespace JCertPreApplication.Application.Features.Course
                     var customFormFile = CreateCustomFormFile(updateCourseDto.ThumbnailFile, courseId.ToString());
                     var uploadResult = await _fileService.UploadImageAsync(customFormFile);
                     
-                    if (uploadResult != null && !string.IsNullOrEmpty(uploadResult.SecureUrl?.ToString()))
+                    if (uploadResult.Success && !string.IsNullOrEmpty(uploadResult.Url))
                     {
-                        course.thumbnailUrl = uploadResult.SecureUrl.ToString();
+                        course.thumbnailUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Failed to upload thumbnail: {uploadResult.ErrorMessage}");
                     }
                 }
                 else if (updateCourseDto.ThumbnailUrl != null) // Allow setting to null or updating URL
