@@ -116,18 +116,18 @@ namespace JCertPreApplication.Persistence.Services.File
             // Validate input
             if (file == null || file.Length == 0)
             {
-                _logger.LogWarning("Video upload failed: file is null or empty");
+                _logger.LogWarning("Video/Audio upload failed: file is null or empty");
                 throw ApiException.BadRequest("FILE_REQUIRED", "Không có tệp được cung cấp.");
             }
 
             // Validate file type
             if (!IsVideoFile(file))
             {
-                _logger.LogWarning("Video upload failed: invalid file type {ContentType}", file.ContentType);
-                throw ApiException.BadRequest("INVALID_FILE_TYPE", "Tệp không phải là video hợp lệ.");
+                _logger.LogWarning("Video/Audio upload failed: invalid file type {ContentType}", file.ContentType);
+                throw ApiException.BadRequest("INVALID_FILE_TYPE", "Tệp không phải là video hoặc audio hợp lệ.");
             }
 
-            _logger.LogInformation("Starting video upload: {FileName}, Size: {Size}MB", file.FileName, file.Length / (1024 * 1024));
+            _logger.LogInformation("Starting video/audio upload: {FileName}, Size: {Size}MB", file.FileName, file.Length / (1024 * 1024));
 
             var uploadParams = new VideoUploadParams();
             var stream = file.OpenReadStream();
@@ -159,7 +159,9 @@ namespace JCertPreApplication.Persistence.Services.File
                     throw ApiException.BadRequest("UPLOAD_FAILED", $"Upload failed: {result.Error.Message}");
                 }
 
-                _logger.LogInformation("Video uploaded successfully: {PublicId}, Duration: {Duration}s, Size: {Size}MB", 
+                var fileType = file.ContentType?.StartsWith("audio/") == true ? "Audio" : "Video";
+                _logger.LogInformation("{FileType} uploaded successfully: {PublicId}, Duration: {Duration}s, Size: {Size}MB", 
+                    fileType,
                     result.PublicId, 
                     result.Duration,
                     result.Bytes / (1024 * 1024));
@@ -169,8 +171,8 @@ namespace JCertPreApplication.Persistence.Services.File
             catch (TaskCanceledException)
             {
                 await stream.DisposeAsync();
-                _logger.LogError("Video upload timed out after {Timeout} seconds", UPLOAD_TIMEOUT_SECONDS);
-                throw ApiException.BadRequest("UPLOAD_TIMEOUT", $"Tải lên video đã hết thời gian chờ sau {UPLOAD_TIMEOUT_SECONDS} giây.");
+                _logger.LogError("Video/Audio upload timed out after {Timeout} seconds", UPLOAD_TIMEOUT_SECONDS);
+                throw ApiException.BadRequest("UPLOAD_TIMEOUT", $"Tải lên video/audio đã hết thời gian chờ sau {UPLOAD_TIMEOUT_SECONDS} giây.");
             }
             catch (ApiException)
             {
@@ -180,8 +182,8 @@ namespace JCertPreApplication.Persistence.Services.File
             catch (Exception ex)
             {
                 await stream.DisposeAsync();
-                _logger.LogError(ex, "Unexpected error during video upload");
-                throw ApiException.InternalServerError("VIDEO_UPLOAD_ERROR", "Đã xảy ra lỗi trong quá trình tải lên video.");
+                _logger.LogError(ex, "Unexpected error during video/audio upload");
+                throw ApiException.InternalServerError("VIDEO_UPLOAD_ERROR", "Đã xảy ra lỗi trong quá trình tải lên video/audio.");
             }
         }
 
@@ -275,7 +277,7 @@ namespace JCertPreApplication.Persistence.Services.File
             // Validate input
             if (string.IsNullOrEmpty(publicId))
             {
-                _logger.LogWarning("Video deletion failed: publicId is null or empty");
+                _logger.LogWarning("Video/Audio deletion failed: publicId is null or empty");
                 throw ApiException.BadRequest("PUBLIC_ID_REQUIRED", "Public ID không được cung cấp.");
             }
 
@@ -291,11 +293,11 @@ namespace JCertPreApplication.Persistence.Services.File
                 // Check for Cloudinary-specific errors
                 if (result.Error != null)
                 {
-                    _logger.LogError("Video deletion failed: {ErrorMessage}", result.Error.Message);
+                    _logger.LogError("Video/Audio deletion failed: {ErrorMessage}", result.Error.Message);
                     throw ApiException.BadRequest("DELETE_FAILED", $"Delete failed: {result.Error.Message}");
                 }
 
-                _logger.LogDebug("Video deleted successfully: {PublicId}", publicId);
+                _logger.LogDebug("Video/Audio deleted successfully: {PublicId}", publicId);
                 return result;
             }
             catch (ApiException)
@@ -304,8 +306,8 @@ namespace JCertPreApplication.Persistence.Services.File
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during video deletion for publicId: {PublicId}", publicId);
-                throw ApiException.InternalServerError("VIDEO_DELETE_ERROR", "Đã xảy ra lỗi trong quá trình xóa video.");
+                _logger.LogError(ex, "Unexpected error during video/audio deletion for publicId: {PublicId}", publicId);
+                throw ApiException.InternalServerError("VIDEO_DELETE_ERROR", "Đã xảy ra lỗi trong quá trình xóa video/audio.");
             }
         }
 
@@ -482,8 +484,14 @@ namespace JCertPreApplication.Persistence.Services.File
         {
             var allowedVideoTypes = new[]
             {
+                // Video formats
                 "video/mp4", "video/avi", "video/mov", "video/wmv", 
-                "video/flv", "video/webm", "video/mkv", "video/3gp"
+                "video/flv", "video/webm", "video/mkv", "video/3gp",
+                
+                // Audio formats (uploaded as video resource type)
+                "audio/mpeg", "audio/mp3", "audio/wav", "audio/aac", 
+                "audio/ogg", "audio/opus", "audio/flac", "audio/m4a", 
+                "audio/wma", "audio/amr", "audio/3gpp", "audio/webm"
             };
             
             return allowedVideoTypes.Contains(file.ContentType?.ToLowerInvariant());
