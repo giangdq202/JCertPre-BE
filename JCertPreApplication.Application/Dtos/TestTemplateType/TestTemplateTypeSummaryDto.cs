@@ -1,7 +1,6 @@
 ﻿using JCertPreApplication.Domain.Enums;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Dtos.TestTemplateType
 {
