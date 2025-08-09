@@ -77,20 +77,9 @@ namespace JCertPreApplication.API.Controllers
         /// <summary>
         /// Gets all conversations for the user.
         /// </summary>
-        [HttpGet("my-conversations")]
-        public async Task<IActionResult> GetMyConversations()
+        [HttpGet("my-conversations/{userId}")]
+        public async Task<IActionResult> GetMyConversations([FromRoute] Guid userId)
         {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdStr) || !Guid.TryParse(userIdStr, out var userId))
-            {
-                return Unauthorized(new ApiErrorResponse
-                {
-                    StatusCode = 401,
-                    ErrorCode = "INVALID_TOKEN",
-                    Message = "Invalid user token or user not authenticated."
-                });
-            }
-
             var conversations = await _conversationService.GetConversationsForUserAsync(userId);
             return Ok(conversations);
         }
