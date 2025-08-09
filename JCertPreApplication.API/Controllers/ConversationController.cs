@@ -39,18 +39,18 @@ namespace JCertPreApplication.API.Controllers
         [HttpPost("send-messages/{conversationId}")]
         public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] MessageRequest model)
         {
-            var senderIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(senderIdStr) || !Guid.TryParse(senderIdStr, out var senderId))
-            {
-                return Unauthorized(new ApiErrorResponse
-                {
-                    StatusCode = 401,
-                    ErrorCode = "INVALID_TOKEN",
-                    Message = "Invalid user token or user not authenticated."
-                });
-            }
+            //var senderIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            //if (string.IsNullOrEmpty(senderIdStr) || !Guid.TryParse(senderIdStr, out var senderId))
+            //{
+            //    return Unauthorized(new ApiErrorResponse
+            //    {
+            //        StatusCode = 401,
+            //        ErrorCode = "INVALID_TOKEN",
+            //        Message = "Invalid user token or user not authenticated."
+            //    });
+            //}
 
-            var messageDto = await _conversationService.SendMessageAsync(conversationId, senderId, model);
+            var messageDto = await _conversationService.SendMessageAsync(conversationId, model);
             return Ok(messageDto);
         }
 

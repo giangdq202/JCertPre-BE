@@ -55,7 +55,7 @@ namespace JCertPreApplication.Application.Features.Conversation
             return MapToConversationDto(conversation);
         }
 
-        public async Task<MessageDto> SendMessageAsync(Guid conversationId, Guid senderId, MessageRequest messageRequest)
+        public async Task<MessageDto> SendMessageAsync(Guid conversationId, MessageRequest messageRequest)
         {
             // Validate message content
             if (string.IsNullOrWhiteSpace(messageRequest.Content))
@@ -69,14 +69,14 @@ namespace JCertPreApplication.Application.Features.Conversation
                 throw ApiException.NotFound("Conversation", conversationId);
             }
 
-            var sender = await _userRepository.GetByIdAsync(senderId);
+            var sender = await _userRepository.GetByIdAsync(messageRequest.senderId);
             if (sender == null)
             {
-                throw ApiException.NotFound("User", senderId);
+                throw ApiException.NotFound("User", messageRequest.senderId);
             }
 
             // Verify sender is a participant in the conversation
-            if (!conversation.Participants.Any(p => p.userId == senderId))
+            if (!conversation.Participants.Any(p => p.userId == messageRequest.senderId))
             {
                 throw ApiException.Forbidden("SENDER_NOT_PARTICIPANT", "Sender is not a participant in this conversation.");
             }
@@ -85,7 +85,7 @@ namespace JCertPreApplication.Application.Features.Conversation
             {
                 messageId = Guid.NewGuid(),
                 content = messageRequest.Content.Trim(),
-                senderId = senderId,
+                senderId = messageRequest.senderId,
                 conversationId = conversationId,
                 sentAt = DateTime.UtcNow
             };

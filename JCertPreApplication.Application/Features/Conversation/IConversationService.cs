@@ -25,7 +25,7 @@ namespace JCertPreApplication.Application.Features.Conversation
         /// <param name="messageRequest">The message content and details</param>
         /// <returns>The sent message details</returns>
         /// <exception cref="ApiException">Thrown when conversation not found, sender not found, or message content is invalid</exception>
-        Task<MessageDto> SendMessageAsync(Guid conversationId, Guid senderId, MessageRequest messageRequest);
+        Task<MessageDto> SendMessageAsync(Guid conversationId, MessageRequest messageRequest);
 
         /// <summary>
         /// Assigns an instructor to a conversation
