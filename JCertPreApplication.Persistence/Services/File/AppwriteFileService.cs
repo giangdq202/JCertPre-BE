@@ -47,6 +47,20 @@ namespace JCertPreApplication.Persistence.Services.File
             { "video/mkv", FileType.Video },
             { "video/3gp", FileType.Video },
 
+            // Audio files (stored in video bucket)
+            { "audio/mpeg", FileType.Video },
+            { "audio/mp3", FileType.Video },
+            { "audio/wav", FileType.Video },
+            { "audio/aac", FileType.Video },
+            { "audio/ogg", FileType.Video },
+            { "audio/opus", FileType.Video },
+            { "audio/flac", FileType.Video },
+            { "audio/m4a", FileType.Video },
+            { "audio/wma", FileType.Video },
+            { "audio/amr", FileType.Video },
+            { "audio/3gpp", FileType.Video },
+            { "audio/webm", FileType.Video },
+
             // Documents
             { "application/pdf", FileType.Document },
             { "application/msword", FileType.Document },
@@ -134,7 +148,7 @@ namespace JCertPreApplication.Persistence.Services.File
         }
 
         /// <summary>
-        /// Uploads a video file to Appwrite and returns Cloudinary-compatible result
+        /// Uploads a video or audio file to Appwrite and returns Cloudinary-compatible result
         /// </summary>
         public async Task<VideoUploadResult> UploadVideoAsync(IFormFile file)
         {
@@ -160,20 +174,21 @@ namespace JCertPreApplication.Persistence.Services.File
 
                 var result = MapToVideoUploadResult(appwriteFile, FileType.Video);
                 
-                _logger.LogInformation("Video uploaded successfully to Appwrite. FileId: {FileId}, Size: {Size}MB", 
-                    result.PublicId, result.Bytes / (1024 * 1024));
+                var fileType = file.ContentType.StartsWith("audio/") ? "Audio" : "Video";
+                _logger.LogInformation("{FileType} uploaded successfully to Appwrite. FileId: {FileId}, Size: {Size}MB", 
+                    fileType, result.PublicId, result.Bytes / (1024 * 1024));
 
                 return result;
             }
             catch (AppwriteException ex)
             {
-                _logger.LogError(ex, "Failed to upload video to Appwrite: {Message}", ex.Message);
-                throw ApiException.InternalServerError("APPWRITE_UPLOAD_FAILED", $"Failed to upload video: {ex.Message}");
+                _logger.LogError(ex, "Failed to upload video/audio to Appwrite: {Message}", ex.Message);
+                throw ApiException.InternalServerError("APPWRITE_UPLOAD_FAILED", $"Failed to upload video/audio: {ex.Message}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Unexpected error during video upload");
-                throw ApiException.InternalServerError("VIDEO_UPLOAD_ERROR", "An unexpected error occurred during video upload");
+                _logger.LogError(ex, "Unexpected error during video/audio upload");
+                throw ApiException.InternalServerError("VIDEO_UPLOAD_ERROR", "An unexpected error occurred during video/audio upload");
             }
         }
 
@@ -230,11 +245,11 @@ namespace JCertPreApplication.Persistence.Services.File
         }
 
         /// <summary>
-        /// Deletes a video file from Appwrite
+        /// Deletes a video or audio file from Appwrite
         /// </summary>
         public async Task<DeletionResult> DeleteVideoAsync(string publicId)
         {
-            return await DeleteFileAsync(publicId, _config.VideosBucketId, "video");
+            return await DeleteFileAsync(publicId, _config.VideosBucketId, "video/audio");
         }
 
         /// <summary>
@@ -256,6 +271,7 @@ namespace JCertPreApplication.Persistence.Services.File
                 {
                     "image" => _config.ImagesBucketId,
                     "video" => _config.VideosBucketId,
+                    "audio" => _config.VideosBucketId, // Audio files stored in video bucket
                     "raw" => _config.DocumentsBucketId,
                     _ => _config.ImagesBucketId
                 };
@@ -480,11 +496,11 @@ namespace JCertPreApplication.Persistence.Services.File
         {
             if (file == null || file.Length == 0)
             {
-                _logger.LogWarning("Video validation failed: File is null or empty");
+                _logger.LogWarning("Video/Audio validation failed: File is null or empty");
                 throw ApiException.BadRequest("INVALID_FILE", "File is required and cannot be empty");
             }
 
-            _logger.LogInformation("Validating video file: {FileName}, Size: {FileSize}MB ({FileSizeBytes} bytes), ContentType: {ContentType}", 
+            _logger.LogInformation("Validating video/audio file: {FileName}, Size: {FileSize}MB ({FileSizeBytes} bytes), ContentType: {ContentType}", 
                 file.FileName, 
                 Math.Round((double)file.Length / (1024 * 1024), 2), 
                 file.Length, 
@@ -492,25 +508,25 @@ namespace JCertPreApplication.Persistence.Services.File
 
             if (!_mimeTypeMapping.ContainsKey(file.ContentType) || _mimeTypeMapping[file.ContentType] != FileType.Video)
             {
-                _logger.LogWarning("Video validation failed: Invalid content type {ContentType} for file {FileName}", file.ContentType, file.FileName);
-                throw ApiException.BadRequest("INVALID_FILE_TYPE", $"File type {file.ContentType} is not supported for videos");
+                _logger.LogWarning("Video/Audio validation failed: Invalid content type {ContentType} for file {FileName}", file.ContentType, file.FileName);
+                throw ApiException.BadRequest("INVALID_FILE_TYPE", $"File type {file.ContentType} is not supported for videos/audio files");
             }
 
-            // Use configuration limit for videos (sync with Appwrite Console settings)
+            // Use configuration limit for videos/audio (sync with Appwrite Console settings)
             var maxSizeBytes = _config.MaxFileSizeMB * 1024 * 1024;
-            _logger.LogInformation("Video file size check: File={FileSize}MB, MaxAllowed={MaxSize}MB (Config MaxFileSizeMB={ConfigValue})", 
+            _logger.LogInformation("Video/Audio file size check: File={FileSize}MB, MaxAllowed={MaxSize}MB (Config MaxFileSizeMB={ConfigValue})", 
                 Math.Round((double)file.Length / (1024 * 1024), 2), 
                 _config.MaxFileSizeMB, 
                 _config.MaxFileSizeMB);
                 
             if (file.Length > maxSizeBytes)
             {
-                _logger.LogWarning("Video validation failed: File size {FileSize}MB exceeds maximum {MaxSize}MB", 
+                _logger.LogWarning("Video/Audio validation failed: File size {FileSize}MB exceeds maximum {MaxSize}MB", 
                     Math.Round((double)file.Length / (1024 * 1024), 2), _config.MaxFileSizeMB);
-                throw ApiException.BadRequest("FILE_TOO_LARGE", $"File size exceeds maximum allowed size of {_config.MaxFileSizeMB}MB for videos");
+                throw ApiException.BadRequest("FILE_TOO_LARGE", $"File size exceeds maximum allowed size of {_config.MaxFileSizeMB}MB for videos/audio files");
             }
 
-            _logger.LogInformation("Video file validation successful: {FileName}", file.FileName);
+            _logger.LogInformation("Video/Audio file validation successful: {FileName}", file.FileName);
         }
 
         private void ValidateRawFile(IFormFile file)
