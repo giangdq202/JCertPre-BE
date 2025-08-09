@@ -30,20 +30,22 @@ namespace JCertPreApplication.Persistence.Repositories
 
         public async Task<decimal> GetUserCourseCompletionRateAsync(Guid userId, Guid courseId)
         {
-            // Get all lesson IDs for the course
-            var lessonIds = await _context.Set<Lesson>()
+            // Get total lessons for the course (count only, no list)
+            var totalLessons = await _context.Set<Lesson>()
                 .Where(l => l.courseId == courseId)
-                .Select(l => l.lessonId)
-                .ToListAsync();
-
-            if (lessonIds.Count == 0) return 0.0m;
-
-            // Get count of user's progresses for those lessons
-            var completedLessons = await _dbSet
-                .Where(lp => lp.userId == userId && lessonIds.Contains(lp.lessonId))
                 .CountAsync();
 
-            return Math.Round((decimal)completedLessons / lessonIds.Count * 100, 2);
+            if (totalLessons == 0) return 0.0m;
+
+            // Get count of user's progresses for those lessons (join for efficiency)
+            var completedLessons = await (from lp in _dbSet
+                                          join l in _context.Set<Lesson>() on lp.lessonId equals l.lessonId
+                                          where lp.userId == userId && l.courseId == courseId
+                                          select lp.lessonId)
+                                         .Distinct()
+                                         .CountAsync();
+
+            return Math.Round((decimal)completedLessons / totalLessons * 100, 2);
         }
     }
 }

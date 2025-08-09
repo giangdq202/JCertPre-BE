@@ -4,6 +4,7 @@ using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 namespace JCertPreApplication.Persistence.Repositories
@@ -93,6 +94,11 @@ namespace JCertPreApplication.Persistence.Repositories
 
             // Always return unique IDs, at most questionCount
             return result.Distinct().Take(questionCount).ToList();
+        }
+
+        public async Task<int> CountAsync(Expression<Func<Question, bool>> predicate)
+        {
+            return await _dbSet.CountAsync(predicate);
         }
     }
 }

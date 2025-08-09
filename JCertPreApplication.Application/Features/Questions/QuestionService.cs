@@ -64,6 +64,11 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (subContent == null)
                     throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
 
+                // Efficiently check for duplicate question text
+                var isExisted = await _questionRepository.AnyAsync(q => q.questionText == createDto.Content);
+                if (isExisted)
+                    throw ApiException.BadRequest("QUESTION_TEXT_EXISTS", "A question with the same text already exists.");
+
                 var question = new Question
                 {
                     questionId = Guid.NewGuid(),
@@ -76,11 +81,9 @@ namespace JCertPreApplication.Application.Features.Questions
                     isActive = createDto.IsActive
                 };
 
-                // Insert and persist the new question
                 var created = await _questionRepository.InsertAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                // Retrieve the created question with navigation properties
                 var result = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == created.questionId, "SubContent");
                 if (result == null)
                     throw ApiException.InternalServerError("QUESTION_CREATION_ERROR", "Failed to retrieve the created question.");
@@ -106,8 +109,14 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
+                // Efficiently check for duplicate question text if updating content
                 if (updateDto.Content != null)
+                {
+                    var isExisted = await _questionRepository.AnyAsync(q => q.questionText == updateDto.Content && q.questionId != id);
+                    if (isExisted)
+                        throw ApiException.BadRequest("QUESTION_TEXT_EXISTS", "A question with the same text already exists.");
                     question.questionText = updateDto.Content;
+                }
                 if (updateDto.Explanation != null)
                     question.explanation = updateDto.Explanation;
                 if (updateDto.Points.HasValue)
@@ -232,61 +241,76 @@ namespace JCertPreApplication.Application.Features.Questions
         /// </summary>
         public async Task<QuestionForTestDto?> GetByIdForTestAsync(Guid id)
         {
-            var question = await _questionRepository.GetFirstOrDefaultAsync(
-                q => q.questionId == id,
-                "Choices,QuestionAttachments"
-            );
-            if (question == null)
-                return null;
-
-            return new QuestionForTestDto
+            try
             {
-                Id = question.questionId,
-                Content = question.questionText,
-                QuestionType = question.questionType,
-                Choices = question.Choices?.Select(c => new ChoiceForTestDto
+                var question = await _questionRepository.GetFirstOrDefaultAsync(
+                    q => q.questionId == id,
+                    "Choices,QuestionAttachments"
+                );
+                if (question == null)
+                    return null;
+
+                return new QuestionForTestDto
                 {
-                    ChoiceId = c.choiceId,
-                    Content = c.choiceText
-                }).ToList(),
-                QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
-                {
-                    MediaUrl = a.mediaUrl,
-                    MediaType = a.mediaType
-                }).ToList()
-            };
+                    Id = question.questionId,
+                    Content = question.questionText,
+                    QuestionType = question.questionType,
+                    Choices = question.Choices?.Select(c => new ChoiceForTestDto
+                    {
+                        ChoiceId = c.choiceId,
+                        Content = c.choiceText
+                    }).ToList(),
+                    QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+                    {
+                        MediaUrl = a.mediaUrl,
+                        MediaType = a.mediaType
+                    }).ToList()
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving the question for test: {ex.Message}");
+            }
         }
 
         private static QuestionDto MapToQuestionDto(Question question)
         {
-            var subContent = question.SubContent;
-            return new QuestionDto
+            try
             {
-                Id = question.questionId,
-                Content = question.questionText,
-                Explanation = question.explanation,
-                Points = question.points,
-                Difficulty = question.difficulty,
-                IsActive = question.isActive,
-                Choices = question.Choices?.Select(c => new ChoiceReadDto
+                var subContent = question.SubContent;
+                return new QuestionDto
                 {
-                    ChoiceId = c.choiceId,
-                    Content = c.choiceText,
-                    IsCorrect = c.isCorrect,
-                    QuestionId = c.questionId
-                }).ToList(),
-                QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
-                {
-                    MediaUrl = a.mediaUrl,
-                    MediaType = a.mediaType
-                }).ToList(),
-                ContentName = subContent?.ContentName.ToString() ?? "",
-                ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
-                Level = subContent?.Level.ToString() ?? "",
-                LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
-                SubContentName = subContent?.SubContentName.ToString() ?? "",
-                SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
-            };
+                    Id = question.questionId,
+                    Content = question.questionText,
+                    Explanation = question.explanation,
+                    Points = question.points,
+                    Difficulty = question.difficulty,
+                    IsActive = question.isActive,
+                    Choices = question.Choices?.Select(c => new ChoiceReadDto
+                    {
+                        ChoiceId = c.choiceId,
+                        Content = c.choiceText,
+                        IsCorrect = c.isCorrect,
+                        QuestionId = c.questionId
+                    }).ToList(),
+                    QuestionAttachments = question.QuestionAttachments?.Select(a => new QuestionAttachmentDto
+                    {
+                        MediaUrl = a.mediaUrl,
+                        MediaType = a.mediaType
+                    }).ToList(),
+                    ContentName = subContent?.ContentName.ToString() ?? "",
+                    ContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.ContentName) : "",
+                    Level = subContent?.Level.ToString() ?? "",
+                    LevelDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.Level) : "",
+                    SubContentName = subContent?.SubContentName.ToString() ?? "",
+                    SubContentNameDescription = subContent != null ? EnumHelper.GetEnumDescription(subContent.SubContentName) : ""
+                };
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while mapping question to DTO: {ex.Message}");
+            }
         }
 
         /// <summary>

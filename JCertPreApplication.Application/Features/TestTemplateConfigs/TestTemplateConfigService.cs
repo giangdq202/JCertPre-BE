@@ -13,15 +13,18 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
         private readonly ITestTemplateConfigRepository _repo;
         private readonly ITestTemplateRepository _templateRepo;
         private readonly ITestTemplateTypeRepository _typeRepo;
+        private readonly IQuestionRepository _questionRepo;
 
         public TestTemplateConfigService(
             ITestTemplateConfigRepository repo,
             ITestTemplateRepository templateRepo,
-            ITestTemplateTypeRepository typeRepo)
+            ITestTemplateTypeRepository typeRepo,
+            IQuestionRepository questionRepo)
         {
             _repo = repo;
             _templateRepo = templateRepo;
             _typeRepo = typeRepo;
+            _questionRepo = questionRepo;
         }
 
         public async Task<List<TestTemplateConfigDto>> GetAllByTemplateIdAsync(Guid templateId)
@@ -54,9 +57,7 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
         {
             try
             {
-                // Get template type id directly
-                var template = await _templateRepo.GetByIdAsync(templateId); // For create
-
+                var template = await _templateRepo.GetByIdAsync(templateId);
                 if (template == null)
                     throw ApiException.NotFound("TestTemplate", templateId);
 
@@ -66,6 +67,14 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
 
                 if (isTypeActive)
                     throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot perform this operation because the test template type is active.");
+
+                // Efficiently check if there are enough questions in DB for this subContentId
+                var availableCount = await _questionRepo.CountAsync(q =>
+                    q.SubContentId == dto.subContentId && q.isActive);
+
+                if (availableCount < dto.questionCount)
+                    throw ApiException.BadRequest("NOT_ENOUGH_QUESTIONS",
+                        $"Not enough questions in the database for subContentId {dto.subContentId}. Required: {dto.questionCount}, Available: {availableCount}");
 
                 var entity = new TestTemplateConfig
                 {
@@ -80,7 +89,6 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 await _repo.InsertAsync(entity);
                 await _repo.SaveChangesAsync();
 
-                // Fetch with SubContent included
                 var created = await _repo.GetByConfigIdAsync(entity.configId);
                 return MapToDto(created!);
             }
@@ -98,7 +106,6 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 if (entity == null)
                     throw ApiException.NotFound("TestTemplateConfig", configId);
 
-                // For update/delete, use entity.templateId
                 var template = await _templateRepo.GetByIdAsync(entity.templateId);
                 if (template == null)
                     throw ApiException.NotFound("TestTemplate", entity.templateId);
@@ -110,8 +117,21 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 if (isTypeActive)
                     throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot perform this operation because the test template type is active.");
 
+                // Efficiently check if there are enough questions in DB for this subContentId and pointPerQuestion
+                var newQuestionCount = dto.questionCount ?? entity.questionCount;
+                var newPointPerQuestion = dto.pointPerQuestion ?? entity.pointPerQuestion;
+                var subContentId = entity.subContentId;
+
                 if (dto.questionCount.HasValue)
+                {
+                    var availableCount = await _questionRepo.CountAsync(q =>
+                        q.SubContentId == subContentId && q.isActive);
+
+                    if (availableCount < newQuestionCount)
+                        throw ApiException.BadRequest("NOT_ENOUGH_QUESTIONS",
+                            $"Not enough questions in the database for subContentId {subContentId}. Required: {newQuestionCount}, Available: {availableCount}");
                     entity.questionCount = dto.questionCount.Value;
+                }
                 if (dto.pointPerQuestion.HasValue)
                     entity.pointPerQuestion = dto.pointPerQuestion.Value;
                 if (dto.totalPoints.HasValue)
@@ -122,7 +142,6 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 await _repo.UpdateAsync(entity);
                 await _repo.SaveChangesAsync();
 
-                // Fetch with SubContent included
                 var updated = await _repo.GetByConfigIdAsync(configId);
                 return MapToDto(updated!);
             }
@@ -163,25 +182,32 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
 
         private static TestTemplateConfigDto MapToDto(TestTemplateConfig entity)
         {
-            return new TestTemplateConfigDto
+            try
             {
-                configId = entity.configId,
-                templateId = entity.templateId,
-                questionCount = entity.questionCount,
-                pointPerQuestion = entity.pointPerQuestion,
-                totalPoints = entity.totalPoints,
-                sequence = entity.sequence,
-                SubContent = entity.SubContent == null ? null : new SubContentDto
+                return new TestTemplateConfigDto
                 {
-                    SubContentId = entity.SubContent.SubContentId,
-                    SubContentName = entity.SubContent.SubContentName.ToString(),
-                    SubContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContent.SubContentName),
-                    Level = entity.SubContent.Level.ToString(),
-                    LevelDescription = EnumHelper.GetEnumDescription(entity.SubContent.Level),
-                    ContentName = entity.SubContent.ContentName.ToString(),
-                    ContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContent.ContentName)
-                }
-            };
+                    configId = entity.configId,
+                    templateId = entity.templateId,
+                    questionCount = entity.questionCount,
+                    pointPerQuestion = entity.pointPerQuestion,
+                    totalPoints = entity.totalPoints,
+                    sequence = entity.sequence,
+                    SubContent = entity.SubContent == null ? null : new SubContentDto
+                    {
+                        SubContentId = entity.SubContent.SubContentId,
+                        SubContentName = entity.SubContent.SubContentName.ToString(),
+                        SubContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContent.SubContentName),
+                        Level = entity.SubContent.Level.ToString(),
+                        LevelDescription = EnumHelper.GetEnumDescription(entity.SubContent.Level),
+                        ContentName = entity.SubContent.ContentName.ToString(),
+                        ContentNameDescription = EnumHelper.GetEnumDescription(entity.SubContent.ContentName)
+                    }
+                };
+            }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("TEST_TEMPLATE_CONFIG_ERROR", $"An error occurred while mapping TestTemplateConfig to DTO: {ex.Message}");
+            }
         }
     }
 }

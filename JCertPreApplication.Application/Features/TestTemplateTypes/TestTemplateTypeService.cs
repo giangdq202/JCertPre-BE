@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.TestTemplateType;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
@@ -234,6 +235,72 @@ public class TestTemplateTypeService : ITestTemplateTypeService
         }
     }
 
+    /// <summary>
+    /// Get a summary of a test template type, including its test templates and configuration.
+    /// </summary>
+    public async Task<TestTemplateTypeSummaryDto?> GetTemplateTypeSummaryAsync(CourseLevel courseLevel, TestType testType)
+    {
+        try
+        {
+            var templateType = await _repo.GetFirstOrDefaultAsync(
+                t => t.courseLevel == courseLevel && t.testType == testType
+            );
+            if (templateType == null)
+                return null;
+
+            var templatesQuery = await _testTemplateRepository.GetAll();
+            var templates = templatesQuery
+                .Where(t => t.TestTemplateTypeId == templateType.TestTemplateTypeId)
+                .Select(t => new
+                {
+                    t.templateId,
+                    t.templateName,
+                    t.totalScore,
+                    t.toPassPercentage,
+                    t.durationMinutes
+                })
+                .ToList();
+
+            var templateIds = templates.Select(t => t.templateId).ToList();
+
+            var configsQuery = await _testTemplateConfigRepository.GetAll();
+            var configs = configsQuery
+                .Where(c => templateIds.Contains(c.templateId))
+                .Select(c => new { c.templateId, c.questionCount })
+                .ToList();
+
+            var questionCountMap = configs
+                .GroupBy(c => c.templateId)
+                .ToDictionary(g => g.Key, g => g.Sum(x => x.questionCount));
+
+            var result = new TestTemplateTypeSummaryDto
+            {
+                TestTemplateTypeId = templateType.TestTemplateTypeId,
+                TypeName = templateType.typeName,
+                CourseLevel = templateType.courseLevel,
+                TestType = templateType.testType,
+                TotalTestScore = templateType.totalTestScore,
+                TotalPassPercentage = templateType.totalPassPercentage,
+                TotalDurationMinutes = templates.Sum(t => t.durationMinutes),
+                TestTemplates = templates.Select(t => new TestTemplateSummaryDto
+                {
+                    TemplateId = t.templateId,
+                    TemplateName = t.templateName,
+                    TotalScore = t.totalScore,
+                    ToPassPercentage = t.toPassPercentage,
+                    DurationMinutes = t.durationMinutes,
+                    TotalQuestionCount = questionCountMap.TryGetValue(t.templateId, out var count) ? count : 0
+                }).OrderBy(t => t.TemplateName).ToList()
+            };
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("GET_TEMPLATE_TYPE_SUMMARY_ERROR", ex.Message);
+        }
+    }
+
     private static TestTemplateTypeDto MapToDto(TestTemplateType t) => new()
     {
         TestTemplateTypeId = t.TestTemplateTypeId,
@@ -248,3 +315,6 @@ public class TestTemplateTypeService : ITestTemplateTypeService
         totalPassPercentage = t.totalPassPercentage,
     };
 }
+
+
+

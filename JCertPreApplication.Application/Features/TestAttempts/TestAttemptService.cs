@@ -68,7 +68,6 @@ public class TestAttemptService : ITestAttemptService
             if (test == null)
                 throw ApiException.NotFound("Test", dto.TestId);
 
-            // Check available range
             var now = DateTime.UtcNow;
             if (test.availableFrom.HasValue && now < test.availableFrom.Value)
                 throw ApiException.BadRequest("TEST_NOT_AVAILABLE", "Test is not yet available.");
@@ -77,12 +76,10 @@ public class TestAttemptService : ITestAttemptService
             if (test.status == TestStatus.Close)
                 throw ApiException.BadRequest("TEST_CLOSED", "Test is closed.");
           
-            // Check max attempts
             var userAttempts = await _testAttemptRepository.GetAllAsync(a => a.testId == dto.TestId && a.userId == dto.UserId);
             if (userAttempts.Count >= test.maxAttempts)
                 throw ApiException.BadRequest("MAX_ATTEMPTS_REACHED", "User has reached the maximum number of attempts.");
 
-            // If lessonId is set, check enrollment in the course of the lesson
             if (test.lessonId.HasValue)
             {
                 var lesson = await _lessonRepository.GetByIdAsync(test.lessonId.Value);
@@ -96,7 +93,6 @@ public class TestAttemptService : ITestAttemptService
                     throw ApiException.Forbidden("USER_NOT_ENROLLED", "User is not enrolled in the course for this test.");
             }
 
-            // Create new attempt
             var attempt = new TestAttempt
             {
                 attemptId = Guid.NewGuid(),
@@ -112,20 +108,16 @@ public class TestAttemptService : ITestAttemptService
             await _testAttemptRepository.InsertAsync(attempt);
             await _testAttemptRepository.SaveChangesAsync();
 
-            // Register attempt for auto-submission monitoring
             _autoSubmitController.AddAttempt(attempt.attemptId, attempt.endTime);
             _logger.LogInformation("Started test attempt {AttemptId} for user {UserId} and registered for auto-submit monitoring",
                 attempt.attemptId, attempt.userId);
 
             return MapToDto(attempt);
         }
-        catch (ApiException)
-        {
-            throw;
-        }
+        catch (ApiException) { throw; }
         catch (Exception ex)
         {
-            throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", ex.Message);
+            throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", $"An error occurred while starting test attempt: {ex.Message}");
         }
     }
 
@@ -157,13 +149,10 @@ public class TestAttemptService : ITestAttemptService
 
             return MapToDto(attempt);
         }
-        catch (ApiException)
-        {
-            throw;
-        }
+        catch (ApiException) { throw; }
         catch (Exception ex)
         {
-            throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", ex.Message);
+            throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", $"An error occurred while submitting test attempt: {ex.Message}");
         }
     }
 
@@ -172,125 +161,133 @@ public class TestAttemptService : ITestAttemptService
     /// </summary>
     private async Task CalculateAndSaveTestScoreSummaryAsync(TestAttempt attempt, Test test)
     {
-        // 1. Get all test questions for the test, including Question and SubContent
-        var testQuestions = await _testQuestionRepository.GetAllAsync(
-            tq => tq.testId == test.testId,
-            "Question.SubContent"
-        );
-
-        // 2. Calculate max scores for each content name
-        int kanjiMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Kanji).Sum(q => q.Question?.points ?? 0);
-        int vocabMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Vocabulary).Sum(q => q.Question?.points ?? 0);
-        int grammarMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Grammar).Sum(q => q.Question?.points ?? 0);
-        int readingMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Reading).Sum(q => q.Question?.points ?? 0);
-        int listeningMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Listening).Sum(q => q.Question?.points ?? 0);
-        int totalMax = kanjiMax + vocabMax + grammarMax + readingMax + listeningMax;
-
-        // 3. Get all attempt answers for this attempt, including Question and SubContent
-        var attemptAnswers = await _attemptAnswerRepository.GetAllAsync(
-            a => a.attemptId == attempt.attemptId,
-            "Question.SubContent"
-        );
-
-        // 4. Calculate user scores for each content name (only add score if isCorrect)
-        int kanjiScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Kanji).Sum(a => a.score);
-        int vocabScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Vocabulary).Sum(a => a.score);
-        int grammarScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Grammar).Sum(a => a.score);
-        int readingScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Reading).Sum(a => a.score);
-        int listeningScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Listening).Sum(a => a.score);
-        int totalScore = kanjiScore + vocabScore + grammarScore + readingScore + listeningScore;
-
-        // 5. Create and save TestScoreSummary for this attempt
-        var scoreSummary = new TestScoreSummary
+        try
         {
-            TestScoreSummaryId = Guid.NewGuid(),
-            TestId = test.testId,
-            TestAttemptId = attempt.attemptId,
-            kanji_max_score = kanjiMax,
-            vocab_max_score = vocabMax,
-            grammar_max_score = grammarMax,
-            reading_max_score = readingMax,
-            listening_max_score = listeningMax,
-            kanji_score = kanjiScore,
-            vocab_score = vocabScore,
-            grammar_score = grammarScore,
-            reading_score = readingScore,
-            listening_score = listeningScore,
-            total_max_score = totalMax,
-            total_score = totalScore
-        };
-
-        await _testScoreSummaryRepository.InsertAsync(scoreSummary);
-        await _testScoreSummaryRepository.SaveChangesAsync();
-
-        // 6. Decide pass/fail based on test type
-        bool? isPass = null;
-        decimal percentScore = totalMax > 0 ? (decimal)totalScore / totalMax * 100 : 0;
-
-        if (test.testType == TestType.CustomManual)
-        {
-            isPass = percentScore >= test.passing_percentage;
-        }
-        else if (test.testType == TestType.JLPTAuto)
-        {
-            var templateType = test.TestTemplateTypeId.HasValue
-                ? await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
-                : null;
-
-            if (templateType != null)
-            {
-                isPass = percentScore >= templateType.totalPassPercentage;
-            }
-
-            var testTemplates = await _testTemplateRepository.GetAllAsync(
-                t => t.TestTemplateTypeId == test.TestTemplateTypeId,
-                "TestTemplateConfigs.SubContent"
+            // 1. Get all test questions for the test, including Question and SubContent
+            var testQuestions = await _testQuestionRepository.GetAllAsync(
+                tq => tq.testId == test.testId,
+                "Question.SubContent"
             );
 
-            foreach (var template in testTemplates)
-            {
-                var contentNames = template.TestTemplateConfigs
-                    .Select(cfg => cfg.SubContent.ContentName)
-                    .Distinct()
-                    .ToList();
+            // 2. Calculate max scores for each content name
+            int kanjiMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Kanji).Sum(q => q.Question?.points ?? 0);
+            int vocabMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Vocabulary).Sum(q => q.Question?.points ?? 0);
+            int grammarMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Grammar).Sum(q => q.Question?.points ?? 0);
+            int readingMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Reading).Sum(q => q.Question?.points ?? 0);
+            int listeningMax = testQuestions.Where(q => q.Question?.SubContent?.ContentName == ContentName.Listening).Sum(q => q.Question?.points ?? 0);
+            int totalMax = kanjiMax + vocabMax + grammarMax + readingMax + listeningMax;
 
-                foreach (var contentName in contentNames)
+            // 3. Get all attempt answers for this attempt, including Question and SubContent
+            var attemptAnswers = await _attemptAnswerRepository.GetAllAsync(
+                a => a.attemptId == attempt.attemptId,
+                "Question.SubContent"
+            );
+
+            // 4. Calculate user scores for each content name (only add score if isCorrect)
+            int kanjiScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Kanji).Sum(a => a.score);
+            int vocabScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Vocabulary).Sum(a => a.score);
+            int grammarScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Grammar).Sum(a => a.score);
+            int readingScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Reading).Sum(a => a.score);
+            int listeningScore = attemptAnswers.Where(a => a.isCorrect && a.Question?.SubContent?.ContentName == ContentName.Listening).Sum(a => a.score);
+            int totalScore = kanjiScore + vocabScore + grammarScore + readingScore + listeningScore;
+
+            // 5. Create and save TestScoreSummary for this attempt
+            var scoreSummary = new TestScoreSummary
+            {
+                TestScoreSummaryId = Guid.NewGuid(),
+                TestId = test.testId,
+                TestAttemptId = attempt.attemptId,
+                kanji_max_score = kanjiMax,
+                vocab_max_score = vocabMax,
+                grammar_max_score = grammarMax,
+                reading_max_score = readingMax,
+                listening_max_score = listeningMax,
+                kanji_score = kanjiScore,
+                vocab_score = vocabScore,
+                grammar_score = grammarScore,
+                reading_score = readingScore,
+                listening_score = listeningScore,
+                total_max_score = totalMax,
+                total_score = totalScore
+            };
+
+            await _testScoreSummaryRepository.InsertAsync(scoreSummary);
+            await _testScoreSummaryRepository.SaveChangesAsync();
+
+            // 6. Decide pass/fail based on test type
+            bool? isPass = null;
+            decimal percentScore = totalMax > 0 ? (decimal)totalScore / totalMax * 100 : 0;
+
+            if (test.testType == TestType.CustomManual)
+            {
+                isPass = percentScore >= test.passing_percentage;
+            }
+            else if (test.testType == TestType.JLPTAuto)
+            {
+                var templateType = test.TestTemplateTypeId.HasValue
+                    ? await _testTemplateTypeRepository.GetByIdAsync(test.TestTemplateTypeId.Value)
+                    : null;
+
+                if (templateType != null)
                 {
-                    int userScore = contentName switch
+                    isPass = percentScore >= templateType.totalPassPercentage;
+                }
+
+                var testTemplates = await _testTemplateRepository.GetAllAsync(
+                    t => t.TestTemplateTypeId == test.TestTemplateTypeId,
+                    "TestTemplateConfigs.SubContent"
+                );
+
+                foreach (var template in testTemplates)
+                {
+                    var contentNames = template.TestTemplateConfigs
+                        .Select(cfg => cfg.SubContent.ContentName)
+                        .Distinct()
+                        .ToList();
+
+                    foreach (var contentName in contentNames)
                     {
-                        ContentName.Kanji => kanjiScore,
-                        ContentName.Vocabulary => vocabScore,
-                        ContentName.Grammar => grammarScore,
-                        ContentName.Reading => readingScore,
-                        ContentName.Listening => listeningScore,
-                        _ => 0
-                    };
-                    int maxScore = contentName switch
-                    {
-                        ContentName.Kanji => kanjiMax,
-                        ContentName.Vocabulary => vocabMax,
-                        ContentName.Grammar => grammarMax,
-                        ContentName.Reading => readingMax,
-                        ContentName.Listening => listeningMax,
-                        _ => 0
-                    };
-                    decimal contentPercent = maxScore > 0 ? (decimal)userScore / maxScore * 100 : 0;
-                    if (contentPercent < template.toPassPercentage)
-                    {
-                        isPass = false;
-                        break;
+                        int userScore = contentName switch
+                        {
+                            ContentName.Kanji => kanjiScore,
+                            ContentName.Vocabulary => vocabScore,
+                            ContentName.Grammar => grammarScore,
+                            ContentName.Reading => readingScore,
+                            ContentName.Listening => listeningScore,
+                            _ => 0
+                        };
+                        int maxScore = contentName switch
+                        {
+                            ContentName.Kanji => kanjiMax,
+                            ContentName.Vocabulary => vocabMax,
+                            ContentName.Grammar => grammarMax,
+                            ContentName.Reading => readingMax,
+                            ContentName.Listening => listeningMax,
+                            _ => 0
+                        };
+                        decimal contentPercent = maxScore > 0 ? (decimal)userScore / maxScore * 100 : 0;
+                        if (contentPercent < template.toPassPercentage)
+                        {
+                            isPass = false;
+                            break;
+                        }
                     }
                 }
             }
-        }
-        else if (test.testType == TestType.CustomAuto)
-        {
-            isPass = null;
-        }
+            else if (test.testType == TestType.CustomAuto)
+            {
+                isPass = null;
+            }
 
-        attempt.isPass = isPass;
-        await _testAttemptRepository.UpdateAsync(attempt);
-        await _testAttemptRepository.SaveChangesAsync();
+            attempt.isPass = isPass;
+            await _testAttemptRepository.UpdateAsync(attempt);
+            await _testAttemptRepository.SaveChangesAsync();
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("CALCULATE_SCORE_SUMMARY_ERROR", $"An error occurred while calculating score summary: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -306,7 +303,7 @@ public class TestAttemptService : ITestAttemptService
         catch (ApiException) { throw; }
         catch (Exception ex)
         {
-            throw ApiException.InternalServerError("GET_ATTEMPTS_ERROR", ex.Message);
+            throw ApiException.InternalServerError("GET_ATTEMPTS_ERROR", $"An error occurred while retrieving test attempts: {ex.Message}");
         }
     }
 
@@ -332,7 +329,7 @@ public class TestAttemptService : ITestAttemptService
         catch (ApiException) { throw; }
         catch (Exception ex)
         {
-            throw ApiException.InternalServerError("UPDATE_ATTEMPT_STATUS_ERROR", ex.Message);
+            throw ApiException.InternalServerError("UPDATE_ATTEMPT_STATUS_ERROR", $"An error occurred while updating test attempt status: {ex.Message}");
         }
     }
 
@@ -341,14 +338,22 @@ public class TestAttemptService : ITestAttemptService
     /// </summary>
     public async Task<(TestAttemptDto Attempt, TestScoreSummary? ScoreSummary)> GetAttemptWithScoreSummaryAsync(Guid attemptId)
     {
-        var attempt = await _testAttemptRepository.GetByIdAsync(attemptId);
-        if (attempt == null)
-            throw ApiException.NotFound("TestAttempt", attemptId);
+        try
+        {
+            var attempt = await _testAttemptRepository.GetByIdAsync(attemptId);
+            if (attempt == null)
+                throw ApiException.NotFound("TestAttempt", attemptId);
 
-        var scoreSummary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
-            s => s.TestAttemptId == attemptId);
+            var scoreSummary = await _testScoreSummaryRepository.GetFirstOrDefaultAsync(
+                s => s.TestAttemptId == attemptId);
 
-        return (MapToDto(attempt), scoreSummary);
+            return (MapToDto(attempt), scoreSummary);
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("GET_ATTEMPT_SCORE_SUMMARY_ERROR", $"An error occurred while retrieving attempt and score summary: {ex.Message}");
+        }
     }
 
     // Helper: Map entity to DTO
