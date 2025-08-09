@@ -20,6 +20,11 @@ namespace JCertPreApplication.Application.Features.Users
                 .ForMember(dest => dest.status, opt => opt.MapFrom(src => src.status))
                 .ForMember(dest => dest.roleId, opt => opt.MapFrom(src => src.roleId))
                 .ForMember(dest => dest.roleName, opt => opt.MapFrom(src => src.Role.roleName));
+
+            CreateMap<Role, RoleDto>()
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.roleId))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.roleName))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.description));
         }
     }
 } 

@@ -32,6 +32,29 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
+        /// Creates a new user account with specified role (Admin/Staff only).
+        /// </summary>
+        /// <param name="createUserDto">User creation information including role assignment.</param>
+        /// <returns>Created user information.</returns>
+        [HttpPost]
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> CreateUser([FromForm] CreateUserDto createUserDto)
+        {
+            var createdUser = await _userService.CreateUserAsync(createUserDto);
+            return CreatedAtAction(nameof(GetUserById), new { userId = createdUser.Id }, createdUser);
+        }
+
+        /// <summary>
+        /// Retrieves all available roles for user creation.
+        /// </summary>
+        [HttpGet("roles")]
+        public async Task<IActionResult> GetAvailableRoles()
+        {
+            var roles = await _userService.GetAvailableRolesAsync();
+            return Ok(roles);
+        }
+
+        /// <summary>
         /// Retrieves a specific user by ID.
         /// </summary>
         [HttpGet("{userId:guid}")]

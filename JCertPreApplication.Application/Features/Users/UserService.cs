@@ -13,12 +13,21 @@ namespace JCertPreApplication.Application.Features.Users
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IRoleRepository _roleRepository;
+        private readonly IPasswordService _passwordService;
         private readonly IMapper _mapper;
         private readonly IFileService _fileService;
 
-        public UserService(IUserRepository userRepository, IMapper mapper, IFileService fileService)
+        public UserService(
+            IUserRepository userRepository, 
+            IRoleRepository roleRepository,
+            IPasswordService passwordService,
+            IMapper mapper, 
+            IFileService fileService)
         {
             _userRepository = userRepository;
+            _roleRepository = roleRepository;
+            _passwordService = passwordService;
             _mapper = mapper;
             _fileService = fileService;
         }
@@ -78,6 +87,77 @@ namespace JCertPreApplication.Application.Features.Users
             );
 
             return user != null ? _mapper.Map<AppUserDto>(user) : null;
+        }
+
+        public async Task<AppUserDto> CreateUserAsync(CreateUserDto createUserDto)
+        {
+            // Check if email already exists
+            var existingUser = await _userRepository.GetByEmailAsync(createUserDto.Email);
+            if (existingUser != null)
+            {
+                throw ApiException.BadRequest("EMAIL_EXISTS", "A user with this email address already exists.");
+            }
+
+            // Get role by name
+            var role = await _roleRepository.GetByRoleNameAsync(createUserDto.RoleName);
+            if (role == null)
+            {
+                throw ApiException.BadRequest("INVALID_ROLE", $"Role '{createUserDto.RoleName}' does not exist.");
+            }
+
+            // Generate user ID
+            var userId = Guid.NewGuid();
+            string? avatarUrl = null;
+
+            // Handle avatar file upload if provided
+            if (createUserDto.AvatarFile != null)
+            {
+                // Create a custom FormFile with userId as filename
+                var customFormFile = CreateCustomFormFile(createUserDto.AvatarFile, userId.ToString());
+
+                // Upload avatar to file service
+                var uploadResult = await _fileService.UploadImageAsync(customFormFile);
+                
+                if (uploadResult.Success && !string.IsNullOrEmpty(uploadResult.Url))
+                {
+                    avatarUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to upload avatar: {uploadResult.ErrorMessage}");
+                }
+            }
+
+            // Hash password
+            var hashedPassword = _passwordService.HashPassword(createUserDto.Password);
+
+            // Create user entity
+            var user = new User
+            {
+                userId = userId,
+                fullName = createUserDto.FullName,
+                email = createUserDto.Email,
+                passwordHash = hashedPassword,
+                phone = createUserDto.Phone,
+                avatarUrl = avatarUrl,
+                credit = createUserDto.Credit,
+                createdAt = DateTime.UtcNow,
+                lastLogin = DateTime.UtcNow,
+                status = createUserDto.Status,
+                roleId = role.roleId
+            };
+
+            // Save user to database
+            await _userRepository.InsertAsync(user);
+            await _userRepository.SaveChangesAsync();
+
+            // Return user with role information
+            var createdUser = await _userRepository.GetFirstOrDefaultAsync(
+                u => u.userId == userId,
+                includeProperties: "Role"
+            );
+
+            return _mapper.Map<AppUserDto>(createdUser);
         }
 
         public async Task<AppUserDto> UpdateUserAsync(Guid userId, UpdateUserDto updateUserDto)
@@ -175,6 +255,17 @@ namespace JCertPreApplication.Application.Features.Users
         {
             var user = await _userRepository.GetByIdAsync(userId);
             return user != null;
+        }
+
+        public async Task<List<RoleDto>> GetAvailableRolesAsync()
+        {
+            var roles = await _roleRepository.GetAllAsync();
+            return roles.Select(r => new RoleDto
+            {
+                RoleId = r.roleId,
+                RoleName = r.roleName,
+                Description = r.description
+            }).ToList();
         }
 
         #region Private Helper Methods
