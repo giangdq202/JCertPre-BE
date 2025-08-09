@@ -53,5 +53,21 @@ namespace JCertPreApplication.API.Controllers
             var totalEnrollments = await _adminDashboardService.GetTotalEnrollmentsAsync();
             return Ok(totalEnrollments);
         }
+
+        /// <summary>
+        /// Get course enrollments statistics by month for the last 12 months.
+        /// Returns enrollment counts grouped by month in MM/yyyy format.
+        /// </summary>
+        /// <returns>Enrollments by month data as a dictionary with MM/yyyy keys and count values</returns>
+        /// <response code="200">Returns the enrollments by month data</response>
+        /// <response code="500">If there was an internal server error</response>
+        [HttpGet("enrollments/by-month")]
+        [ProducesResponseType(typeof(Application.Dtos.AdminDashboard.EnrollmentsByMonthDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetEnrollmentsByMonth()
+        {
+            var enrollmentsByMonth = await _adminDashboardService.GetEnrollmentsByMonthAsync();
+            return Ok(enrollmentsByMonth);
+        }
     }
 }

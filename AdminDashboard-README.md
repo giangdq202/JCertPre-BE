@@ -37,6 +37,35 @@ Lấy thống kê tổng số lượt đăng ký khóa học.
 }
 ```
 
+### GET /api/admin-dashboard/enrollments/by-month
+Lấy thống kê số lượt đăng ký khóa học theo từng tháng trong 12 tháng gần nhất.
+
+**Mô tả:**
+- Lấy dữ liệu enrollment của 12 tháng gần nhất (từ tháng hiện tại lùi về quá khứ)
+- Trả về dữ liệu dạng Dictionary với key là "MM/yyyy" và value là số lượt đăng ký
+- Các tháng không có dữ liệu sẽ có giá trị 0
+
+**Response:**
+```json
+{
+  "data": {
+    "09/2024": 12,
+    "10/2024": 25,
+    "11/2024": 18,
+    "12/2024": 30,
+    "01/2025": 22,
+    "02/2025": 15,
+    "03/2025": 28,
+    "04/2025": 35,
+    "05/2025": 20,
+    "06/2025": 27,
+    "07/2025": 32,
+    "08/2025": 19
+  },
+  "calculatedAt": "2025-08-09T10:30:00Z"
+}
+```
+
 **Status Codes:**
 - `200 OK`: Thành công
 - `500 Internal Server Error`: Lỗi server (sử dụng `ApiException.InternalServerError`)
@@ -47,7 +76,8 @@ API sử dụng hệ thống `ApiException` để xử lý lỗi một cách chu
 **Trong Service Layer:**
 - Catch tất cả exceptions không mong muốn
 - Revenue API: Throw `ApiException.InternalServerError` với error code `REVENUE_CALCULATION_ERROR`
-- Enrollments API: Throw `ApiException.InternalServerError` với error code `ENROLLMENTS_COUNT_ERROR`
+- Enrollments Total API: Throw `ApiException.InternalServerError` với error code `ENROLLMENTS_COUNT_ERROR`
+- Enrollments By Month API: Throw `ApiException.InternalServerError` với error code `ENROLLMENTS_BY_MONTH_ERROR`
 
 **Trong Controller Layer:**
 - Không cần try-catch vì Global Exception Handling Middleware sẽ xử lý
@@ -57,7 +87,7 @@ API sử dụng hệ thống `ApiException` để xử lý lỗi một cách chu
 ```json
 {
   "statusCode": 500,
-  "errorCode": "REVENUE_CALCULATION_ERROR", // hoặc "ENROLLMENTS_COUNT_ERROR"
+  "errorCode": "REVENUE_CALCULATION_ERROR", // hoặc "ENROLLMENTS_COUNT_ERROR" hoặc "ENROLLMENTS_BY_MONTH_ERROR"
   "message": "An error occurred while calculating total revenue. Please try again later.",
   "details": null,
   "path": "/api/admin-dashboard/revenue/total"
@@ -84,6 +114,7 @@ API sử dụng hệ thống `ApiException` để xử lý lỗi một cách chu
 ### 4. DTO
 - **File:** `JCertPreApplication.Application/Dtos/AdminDashboard/TotalRevenueDto.cs`
 - **File:** `JCertPreApplication.Application/Dtos/AdminDashboard/TotalEnrollmentsDto.cs`
+- **File:** `JCertPreApplication.Application/Dtos/AdminDashboard/EnrollmentsByMonthDto.cs`
 - **Chức năng:** Định nghĩa cấu trúc dữ liệu trả về
 
 ## Dependency Injection
@@ -97,6 +128,7 @@ Sử dụng Swagger UI hoặc Postman để test endpoints:
 ```
 GET https://localhost:7001/api/admin-dashboard/revenue/total
 GET https://localhost:7001/api/admin-dashboard/enrollments/total
+GET https://localhost:7001/api/admin-dashboard/enrollments/by-month
 ```
 
 ## Mở rộng tương lai
@@ -105,4 +137,5 @@ Có thể dễ dàng thêm các endpoints khác như:
 - `/api/admin-dashboard/courses/analytics`
 - `/api/admin-dashboard/revenue/by-period`
 - `/api/admin-dashboard/enrollments/by-course`
-- `/api/admin-dashboard/enrollments/by-period`
+- `/api/admin-dashboard/revenue/by-month` (tương tự enrollments by month)
+- `/api/admin-dashboard/top-courses` (khóa học có nhiều lượt đăng ký nhất)

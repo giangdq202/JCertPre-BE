@@ -18,5 +18,11 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
         /// </summary>
         /// <returns>Total enrollments information</returns>
         Task<TotalEnrollmentsDto> GetTotalEnrollmentsAsync();
+
+        /// <summary>
+        /// Get course enrollments statistics by month for the last 12 months
+        /// </summary>
+        /// <returns>Enrollments by month data</returns>
+        Task<EnrollmentsByMonthDto> GetEnrollmentsByMonthAsync();
     }
 }

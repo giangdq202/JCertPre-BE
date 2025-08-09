@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
@@ -51,6 +52,15 @@ namespace JCertPreApplication.Persistence.Repositories
         public async Task<long> GetTotalEnrollmentsCountAsync()
         {
             return await _context.Enrollments.LongCountAsync();
+        }
+
+        public async Task<IEnumerable<MonthlyCount>> GetEnrollmentCountsByMonthAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Enrollments
+                .Where(e => e.enrollDate >= startDate && e.enrollDate < endDate)
+                .GroupBy(e => new { e.enrollDate.Year, e.enrollDate.Month })
+                .Select(g => new MonthlyCount(g.Key.Year, g.Key.Month, g.LongCount()))
+                .ToListAsync();
         }
     }
 } 

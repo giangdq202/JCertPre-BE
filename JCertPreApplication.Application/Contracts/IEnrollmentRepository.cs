@@ -1,3 +1,4 @@
+using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Contracts
@@ -10,5 +11,6 @@ namespace JCertPreApplication.Application.Contracts
         Task<Enrollment?> GetEnrollmentWithDetailsAsync(Guid enrollmentId);
         Task<bool> IsUserEnrolledInCourseAsync(Guid userId, Guid courseId);
         Task<long> GetTotalEnrollmentsCountAsync();
+        Task<IEnumerable<MonthlyCount>> GetEnrollmentCountsByMonthAsync(DateTime startDate, DateTime endDate);
     }
 } 
