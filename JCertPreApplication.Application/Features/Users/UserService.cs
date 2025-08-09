@@ -113,14 +113,14 @@ namespace JCertPreApplication.Application.Features.Users
                             var oldPublicId = ExtractCloudinaryPublicId(user.avatarUrl);
                             if (!string.IsNullOrWhiteSpace(oldPublicId))
                             {
-                                await _fileService.DeleteImageAsync(oldPublicId);
+                                await _fileService.DeleteFileAsync(oldPublicId);
                             }
                         }
                         catch (Exception ex)
                         {
                             // Log warning but don't fail the update if old image deletion fails
                             // This could happen if the image was already deleted or doesn't exist
-                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old Cloudinary avatar: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {ex.Message}");
                         }
                     }
                     // Clear the old URL regardless of source
@@ -132,7 +132,15 @@ namespace JCertPreApplication.Application.Features.Users
 
                 // Upload new avatar
                 var uploadResult = await _fileService.UploadImageAsync(customFormFile);
-                user.avatarUrl = uploadResult.SecureUrl.ToString();
+                
+                if (uploadResult.Success)
+                {
+                    user.avatarUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                }
+                else
+                {
+                    throw new InvalidOperationException($"Failed to upload avatar: {uploadResult.ErrorMessage}");
+                }
             }
 
             await _userRepository.UpdateAsync(user);

@@ -1,10 +1,8 @@
 using Appwrite;
 using Appwrite.Models;
 using Appwrite.Services;
-using CloudinaryDotNet.Actions;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.File;
-using JCertPreApplication.Application.Dtos.File.Appwrite;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Domain.Enums;
@@ -16,7 +14,7 @@ using System.Text;
 namespace JCertPreApplication.Persistence.Services.File
 {
     /// <summary>
-    /// Appwrite implementation of IFileService that provides compatibility with existing Cloudinary-based interface
+    /// Appwrite implementation of IFileService providing generic file storage operations
     /// </summary>
     public class AppwriteFileService : IFileService
     {
@@ -104,9 +102,9 @@ namespace JCertPreApplication.Persistence.Services.File
         }
 
         /// <summary>
-        /// Uploads an image file to Appwrite and returns Cloudinary-compatible result
+        /// Uploads an image file to Appwrite
         /// </summary>
-        public async Task<ImageUploadResult> UploadImageAsync(IFormFile file)
+        public async Task<FileUploadResult> UploadImageAsync(IFormFile file, CancellationToken cancellationToken = default)
         {
             ValidateImageFile(file);
 
@@ -114,7 +112,7 @@ namespace JCertPreApplication.Persistence.Services.File
             {
                 using var stream = file.OpenReadStream();
                 var fileBytes = new byte[stream.Length];
-                await stream.ReadAsync(fileBytes, 0, (int)stream.Length);
+                await stream.ReadAsync(fileBytes, 0, (int)stream.Length, cancellationToken);
 
                 var inputFile = InputFile.FromBytes(fileBytes, file.FileName, file.ContentType);
                 
@@ -123,12 +121,12 @@ namespace JCertPreApplication.Persistence.Services.File
                     fileId: ID.Unique(),
                     file: inputFile,
                     permissions: new List<string> { 
-                        Permission.Read(Appwrite.Role.Any()),  // Allow everyone to read (ViewURL works)
+                        Permission.Read(Appwrite.Role.Any()),  // Allow everyone to read
                         Permission.Write(Appwrite.Role.Users()) // Only logged in users can upload
                     }
                 );
 
-                var result = MapToImageUploadResult(appwriteFile, FileType.Image);
+                var result = MapToFileUploadResult(appwriteFile, "image");
                 
                 _logger.LogInformation("Image uploaded successfully to Appwrite. FileId: {FileId}, Size: {Size}KB", 
                     result.PublicId, result.Bytes / 1024);
@@ -138,19 +136,27 @@ namespace JCertPreApplication.Persistence.Services.File
             catch (AppwriteException ex)
             {
                 _logger.LogError(ex, "Failed to upload image to Appwrite: {Message}", ex.Message);
-                throw ApiException.InternalServerError("APPWRITE_UPLOAD_FAILED", $"Failed to upload image: {ex.Message}");
+                return new FileUploadResult 
+                { 
+                    Success = false, 
+                    ErrorMessage = $"Failed to upload image: {ex.Message}" 
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during image upload");
-                throw ApiException.InternalServerError("IMAGE_UPLOAD_ERROR", "An unexpected error occurred during image upload");
+                return new FileUploadResult 
+                { 
+                    Success = false, 
+                    ErrorMessage = "An unexpected error occurred during image upload" 
+                };
             }
         }
 
         /// <summary>
-        /// Uploads a video or audio file to Appwrite and returns Cloudinary-compatible result
+        /// Uploads a video or audio file to Appwrite
         /// </summary>
-        public async Task<VideoUploadResult> UploadVideoAsync(IFormFile file)
+        public async Task<FileUploadResult> UploadVideoAsync(IFormFile file, CancellationToken cancellationToken = default)
         {
             ValidateVideoFile(file);
 
@@ -158,7 +164,7 @@ namespace JCertPreApplication.Persistence.Services.File
             {
                 using var stream = file.OpenReadStream();
                 var fileBytes = new byte[stream.Length];
-                await stream.ReadAsync(fileBytes, 0, (int)stream.Length);
+                await stream.ReadAsync(fileBytes, 0, (int)stream.Length, cancellationToken);
 
                 var inputFile = InputFile.FromBytes(fileBytes, file.FileName, file.ContentType);
                 
@@ -167,12 +173,12 @@ namespace JCertPreApplication.Persistence.Services.File
                     fileId: ID.Unique(),
                     file: inputFile,
                     permissions: new List<string> { 
-                        Permission.Read(Appwrite.Role.Any()),  // Allow everyone to read (ViewURL works)
+                        Permission.Read(Appwrite.Role.Any()),  // Allow everyone to read
                         Permission.Write(Appwrite.Role.Users()) // Only logged in users can upload
                     }
                 );
 
-                var result = MapToVideoUploadResult(appwriteFile, FileType.Video);
+                var result = MapToFileUploadResult(appwriteFile, "video");
                 
                 var fileType = file.ContentType.StartsWith("audio/") ? "Audio" : "Video";
                 _logger.LogInformation("{FileType} uploaded successfully to Appwrite. FileId: {FileId}, Size: {Size}MB", 
@@ -183,27 +189,35 @@ namespace JCertPreApplication.Persistence.Services.File
             catch (AppwriteException ex)
             {
                 _logger.LogError(ex, "Failed to upload video/audio to Appwrite: {Message}", ex.Message);
-                throw ApiException.InternalServerError("APPWRITE_UPLOAD_FAILED", $"Failed to upload video/audio: {ex.Message}");
+                return new FileUploadResult 
+                { 
+                    Success = false, 
+                    ErrorMessage = $"Failed to upload video/audio: {ex.Message}" 
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during video/audio upload");
-                throw ApiException.InternalServerError("VIDEO_UPLOAD_ERROR", "An unexpected error occurred during video/audio upload");
+                return new FileUploadResult 
+                { 
+                    Success = false, 
+                    ErrorMessage = "An unexpected error occurred during video/audio upload" 
+                };
             }
         }
 
         /// <summary>
-        /// Uploads a raw/document file to Appwrite and returns Cloudinary-compatible result
+        /// Uploads a document file to Appwrite
         /// </summary>
-        public async Task<RawUploadResult> UploadRawFileAsync(IFormFile file)
+        public async Task<FileUploadResult> UploadDocumentAsync(IFormFile file, CancellationToken cancellationToken = default)
         {
-            ValidateRawFile(file);
+            ValidateDocumentFile(file);
 
             try
             {
                 using var stream = file.OpenReadStream();
                 var fileBytes = new byte[stream.Length];
-                await stream.ReadAsync(fileBytes, 0, (int)stream.Length);
+                await stream.ReadAsync(fileBytes, 0, (int)stream.Length, cancellationToken);
 
                 var inputFile = InputFile.FromBytes(fileBytes, file.FileName, file.ContentType);
                 
@@ -212,12 +226,12 @@ namespace JCertPreApplication.Persistence.Services.File
                     fileId: ID.Unique(),
                     file: inputFile,
                     permissions: new List<string> { 
-                        Permission.Read(Appwrite.Role.Any()),  // Allow everyone to read (ViewURL works)
+                        Permission.Read(Appwrite.Role.Any()),  // Allow everyone to read
                         Permission.Write(Appwrite.Role.Users()) // Only logged in users can upload
                     }
                 );
 
-                var result = MapToRawUploadResult(appwriteFile, FileType.Document);
+                var result = MapToFileUploadResult(appwriteFile, "document");
                 
                 _logger.LogInformation("Document uploaded successfully to Appwrite. FileId: {FileId}, Size: {Size}KB", 
                     result.PublicId, result.Bytes / 1024);
@@ -227,43 +241,107 @@ namespace JCertPreApplication.Persistence.Services.File
             catch (AppwriteException ex)
             {
                 _logger.LogError(ex, "Failed to upload document to Appwrite: {Message}", ex.Message);
-                throw ApiException.InternalServerError("APPWRITE_UPLOAD_FAILED", $"Failed to upload document: {ex.Message}");
+                return new FileUploadResult 
+                { 
+                    Success = false, 
+                    ErrorMessage = $"Failed to upload document: {ex.Message}" 
+                };
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error during document upload");
-                throw ApiException.InternalServerError("RAW_UPLOAD_ERROR", "An unexpected error occurred during document upload");
+                return new FileUploadResult 
+                { 
+                    Success = false, 
+                    ErrorMessage = "An unexpected error occurred during document upload" 
+                };
             }
         }
 
         /// <summary>
-        /// Deletes an image file from Appwrite
+        /// Deletes a file from Appwrite using its public ID
         /// </summary>
-        public async Task<DeletionResult> DeleteImageAsync(string publicId)
+        public async Task<FileDeletionResult> DeleteFileAsync(string publicId, CancellationToken cancellationToken = default)
         {
-            return await DeleteFileAsync(publicId, _config.ImagesBucketId, "image");
-        }
+            if (string.IsNullOrEmpty(publicId))
+            {
+                _logger.LogWarning("File deletion failed: publicId is null or empty");
+                return new FileDeletionResult 
+                { 
+                    Success = false, 
+                    PublicId = publicId, 
+                    ErrorMessage = "Public ID is required" 
+                };
+            }
 
-        /// <summary>
-        /// Deletes a video or audio file from Appwrite
-        /// </summary>
-        public async Task<DeletionResult> DeleteVideoAsync(string publicId)
-        {
-            return await DeleteFileAsync(publicId, _config.VideosBucketId, "video/audio");
-        }
+            try
+            {
+                // Try to delete from each bucket until we find the file
+                var buckets = new[] 
+                { 
+                    (_config.ImagesBucketId, "image"),
+                    (_config.VideosBucketId, "video"),
+                    (_config.DocumentsBucketId, "document")
+                };
 
-        /// <summary>
-        /// Deletes a raw/document file from Appwrite
-        /// </summary>
-        public async Task<DeletionResult> DeleteRawFileAsync(string publicId)
-        {
-            return await DeleteFileAsync(publicId, _config.DocumentsBucketId, "document");
+                foreach (var (bucketId, bucketType) in buckets)
+                {
+                    try
+                    {
+                        await _storage.DeleteFile(bucketId, publicId);
+                        
+                        _logger.LogInformation("File deleted successfully from Appwrite {BucketType} bucket. FileId: {FileId}", 
+                            bucketType, publicId);
+
+                        return new FileDeletionResult
+                        {
+                            Success = true,
+                            PublicId = publicId,
+                            Result = "deleted"
+                        };
+                    }
+                    catch (AppwriteException ex) when (ex.Code == 404)
+                    {
+                        // File not found in this bucket, try next bucket
+                        continue;
+                    }
+                }
+
+                // File not found in any bucket
+                _logger.LogWarning("File not found for deletion in any bucket. FileId: {FileId}", publicId);
+                return new FileDeletionResult
+                {
+                    Success = false,
+                    PublicId = publicId,
+                    ErrorMessage = "File not found"
+                };
+            }
+            catch (AppwriteException ex)
+            {
+                _logger.LogError(ex, "Failed to delete file from Appwrite: {Message}", ex.Message);
+                return new FileDeletionResult 
+                { 
+                    Success = false, 
+                    PublicId = publicId, 
+                    ErrorMessage = $"Failed to delete file: {ex.Message}" 
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error during file deletion");
+                return new FileDeletionResult 
+                { 
+                    Success = false, 
+                    PublicId = publicId, 
+                    ErrorMessage = "An unexpected error occurred during file deletion" 
+                };
+            }
         }
 
         /// <summary>
         /// Gets a page of resources from Appwrite with cursor-based pagination
         /// </summary>
-        public async Task<FileResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image")
+        public async Task<FileResourcesPageDto> GetResourcesPageAsync(int maxResults = 100, string? nextCursor = null, string resourceType = "image", CancellationToken cancellationToken = default)
         {
             try
             {
@@ -272,7 +350,7 @@ namespace JCertPreApplication.Persistence.Services.File
                     "image" => _config.ImagesBucketId,
                     "video" => _config.VideosBucketId,
                     "audio" => _config.VideosBucketId, // Audio files stored in video bucket
-                    "raw" => _config.DocumentsBucketId,
+                    "document" => _config.DocumentsBucketId,
                     _ => _config.ImagesBucketId
                 };
 
@@ -320,108 +398,28 @@ namespace JCertPreApplication.Persistence.Services.File
 
         #region Private Helper Methods
 
-        private async Task<DeletionResult> DeleteFileAsync(string fileId, string bucketId, string fileType)
+        private FileUploadResult MapToFileUploadResult(Appwrite.Models.File appwriteFile, string resourceType)
         {
-            try
+            var viewUrl = GetFileViewUrl(appwriteFile.BucketId, appwriteFile.Id);
+            
+            return new FileUploadResult
             {
-                await _storage.DeleteFile(bucketId, fileId);
-
-                _logger.LogInformation("{FileType} deleted successfully from Appwrite. FileId: {FileId}", 
-                    fileType, fileId);
-
-                var result = new AppwriteDeletionResult
+                Success = true,
+                PublicId = appwriteFile.Id,
+                Url = viewUrl,
+                SecureUrl = viewUrl,
+                Bytes = appwriteFile.SizeOriginal,
+                Format = Path.GetExtension(appwriteFile.Name).TrimStart('.'),
+                ResourceType = resourceType,
+                CreatedAt = DateTime.Parse(appwriteFile.CreatedAt),
+                Metadata = new Dictionary<string, object>
                 {
-                    Success = true,
-                    FileId = fileId
-                };
-                result.MapToCloudinaryFields();
-                
-                return result;
-            }
-            catch (AppwriteException ex) when (ex.Code == 404)
-            {
-                _logger.LogWarning("File not found for deletion. FileId: {FileId}", fileId);
-                
-                var result = new AppwriteDeletionResult
-                {
-                    Success = false,
-                    FileId = fileId,
-                    Error = "File not found"
-                };
-                result.MapToCloudinaryFields();
-                
-                return result;
-            }
-            catch (AppwriteException ex)
-            {
-                _logger.LogError(ex, "Failed to delete {FileType} from Appwrite: {Message}", fileType, ex.Message);
-                throw ApiException.InternalServerError("APPWRITE_DELETE_FAILED", $"Failed to delete {fileType}: {ex.Message}");
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Unexpected error during {FileType} deletion", fileType);
-                throw ApiException.InternalServerError($"{fileType.ToUpper()}_DELETE_ERROR", $"An unexpected error occurred during {fileType} deletion");
-            }
-        }
-
-        private ImageUploadResult MapToImageUploadResult(Appwrite.Models.File appwriteFile, FileType fileType)
-        {
-            var result = new AppwriteImageUploadResult
-            {
-                FileId = appwriteFile.Id,
-                Name = appwriteFile.Name,
-                BucketId = appwriteFile.BucketId,
-                MimeType = appwriteFile.MimeType,
-                SizeOriginal = appwriteFile.SizeOriginal,
-                CreatedAt = DateTime.Parse(appwriteFile.CreatedAt),
-                UpdatedAt = DateTime.Parse(appwriteFile.UpdatedAt),
-                ViewUrl = GetFileViewUrl(appwriteFile.BucketId, appwriteFile.Id),
-                FileType = fileType.ToString().ToLower(),
-                Extension = Path.GetExtension(appwriteFile.Name).TrimStart('.'),
-                SizeFormatted = FormatFileSize(appwriteFile.SizeOriginal),
+                    ["name"] = appwriteFile.Name,
+                    ["mimeType"] = appwriteFile.MimeType,
+                    ["bucketId"] = appwriteFile.BucketId,
+                    ["updatedAt"] = appwriteFile.UpdatedAt
+                }
             };
-
-            result.MapToCloudinaryFields();
-            return result;
-        }
-
-        private VideoUploadResult MapToVideoUploadResult(Appwrite.Models.File appwriteFile, FileType fileType)
-        {
-            var result = new AppwriteVideoUploadResult
-            {
-                FileId = appwriteFile.Id,
-                Name = appwriteFile.Name,
-                BucketId = appwriteFile.BucketId,
-                MimeType = appwriteFile.MimeType,
-                SizeOriginal = appwriteFile.SizeOriginal,
-                CreatedAt = DateTime.Parse(appwriteFile.CreatedAt),
-                UpdatedAt = DateTime.Parse(appwriteFile.UpdatedAt),
-                ViewUrl = GetFileViewUrl(appwriteFile.BucketId, appwriteFile.Id),
-                FileType = fileType.ToString().ToLower()
-            };
-
-            result.MapToCloudinaryFields();
-            return result;
-        }
-
-        private RawUploadResult MapToRawUploadResult(Appwrite.Models.File appwriteFile, FileType fileType)
-        {
-            var result = new AppwriteRawUploadResult
-            {
-                FileId = appwriteFile.Id,
-                Name = appwriteFile.Name,
-                BucketId = appwriteFile.BucketId,
-                MimeType = appwriteFile.MimeType,
-                SizeOriginal = appwriteFile.SizeOriginal,
-                CreatedAt = DateTime.Parse(appwriteFile.CreatedAt),
-                UpdatedAt = DateTime.Parse(appwriteFile.UpdatedAt),
-                ViewUrl = GetFileViewUrl(appwriteFile.BucketId, appwriteFile.Id),
-                DownloadUrl = GetFileDownloadUrl(appwriteFile.BucketId, appwriteFile.Id),
-                FileType = fileType.ToString().ToLower()
-            };
-
-            result.MapToCloudinaryFields();
-            return result;
         }
 
         private FileResourceDto MapToFileResourceDto(Appwrite.Models.File appwriteFile, string resourceType)
@@ -438,131 +436,54 @@ namespace JCertPreApplication.Persistence.Services.File
             return $"{_config.Endpoint}/storage/buckets/{bucketId}/files/{fileId}/view?project={_config.ProjectId}";
         }
 
-        private string GetFileDownloadUrl(string bucketId, string fileId)
-        {
-            return $"{_config.Endpoint}/storage/buckets/{bucketId}/files/{fileId}/download?project={_config.ProjectId}";
-        }
-
-        private static string FormatFileSize(long bytes)
-        {
-            string[] suffixes = { "B", "KB", "MB", "GB", "TB" };
-            int counter = 0;
-            decimal number = bytes;
-            while (Math.Round(number / 1024) >= 1)
-            {
-                number /= 1024;
-                counter++;
-            }
-            return $"{number:n1} {suffixes[counter]}";
-        }
-
         private void ValidateImageFile(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-            {
-                _logger.LogWarning("Image validation failed: File is null or empty");
-                throw ApiException.BadRequest("INVALID_FILE", "File is required and cannot be empty");
-            }
-
-            _logger.LogInformation("Validating image file: {FileName}, Size: {FileSize}MB ({FileSizeBytes} bytes), ContentType: {ContentType}", 
-                file.FileName, 
-                Math.Round((double)file.Length / (1024 * 1024), 2), 
-                file.Length, 
-                file.ContentType);
-
-            if (!_mimeTypeMapping.ContainsKey(file.ContentType) || _mimeTypeMapping[file.ContentType] != FileType.Image)
-            {
-                _logger.LogWarning("Image validation failed: Invalid content type {ContentType} for file {FileName}", file.ContentType, file.FileName);
-                throw ApiException.BadRequest("INVALID_FILE_TYPE", $"File type {file.ContentType} is not supported for images");
-            }
-
-            var maxSizeBytes = _config.MaxFileSizeMB * 1024 * 1024;
-            _logger.LogInformation("Image file size check: File={FileSize}MB, MaxAllowed={MaxSize}MB (Config MaxFileSizeMB={ConfigValue})", 
-                Math.Round((double)file.Length / (1024 * 1024), 2), 
-                _config.MaxFileSizeMB, 
-                _config.MaxFileSizeMB);
-                
-            if (file.Length > maxSizeBytes)
-            {
-                _logger.LogWarning("Image validation failed: File size {FileSize}MB exceeds maximum {MaxSize}MB", 
-                    Math.Round((double)file.Length / (1024 * 1024), 2), _config.MaxFileSizeMB);
-                throw ApiException.BadRequest("FILE_TOO_LARGE", $"File size exceeds maximum allowed size of {_config.MaxFileSizeMB}MB");
-            }
-
-            _logger.LogInformation("Image file validation successful: {FileName}", file.FileName);
+            ValidateFile(file, FileType.Image, "image");
         }
 
         private void ValidateVideoFile(IFormFile file)
         {
-            if (file == null || file.Length == 0)
-            {
-                _logger.LogWarning("Video/Audio validation failed: File is null or empty");
-                throw ApiException.BadRequest("INVALID_FILE", "File is required and cannot be empty");
-            }
-
-            _logger.LogInformation("Validating video/audio file: {FileName}, Size: {FileSize}MB ({FileSizeBytes} bytes), ContentType: {ContentType}", 
-                file.FileName, 
-                Math.Round((double)file.Length / (1024 * 1024), 2), 
-                file.Length, 
-                file.ContentType);
-
-            if (!_mimeTypeMapping.ContainsKey(file.ContentType) || _mimeTypeMapping[file.ContentType] != FileType.Video)
-            {
-                _logger.LogWarning("Video/Audio validation failed: Invalid content type {ContentType} for file {FileName}", file.ContentType, file.FileName);
-                throw ApiException.BadRequest("INVALID_FILE_TYPE", $"File type {file.ContentType} is not supported for videos/audio files");
-            }
-
-            // Use configuration limit for videos/audio (sync with Appwrite Console settings)
-            var maxSizeBytes = _config.MaxFileSizeMB * 1024 * 1024;
-            _logger.LogInformation("Video/Audio file size check: File={FileSize}MB, MaxAllowed={MaxSize}MB (Config MaxFileSizeMB={ConfigValue})", 
-                Math.Round((double)file.Length / (1024 * 1024), 2), 
-                _config.MaxFileSizeMB, 
-                _config.MaxFileSizeMB);
-                
-            if (file.Length > maxSizeBytes)
-            {
-                _logger.LogWarning("Video/Audio validation failed: File size {FileSize}MB exceeds maximum {MaxSize}MB", 
-                    Math.Round((double)file.Length / (1024 * 1024), 2), _config.MaxFileSizeMB);
-                throw ApiException.BadRequest("FILE_TOO_LARGE", $"File size exceeds maximum allowed size of {_config.MaxFileSizeMB}MB for videos/audio files");
-            }
-
-            _logger.LogInformation("Video/Audio file validation successful: {FileName}", file.FileName);
+            ValidateFile(file, FileType.Video, "video/audio");
         }
 
-        private void ValidateRawFile(IFormFile file)
+        private void ValidateDocumentFile(IFormFile file)
+        {
+            ValidateFile(file, FileType.Document, "document");
+        }
+
+        private void ValidateFile(IFormFile file, FileType expectedType, string typeName)
         {
             if (file == null || file.Length == 0)
             {
-                _logger.LogWarning("Document validation failed: File is null or empty");
+                _logger.LogWarning("{TypeName} validation failed: File is null or empty", typeName);
                 throw ApiException.BadRequest("INVALID_FILE", "File is required and cannot be empty");
             }
 
-            _logger.LogInformation("Validating document file: {FileName}, Size: {FileSize}MB ({FileSizeBytes} bytes), ContentType: {ContentType}", 
-                file.FileName, 
+            _logger.LogInformation("Validating {TypeName} file: {FileName}, Size: {FileSize}MB ({FileSizeBytes} bytes), ContentType: {ContentType}", 
+                typeName, file.FileName, 
                 Math.Round((double)file.Length / (1024 * 1024), 2), 
                 file.Length, 
                 file.ContentType);
 
-            if (!_mimeTypeMapping.ContainsKey(file.ContentType) || _mimeTypeMapping[file.ContentType] != FileType.Document)
+            if (!_mimeTypeMapping.ContainsKey(file.ContentType) || _mimeTypeMapping[file.ContentType] != expectedType)
             {
-                _logger.LogWarning("Document validation failed: Invalid content type {ContentType} for file {FileName}", file.ContentType, file.FileName);
-                throw ApiException.BadRequest("INVALID_FILE_TYPE", $"File type {file.ContentType} is not supported for documents");
+                _logger.LogWarning("{TypeName} validation failed: Invalid content type {ContentType} for file {FileName}", 
+                    typeName, file.ContentType, file.FileName);
+                throw ApiException.BadRequest("INVALID_FILE_TYPE", $"File type {file.ContentType} is not supported for {typeName}");
             }
 
             var maxSizeBytes = _config.MaxFileSizeMB * 1024 * 1024;
-            _logger.LogInformation("Document file size check: File={FileSize}MB, MaxAllowed={MaxSize}MB (Config MaxFileSizeMB={ConfigValue})", 
-                Math.Round((double)file.Length / (1024 * 1024), 2), 
-                _config.MaxFileSizeMB, 
-                _config.MaxFileSizeMB);
+            _logger.LogInformation("{TypeName} file size check: File={FileSize}MB, MaxAllowed={MaxSize}MB", 
+                typeName, Math.Round((double)file.Length / (1024 * 1024), 2), _config.MaxFileSizeMB);
                 
             if (file.Length > maxSizeBytes)
             {
-                _logger.LogWarning("Document validation failed: File size {FileSize}MB exceeds maximum {MaxSize}MB", 
-                    Math.Round((double)file.Length / (1024 * 1024), 2), _config.MaxFileSizeMB);
+                _logger.LogWarning("{TypeName} validation failed: File size {FileSize}MB exceeds maximum {MaxSize}MB", 
+                    typeName, Math.Round((double)file.Length / (1024 * 1024), 2), _config.MaxFileSizeMB);
                 throw ApiException.BadRequest("FILE_TOO_LARGE", $"File size exceeds maximum allowed size of {_config.MaxFileSizeMB}MB");
             }
 
-            _logger.LogInformation("Document file validation successful: {FileName}", file.FileName);
+            _logger.LogInformation("{TypeName} file validation successful: {FileName}", typeName, file.FileName);
         }
 
         #endregion

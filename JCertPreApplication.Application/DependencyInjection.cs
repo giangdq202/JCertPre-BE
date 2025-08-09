@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Features.AdminDashboard;
 using JCertPreApplication.Application.Features.AttemptAnswers;
 using JCertPreApplication.Application.Features.Auth;
 using JCertPreApplication.Application.Features.Cache;
@@ -29,6 +30,7 @@ namespace JCertPreApplication.Application
         public static IServiceCollection AddApplication(this IServiceCollection services)
         {
             // Register services
+            services.AddScoped<IAdminDashboardService, AdminDashboardService>();
             services.AddScoped<IAuthService, AuthService>();
             services.AddScoped<ICacheService, CacheService>();
             services.AddScoped<IConversationService, ConversationService>();

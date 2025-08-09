@@ -77,9 +77,8 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<ICreditTransactionRepository, CreditTransactionRepository>();
 
-            // Infrastructure Services - Configure both Cloudinary and Appwrite
-            // services.AddScoped<IFileService, Services.File.FileService>(); // Cloudinary implementation (commented for testing)
-            services.AddScoped<IFileService, Services.File.AppwriteFileService>(); // Appwrite implementation (active for testing)
+            // Infrastructure Services - File Service using Appwrite
+            services.AddScoped<IFileService, AppwriteFileService>();
             services.AddScoped<IFirebaseService, FirebaseService>();
             services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();
@@ -127,8 +126,7 @@ namespace JCertPreApplication.Persistence
             {
                 Console.WriteLine("✅ Database connection configured successfully");
                 Console.WriteLine("✅ Redis cache configured successfully");
-                Console.WriteLine("🚀 Appwrite service configured successfully (testing mode)");
-                Console.WriteLine("⚠️  Cloudinary service disabled for Appwrite testing");
+                Console.WriteLine("✅ Appwrite file service configured successfully");
             }
             
             return services;
