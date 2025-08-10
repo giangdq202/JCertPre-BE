@@ -12,11 +12,11 @@ namespace JCertPreApplication.Application.Dtos.Test
     /// </summary>
     public class CreateTestDto
     {
-        public string Title { get; set; } = null!;
-        public string Description { get; set; } = null!;
+        public string Title { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
         public TestType TestType { get; set; }
-        public CourseLevel CourseLevel { get; set; } 
-        public int DurationMinutes { get; set; } 
+        public CourseLevel CourseLevel { get; set; }
+        public int DurationMinutes { get; set; }
         public DateTime? AvailableFrom { get; set; }
         public DateTime? AvailableTo { get; set; }
         public int MaxAttempts { get; set; }
