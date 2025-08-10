@@ -75,18 +75,6 @@ public class LiveKitController : ControllerBase
         return Ok(room);
     }
 
-    /*
-    /// <summary>
-    /// Gets all active rooms.
-    /// </summary>
-    [HttpGet("rooms")]
-    public async Task<IActionResult> GetRooms()
-    {
-        var rooms = await _liveKitService.ListRoomsAsync();
-        return Ok(rooms);
-    }
-    */
-
     /// <summary>
     /// Gets information about a specific room.
     /// </summary>
@@ -131,28 +119,6 @@ public class LiveKitController : ControllerBase
         return NoContent();
     }
 
-    /*
-    /// <summary>
-    /// Promotes a participant to instructor role.
-    /// </summary>
-    [HttpPost("rooms/{roomName}/participants/{identity}/promote")]
-    public async Task<IActionResult> PromoteToInstructor(string roomName, string identity)
-    {
-        var participant = await _liveKitService.PromoteToInstructorAsync(roomName, identity);
-        return Ok(participant);
-    }
-
-    /// <summary>
-    /// Demotes a participant to student role.
-    /// </summary>
-    [HttpPost("rooms/{roomName}/participants/{identity}/demote")]
-    public async Task<IActionResult> DemoteToStudent(string roomName, string identity)
-    {
-        var participant = await _liveKitService.DemoteToStudentAsync(roomName, identity);
-        return Ok(participant);
-    }
-    */
-
     /// <summary>
     /// Mutes a participant's audio.
     /// </summary>
@@ -172,52 +138,6 @@ public class LiveKitController : ControllerBase
         await _liveKitService.UnmuteParticipantAudioAsync(roomName, identity);
         return NoContent();
     }
-
-    /*
-    /// <summary>
-    /// Sends a message to all participants in a room.
-    /// </summary>
-    [HttpPost("rooms/{roomName}/broadcast")]
-    public async Task<IActionResult> BroadcastMessage(
-        string roomName,
-        [FromBody] BroadcastMessageRequest request)
-    {
-        await _liveKitService.BroadcastMessageAsync(roomName, request.Message);
-        return NoContent();
-    }
-
-    /// <summary>
-    /// Gets room statistics.
-    /// </summary>
-    [HttpGet("rooms/{roomName}/statistics")]
-    public async Task<IActionResult> GetRoomStatistics(string roomName)
-    {
-        var statistics = await _liveKitService.GetRoomStatisticsAsync(roomName);
-        return Ok(statistics);
-    }
-
-    /// <summary>
-    /// Processes LiveKit webhooks.
-    /// </summary>
-    [HttpPost("webhook")]
-    public async Task<IActionResult> ProcessWebhook()
-    {
-        try
-        {
-            var payload = await new StreamReader(Request.Body).ReadToEndAsync();
-            var authHeader = Request.Headers["Authorization"].FirstOrDefault() ?? string.Empty;
-
-            var webhookEvent = _liveKitService.ProcessWebhook(payload, authHeader);
-            await _liveKitService.HandleRoomEventAsync(webhookEvent);
-
-            return Ok();
-        }
-        catch (Exception ex)
-        {
-            return BadRequest($"Webhook processing failed: {ex.Message}");
-        }
-    }
-    */
 }
 
 // DTOs for API requests
@@ -228,10 +148,4 @@ public class CreateRoomRequest
     public int? EmptyTimeoutMinutes { get; set; }
     public int? MaxParticipants { get; set; }
     public string? Metadata { get; set; }
-}
-
-public class BroadcastMessageRequest
-{
-    [Required]
-    public object Message { get; set; } = new();
 } 
