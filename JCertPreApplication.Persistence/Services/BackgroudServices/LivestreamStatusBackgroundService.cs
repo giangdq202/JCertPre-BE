@@ -80,18 +80,16 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
             {
                 try
                 {
-                    // Calculate room duration: from current time to end time
+                    // Check if livestream is still valid (not past end time)
                     var endTime = livestream.scheduledDateTime.AddMinutes(livestream.durationMinutes);
-                    var remainingDuration = endTime - currentTime;
-
-                    // Only create room if there's still time remaining
-                    if (remainingDuration.TotalMinutes > 0)
+                    
+                    if (currentTime <= endTime)
                     {
-                        // Create LiveKit room with remaining duration as timeout
+                        // Create LiveKit room with long timeout to prevent auto-close, background service will manage room lifecycle
                         var roomName = GetRoomName(livestream.livestreamId);
                         var roomSettings = new Application.Contracts.RoomSettings
                         {
-                            EmptyTimeout = remainingDuration,
+                            EmptyTimeout = TimeSpan.FromHours(24), // Set long timeout to prevent auto-close
                             MaxParticipants = 100,
                             Metadata = $"{{\"livestreamId\":\"{livestream.livestreamId}\",\"courseId\":\"{livestream.courseId}\"}}"
                         };
@@ -104,9 +102,8 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
                         updatedCount++;
 
                         _logger.LogInformation(
-                            "Livestream {LivestreamId} automatically started. Room created with {RemainingMinutes} minutes remaining.",
-                            livestream.livestreamId,
-                            remainingDuration.TotalMinutes);
+                            "Livestream {LivestreamId} automatically started. Room created with 24-hour timeout and will be managed by background service.",
+                            livestream.livestreamId);
                     }
                     else
                     {
