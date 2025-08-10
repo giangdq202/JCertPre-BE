@@ -23,7 +23,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             
             // Initialize Room Service Client
             _roomClient = new RoomServiceClient(
-                _config.ServerUrl ?? "wss://your-livekit-server.com",
+                _config.ServerUrl,
                 _config.ApiKey,
                 _config.ApiSecret
             );
