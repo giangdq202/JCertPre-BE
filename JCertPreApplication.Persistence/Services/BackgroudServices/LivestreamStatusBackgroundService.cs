@@ -80,18 +80,17 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
             {
                 try
                 {
-                    // Calculate room duration: from current time to end time
+                    // Check if livestream is still valid (not past end time)
                     var endTime = livestream.scheduledDateTime.AddMinutes(livestream.durationMinutes);
-                    var remainingDuration = endTime - currentTime;
-
-                    // Only create room if there's still time remaining
-                    if (remainingDuration.TotalMinutes > 0)
+                    
+                    if (currentTime <= endTime)
                     {
-                        // Create LiveKit room with remaining duration as timeout
+                        // Create LiveKit room with long timeout to prevent auto-close, background service will manage room lifecycle
                         var roomName = GetRoomName(livestream.livestreamId);
                         var roomSettings = new Application.Contracts.RoomSettings
                         {
-                            EmptyTimeout = remainingDuration,
+                            EmptyTimeout = TimeSpan.FromHours(24), // Set long timeout to prevent auto-close
+                            DepartureTimeout = TimeSpan.FromHours(24), // Set same timeout for departure
                             MaxParticipants = 100,
                             Metadata = $"{{\"livestreamId\":\"{livestream.livestreamId}\",\"courseId\":\"{livestream.courseId}\"}}"
                         };
@@ -104,9 +103,8 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
                         updatedCount++;
 
                         _logger.LogInformation(
-                            "Livestream {LivestreamId} automatically started. Room created with {RemainingMinutes} minutes remaining.",
-                            livestream.livestreamId,
-                            remainingDuration.TotalMinutes);
+                            "Livestream {LivestreamId} automatically started. Room created with 24-hour empty and departure timeout and will be managed by background service.",
+                            livestream.livestreamId);
                     }
                     else
                     {
@@ -149,11 +147,12 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
             {
                 try
                 {
-                    // Calculate end time: scheduledDateTime + durationMinutes
+                    // Calculate end time: scheduledDateTime + durationMinutes + 10 minutes buffer
                     var endTime = livestream.scheduledDateTime.AddMinutes(livestream.durationMinutes);
+                    var endTimeWithBuffer = endTime.AddMinutes(10); // Add 10 minutes buffer before room deletion
 
-                    // If current time is past the end time, mark as COMPLETED and delete room
-                    if (currentTime > endTime)
+                    // If current time is past the end time + buffer, mark as COMPLETED and delete room
+                    if (currentTime > endTimeWithBuffer)
                     {
                         // Delete LiveKit room
                         var roomName = GetRoomName(livestream.livestreamId);
@@ -174,11 +173,13 @@ namespace JCertPreApplication.Persistence.Services.BackgroudServices
 
                         _logger.LogInformation(
                             "Livestream {LivestreamId} automatically marked as COMPLETED. " +
-                            "Scheduled: {ScheduledTime}, Duration: {Duration} minutes, End time: {EndTime}",
+                            "Scheduled: {ScheduledTime}, Duration: {Duration} minutes, End time: {EndTime}, " +
+                            "Room deleted after 10-minute buffer at: {DeletionTime}",
                             livestream.livestreamId,
                             livestream.scheduledDateTime,
                             livestream.durationMinutes,
-                            endTime);
+                            endTime,
+                            endTimeWithBuffer);
                     }
                 }
                 catch (Exception ex)

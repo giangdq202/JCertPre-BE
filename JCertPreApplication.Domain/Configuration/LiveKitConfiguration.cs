@@ -5,6 +5,8 @@ namespace JCertPreApplication.Domain.Configuration;
 /// </summary>
 public class LiveKitConfiguration
 {
+    public const string SectionName = "LiveKit";
+
     /// <summary>
     /// The API Key used to authenticate with LiveKit server.
     /// </summary>

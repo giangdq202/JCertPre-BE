@@ -23,7 +23,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             
             // Initialize Room Service Client
             _roomClient = new RoomServiceClient(
-                _config.ServerUrl ?? "wss://your-livekit-server.com",
+                _config.ServerUrl,
                 _config.ApiKey,
                 _config.ApiSecret
             );
@@ -91,12 +91,23 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             {
                 Name = roomName,
                 EmptyTimeout = (uint)(settings?.EmptyTimeout?.TotalSeconds ?? 300),
+                DepartureTimeout = (uint)(settings?.DepartureTimeout?.TotalSeconds ?? 300),
                 MaxParticipants = (uint)(settings?.MaxParticipants ?? 100),
                 Metadata = settings?.Metadata ?? string.Empty
             };
 
             var response = await _roomClient.CreateRoom(request);
             return response;
+        }
+
+        /// <summary>
+        /// Lấy danh sách tất cả các room đang hoạt động
+        /// </summary>
+        public async Task<Room[]> ListRoomsAsync()
+        {
+            var request = new ListRoomsRequest();
+            var response = await _roomClient.ListRooms(request);
+            return response.Rooms.ToArray();
         }
 
         /// <summary>

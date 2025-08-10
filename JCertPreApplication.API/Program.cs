@@ -1,4 +1,5 @@
 using JCertPreApplication.API;
+using JCertPreApplication.API.Extensions;
 using JCertPreApplication.API.Middleware;
 using JCertPreApplication.Application;
 using JCertPreApplication.Domain.Configuration;
@@ -56,37 +57,17 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
 {
     var config = builder.Configuration;
     
-    // Bind and validate JWT config
-    var jwtConfig = new JwtConfiguration();
-    config.GetSection(JwtConfiguration.SectionName).Bind(jwtConfig);
-    jwtConfig.Validate();
-    
-    // Bind and validate Appwrite config
-    var appwriteConfig = new AppwriteConfiguration();
-    config.GetSection(AppwriteConfiguration.SectionName).Bind(appwriteConfig);
-    // Note: Appwrite validation is optional for testing purposes
-    try
-    {
-        appwriteConfig.Validate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Warning: Appwrite configuration validation failed: {ex.Message}");
-    }
-    
-    // Bind and validate Firebase config  
-    var firebaseConfig = new FirebaseConfiguration();
-    config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
-    firebaseConfig.Validate();
-    
-    // Bind and validate LiveKit configuration
-    var liveKitConfig = new LiveKitConfiguration();
-    config.GetSection("LiveKit").Bind(liveKitConfig);
-    liveKitConfig.Validate();
-    
-    // Bind PayOS configuration
-    var payOSConfig = new PayOSConfiguration();
-    config.GetSection(PayOSConfiguration.SectionName).Bind(payOSConfig);
+    // Automatically bind, validate, and register all configurations
+    builder.Services.AddValidatedConfiguration<JwtConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<AppwriteConfiguration>(config, isValidationOptional: true);
+    builder.Services.AddValidatedConfiguration<FirebaseConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<LiveKitConfiguration>(config, registerAsSingleton: true); // Restored: needed for direct injection
+    builder.Services.AddValidatedConfiguration<PayOSConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<CorsConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<ApiConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<FrontendConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<RedisConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<SmtpConfiguration>(config);
     
     // Get API configuration to check if we should show debug info
     var apiConfig = new ApiConfiguration();
@@ -97,102 +78,32 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     {
         LogEnvironmentVariables(config);
     }
-    
-    // Register all configurations
-    builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
-    builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
-    builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
-    builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
-    builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
-    builder.Services.Configure<FrontendConfiguration>(config.GetSection(FrontendConfiguration.SectionName));
-    builder.Services.Configure<PayOSConfiguration>(config.GetSection(PayOSConfiguration.SectionName));
-    builder.Services.Configure<RedisConfiguration>(config.GetSection("Redis"));
-
-    // Register LiveKit as singleton (already bound and validated above)
-    builder.Services.AddSingleton(liveKitConfig);
 }
 
 static void LogEnvironmentVariables(IConfiguration config)
 {
     Console.WriteLine("\n=== ENVIRONMENT VARIABLES DEBUG ===");
-    
-    // Database Configuration
-    Console.WriteLine($"Database ConnectionString: {MaskSensitiveData(config.GetConnectionString("JCertPreDB"))}");
-    
-    // JWT Configuration
-    Console.WriteLine("\n[JWT Configuration]");
-    Console.WriteLine($"SecretKey: {MaskSensitiveData(config["Jwt:SecretKey"])}");
-    Console.WriteLine($"RefreshSecretKey: {MaskSensitiveData(config["Jwt:RefreshSecretKey"])}");
-    Console.WriteLine($"Issuer: {config["Jwt:Issuer"]}");
-    Console.WriteLine($"Audience: {config["Jwt:Audience"]}");
-    Console.WriteLine($"ExpiryInMinutes: {config["Jwt:ExpiryInMinutes"]}");
-    
-    // Redis Configuration
-    Console.WriteLine("\n[Redis Configuration]");
-    Console.WriteLine($"ConnectionString: {MaskSensitiveData(config["Redis:ConnectionString"])}");
-    
-    // API Configuration
-    Console.WriteLine("\n[API Configuration]");
-    Console.WriteLine($"Environment: {config["Api:Environment"]}");
-    Console.WriteLine($"Urls: {config["Api:Urls"]}");
-    Console.WriteLine($"PublicUrl: {config["Api:PublicUrl"]}");
-    Console.WriteLine($"ShowConfigurationStatus: {config["Api:ShowConfigurationStatus"]}");
-    
-    // CORS Configuration
-    Console.WriteLine("\n[CORS Configuration]");
-    Console.WriteLine($"AllowedOrigins: {config["Cors:AllowedOrigins"]}");
-    
-    // Appwrite Configuration
-    Console.WriteLine("\n[Appwrite Configuration]");
-    Console.WriteLine($"Endpoint: {config["Appwrite:Endpoint"]}");
-    Console.WriteLine($"ProjectId: {config["Appwrite:ProjectId"]}");
-    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["Appwrite:ApiKey"])}");
-    Console.WriteLine($"ImagesBucketId: {config["Appwrite:ImagesBucketId"]}");
-    Console.WriteLine($"VideosBucketId: {config["Appwrite:VideosBucketId"]}");
-    Console.WriteLine($"DocumentsBucketId: {config["Appwrite:DocumentsBucketId"]}");
-    Console.WriteLine($"MaxFileSizeMB: {config["Appwrite:MaxFileSizeMB"]}");
-    
-    // Firebase Configuration
-    Console.WriteLine("\n[Firebase Configuration]");
-    Console.WriteLine($"Type: {config["Firebase:Type"]}");
-    Console.WriteLine($"ProjectId: {config["Firebase:ProjectId"]}");
-    Console.WriteLine($"PrivateKeyId: {MaskSensitiveData(config["Firebase:PrivateKeyId"])}");
-    Console.WriteLine($"PrivateKey: {(string.IsNullOrEmpty(config["Firebase:PrivateKey"]) ? "NOT SET" : "***MASKED***")}");
-    Console.WriteLine($"ClientEmail: {config["Firebase:ClientEmail"]}");
-    Console.WriteLine($"ClientId: {config["Firebase:ClientId"]}");
-    Console.WriteLine($"AuthUri: {config["Firebase:AuthUri"]}");
-    Console.WriteLine($"TokenUri: {config["Firebase:TokenUri"]}");
-    
-    // LiveKit Configuration
-    Console.WriteLine("\n[LiveKit Configuration]");
-    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["LiveKit:ApiKey"])}");
-    Console.WriteLine($"ApiSecret: {MaskSensitiveData(config["LiveKit:ApiSecret"])}");
-    Console.WriteLine($"ServerUrl: {config["LiveKit:ServerUrl"]}");
-    
-    // PayOS Configuration
-    Console.WriteLine("\n[PayOS Configuration]");
-    Console.WriteLine($"ClientId: {MaskSensitiveData(config["PayOS:ClientId"])}");
-    Console.WriteLine($"ApiKey: {MaskSensitiveData(config["PayOS:ApiKey"])}");
-    Console.WriteLine($"ChecksumKey: {MaskSensitiveData(config["PayOS:ChecksumKey"])}");
-    Console.WriteLine($"ReturnEndpoint: {config["PayOS:ReturnEndpoint"]}");
-    Console.WriteLine($"CancelEndpoint: {config["PayOS:CancelEndpoint"]}");
-    
-    // Frontend Configuration
-    Console.WriteLine("\n[Frontend Configuration]");
-    Console.WriteLine($"BaseUrl: {config["Frontend:BaseUrl"]}");
-    
-    Console.WriteLine("\n=== END ENVIRONMENT VARIABLES DEBUG ===\n");
-}
 
-static string MaskSensitiveData(string? value)
-{
-    if (string.IsNullOrEmpty(value))
-        return "NOT SET";
-    
-    if (value.Length <= 4)
-        return "***";
-    
-    return $"{value.Substring(0, 4)}***{value.Substring(value.Length - 4)}";
+    // Group configuration by their root section (e.g., "Jwt", "Api")
+    var configGroups = config.AsEnumerable()
+        .Where(c => c.Value != null && c.Key.Contains(':')) // We only care about sectioned keys
+        .OrderBy(c => c.Key)
+        .GroupBy(c => c.Key.Split(':').FirstOrDefault());
+
+    foreach (var group in configGroups)
+    {
+        if (string.IsNullOrEmpty(group.Key)) continue;
+
+        Console.WriteLine($"\n[{group.Key} Configuration]");
+        foreach (var kvp in group)
+        {
+            // Display the key part (e.g., "SecretKey" instead of "Jwt:SecretKey") and its full value
+            var displayKey = kvp.Key.Substring(group.Key.Length + 1);
+            Console.WriteLine($"{displayKey}: {kvp.Value ?? "NOT SET"}");
+        }
+    }
+
+    Console.WriteLine("\n=== END ENVIRONMENT VARIABLES DEBUG ===\n");
 }
 #endregion
 

@@ -344,42 +344,6 @@ namespace JCertPreApplication.Application.Features.Livestreams
             }
         }
 
-        public async Task<bool> CanInstructorManageLivestreamAsync(Guid instructorId, Guid livestreamId)
-        {
-            try
-            {
-                var livestream = await _livestreamRepository.GetByIdAsync(livestreamId);
-                if (livestream == null) return false;
-
-                // Only allow managing LIVE livestreams
-                if (livestream.status != LivestreamStatus.LIVE) return false;
-
-                // Check if user is instructor of the course
-                return await _courseInstructorRepository.IsInstructorAssignedToCourse(livestream.courseId, instructorId);
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
-        public async Task MuteParticipantAsync(Guid livestreamId, string participantId, bool muted)
-        {
-            try
-            {
-                var roomName = GetRoomName(livestreamId);
-
-                if (muted)
-                    await _liveKitService.MuteParticipantAudioAsync(roomName, participantId);
-                else
-                    await _liveKitService.UnmuteParticipantAudioAsync(roomName, participantId);
-            }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("MUTE_PARTICIPANT_ERROR", ex.Message);
-            }
-        }
-
         public string GetDisplayTitle(LivestreamDto livestream)
         {
             return $"{livestream.CourseName} - {livestream.ScheduledDateTime:dd/MM/yyyy HH:mm}";

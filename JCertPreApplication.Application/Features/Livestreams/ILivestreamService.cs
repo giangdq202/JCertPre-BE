@@ -22,8 +22,6 @@ namespace JCertPreApplication.Application.Features.Livestreams
         // LiveKit Integration
         Task<LivestreamJoinDto> GenerateJoinTokenAsync(Guid userId, Guid livestreamId);
         Task<bool> CanUserJoinLivestreamAsync(Guid userId, Guid livestreamId);
-        Task<bool> CanInstructorManageLivestreamAsync(Guid instructorId, Guid livestreamId);
-        Task MuteParticipantAsync(Guid livestreamId, string participantId, bool muted);
         
         // Utility methods
         string GetDisplayTitle(LivestreamDto livestream);
