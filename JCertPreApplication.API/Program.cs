@@ -59,9 +59,9 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     
     // Automatically bind, validate, and register all configurations
     builder.Services.AddValidatedConfiguration<JwtConfiguration>(config);
-    builder.Services.AddValidatedConfiguration<AppwriteConfiguration>(config, isValidationOptional: true); // Optional for testing
+    builder.Services.AddValidatedConfiguration<AppwriteConfiguration>(config, isValidationOptional: true);
     builder.Services.AddValidatedConfiguration<FirebaseConfiguration>(config);
-    var liveKitConfig = builder.Services.AddValidatedConfiguration<LiveKitConfiguration>(config, registerAsSingleton: true);
+    builder.Services.AddValidatedConfiguration<LiveKitConfiguration>(config, registerAsSingleton: true); // Restored: needed for direct injection
     builder.Services.AddValidatedConfiguration<PayOSConfiguration>(config);
     builder.Services.AddValidatedConfiguration<CorsConfiguration>(config);
     builder.Services.AddValidatedConfiguration<ApiConfiguration>(config);
