@@ -14,6 +14,7 @@ namespace JCertPreApplication.Application.Contracts
 
         // Essential Room Management
         Task<Room> CreateRoomAsync(string roomName, RoomSettings? settings = null);
+        Task<Room[]> ListRoomsAsync();
         Task<Room?> GetRoomAsync(string roomName);
         Task DeleteRoomAsync(string roomName);
         Task<bool> IsRoomActiveAsync(string roomName);

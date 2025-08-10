@@ -100,6 +100,16 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
         }
 
         /// <summary>
+        /// Lấy danh sách tất cả các room đang hoạt động
+        /// </summary>
+        public async Task<Room[]> ListRoomsAsync()
+        {
+            var request = new ListRoomsRequest();
+            var response = await _roomClient.ListRooms(request);
+            return response.Rooms.ToArray();
+        }
+
+        /// <summary>
         /// Lấy thông tin chi tiết một room
         /// </summary>
         public async Task<Room?> GetRoomAsync(string roomName)

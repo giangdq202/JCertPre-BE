@@ -76,6 +76,16 @@ public class LiveKitController : ControllerBase
     }
 
     /// <summary>
+    /// Gets all active rooms.
+    /// </summary>
+    [HttpGet("rooms")]
+    public async Task<IActionResult> GetRooms()
+    {
+        var rooms = await _liveKitService.ListRoomsAsync();
+        return Ok(rooms);
+    }
+
+    /// <summary>
     /// Gets information about a specific room.
     /// </summary>
     [HttpGet("rooms/{roomName}")]

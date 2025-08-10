@@ -4,7 +4,22 @@
 1. [Overview](#overview)
 2. [Livestream Status Flow](#livestream-status-flow)
 3. [Background Service](#background-service)
-4. [API Endpoints](#api-endpoints)
+4. [API #### 5. Delete Room
+```http
+DELETE /api/livekit/rooms/{roomName}
+```
+
+#### 6. List Participants
+```http
+GET /api/livekit/rooms/{roomName}/participants
+```
+
+#### 7. Remove Participant
+```http
+DELETE /api/livekit/rooms/{roomName}/participants/{identity}
+```
+
+#### 8. Mute/Unmute Participantendpoints)
 5. [Integration Flow](#integration-flow)
 6. [Client Implementation Guide](#client-implementation-guide)
 7. [Error Handling](#error-handling)
@@ -188,12 +203,19 @@ Content-Type: application/json
 }
 ```
 
-#### 3. Get Room Info
+#### 3. List All Rooms
+```http
+GET /api/livekit/rooms
+```
+
+**Response**: Array of room objects with details like name, participants count, creation time, etc.
+
+#### 4. Get Room Info
 ```http
 GET /api/livekit/rooms/{roomName}
 ```
 
-#### 4. Delete Room
+#### 5. Delete Room
 ```http
 DELETE /api/livekit/rooms/{roomName}
 ```
