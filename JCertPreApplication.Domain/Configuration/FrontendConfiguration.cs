@@ -19,5 +19,14 @@ namespace JCertPreApplication.Domain.Configuration
         public string PaymentPendingUrl => $"{BaseUrl.TrimEnd('/')}{PaymentPendingEndpoint}";
         public string ResetPasswordUrl => $"{BaseUrl.TrimEnd('/')}{ResetPasswordEndpoint}";
         public string LoginUrl => $"{BaseUrl.TrimEnd('/')}{LoginEndpoint}";
+        
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(BaseUrl))
+                throw new InvalidOperationException("Frontend BaseUrl is required. Please configure Frontend__BaseUrl in your .env file.");
+                
+            if (!Uri.TryCreate(BaseUrl, UriKind.Absolute, out var uri))
+                throw new InvalidOperationException("Frontend BaseUrl must be a valid URL.");
+        }
     }
 }

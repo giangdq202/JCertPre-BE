@@ -67,6 +67,7 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.AddValidatedConfiguration<ApiConfiguration>(config);
     builder.Services.AddValidatedConfiguration<FrontendConfiguration>(config);
     builder.Services.AddValidatedConfiguration<RedisConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<SmtpConfiguration>(config);
     
     // Get API configuration to check if we should show debug info
     var apiConfig = new ApiConfiguration();

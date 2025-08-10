@@ -15,5 +15,11 @@ namespace JCertPreApplication.Domain.Configuration
                                 .Select(origin => origin.Trim())
                                 .ToArray();
         }
+        
+        public void Validate()
+        {
+            if (string.IsNullOrWhiteSpace(AllowedOrigins))
+                throw new InvalidOperationException("CORS AllowedOrigins is required. Please configure Cors__AllowedOrigins in your .env file.");
+        }
     }
 } 
