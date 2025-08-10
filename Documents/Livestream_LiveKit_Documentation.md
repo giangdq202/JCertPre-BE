@@ -162,19 +162,6 @@ GET /api/livestreams/{id}/can-join?userId={guid}
 }
 ```
 
-#### 8. Mute/Unmute Participant (Instructor Only)
-```http
-POST /api/livestreams/{id}/participants/{participantId}/mute
-Authorization: Bearer {token}
-Content-Type: application/json
-
-{
-    "muted": true
-}
-```
-
-**Authorization**: Only course instructors for LIVE livestreams
-
 ### LiveKit Controller (`/api/livekit`)
 
 #### 1. Generate Access Token
@@ -260,11 +247,10 @@ GET /api/livestreams/{id}/join-token?userId={user-id}
 # Connect to LiveKit with token (role automatically determined)
 ```
 
-#### 4. Instructor Manages Session (Role-based permissions)
+#### 4. Instructor Manages Session (Using LiveKit Controller directly)
 ```http
-# Mute disruptive student (only if user is instructor for this course)
-POST /api/livestreams/{id}/participants/{student-id}/mute
-{ "muted": true }
+# Mute disruptive student using LiveKit API
+POST /api/livekit/rooms/{livestream-id}/participants/{student-identity}/mute
 
 # Check participants
 GET /api/livekit/rooms/{livestream-id}/participants
@@ -330,17 +316,24 @@ async function joinLivestream(livestreamId: string, userId: string) {
 }
 ```
 
-#### 3. Instructor Controls (Only if user has instructor role)
+#### 3. Instructor Controls (Using LiveKit API directly)
 ```typescript
-async function muteParticipant(livestreamId: string, participantId: string, muted: boolean) {
-    // This will only work if the authenticated user is an instructor for this course
-    await fetch(`/api/livestreams/${livestreamId}/participants/${participantId}/mute`, {
+// Use LiveKit API directly for participant management
+async function muteParticipant(roomName: string, participantIdentity: string) {
+    await fetch(`/api/livekit/rooms/${roomName}/participants/${participantIdentity}/mute`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json',
             'Authorization': `Bearer ${authToken}` // Must be instructor's token
-        },
-        body: JSON.stringify({ muted })
+        }
+    });
+}
+
+async function unmuteParticipant(roomName: string, participantIdentity: string) {
+    await fetch(`/api/livekit/rooms/${roomName}/participants/${participantIdentity}/unmute`, {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${authToken}` // Must be instructor's token
+        }
     });
 }
 
