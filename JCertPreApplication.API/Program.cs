@@ -1,4 +1,5 @@
 using JCertPreApplication.API;
+using JCertPreApplication.API.Extensions;
 using JCertPreApplication.API.Middleware;
 using JCertPreApplication.Application;
 using JCertPreApplication.Domain.Configuration;
@@ -56,37 +57,16 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
 {
     var config = builder.Configuration;
     
-    // Bind and validate JWT config
-    var jwtConfig = new JwtConfiguration();
-    config.GetSection(JwtConfiguration.SectionName).Bind(jwtConfig);
-    jwtConfig.Validate();
-    
-    // Bind and validate Appwrite config
-    var appwriteConfig = new AppwriteConfiguration();
-    config.GetSection(AppwriteConfiguration.SectionName).Bind(appwriteConfig);
-    // Note: Appwrite validation is optional for testing purposes
-    try
-    {
-        appwriteConfig.Validate();
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"Warning: Appwrite configuration validation failed: {ex.Message}");
-    }
-    
-    // Bind and validate Firebase config  
-    var firebaseConfig = new FirebaseConfiguration();
-    config.GetSection(FirebaseConfiguration.SectionName).Bind(firebaseConfig);
-    firebaseConfig.Validate();
-    
-    // Bind and validate LiveKit configuration
-    var liveKitConfig = new LiveKitConfiguration();
-    config.GetSection("LiveKit").Bind(liveKitConfig);
-    liveKitConfig.Validate();
-    
-    // Bind PayOS configuration
-    var payOSConfig = new PayOSConfiguration();
-    config.GetSection(PayOSConfiguration.SectionName).Bind(payOSConfig);
+    // Automatically bind, validate, and register all configurations
+    builder.Services.AddValidatedConfiguration<JwtConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<AppwriteConfiguration>(config, isValidationOptional: true); // Optional for testing
+    builder.Services.AddValidatedConfiguration<FirebaseConfiguration>(config);
+    var liveKitConfig = builder.Services.AddValidatedConfiguration<LiveKitConfiguration>(config, registerAsSingleton: true);
+    builder.Services.AddValidatedConfiguration<PayOSConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<CorsConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<ApiConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<FrontendConfiguration>(config);
+    builder.Services.AddValidatedConfiguration<RedisConfiguration>(config);
     
     // Get API configuration to check if we should show debug info
     var apiConfig = new ApiConfiguration();
@@ -97,19 +77,6 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     {
         LogEnvironmentVariables(config);
     }
-    
-    // Register all configurations
-    builder.Services.Configure<JwtConfiguration>(config.GetSection(JwtConfiguration.SectionName));
-    builder.Services.Configure<CorsConfiguration>(config.GetSection(CorsConfiguration.SectionName));
-    builder.Services.Configure<ApiConfiguration>(config.GetSection(ApiConfiguration.SectionName));
-    builder.Services.Configure<AppwriteConfiguration>(config.GetSection(AppwriteConfiguration.SectionName));
-    builder.Services.Configure<FirebaseConfiguration>(config.GetSection(FirebaseConfiguration.SectionName));
-    builder.Services.Configure<FrontendConfiguration>(config.GetSection(FrontendConfiguration.SectionName));
-    builder.Services.Configure<PayOSConfiguration>(config.GetSection(PayOSConfiguration.SectionName));
-    builder.Services.Configure<RedisConfiguration>(config.GetSection("Redis"));
-
-    // Register LiveKit as singleton (already bound and validated above)
-    builder.Services.AddSingleton(liveKitConfig);
 }
 
 static void LogEnvironmentVariables(IConfiguration config)
