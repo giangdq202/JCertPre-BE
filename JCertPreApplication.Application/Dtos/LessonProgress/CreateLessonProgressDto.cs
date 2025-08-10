@@ -6,6 +6,5 @@ namespace JCertPreApplication.Application.Dtos.LessonProgress
     {
         public Guid UserId { get; set; }
         public Guid LessonId { get; set; }
-        public Guid CourseId { get; set; }
     }
 }

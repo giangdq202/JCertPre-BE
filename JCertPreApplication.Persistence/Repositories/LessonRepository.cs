@@ -48,5 +48,16 @@ namespace JCertPreApplication.Persistence.Repositories
                 Items = items
             };
         }
+
+        public async Task<Test?> GetTestByLessonIdAsync(Guid lessonId)
+        {
+            return await _context.Set<Test>().FirstOrDefaultAsync(t => t.lessonId == lessonId);
+        }
+
+        public async Task<bool> IsUserPassedTestAsync(Guid userId, Guid testId)
+        {
+            return await _context.Set<TestAttempt>()
+                .AnyAsync(a => a.testId == testId && a.userId == userId && a.isPass == true);
+        }
     }
 }

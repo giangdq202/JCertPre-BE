@@ -374,6 +374,7 @@ namespace JCertPreApplication.Application.Features.Tests
                     AvailableFrom = test.availableFrom,
                     AvailableTo = test.availableTo,
                     MaxAttempts = test.maxAttempts,
+                    PassingPercentage = test.passing_percentage, // <-- Added mapping
                     Status = test.status,
                     TestTemplateTypeId = test.TestTemplateTypeId,
                     TestTemplateTypeName = test.TestTemplateType != null ? test.TestTemplateType.typeName : null

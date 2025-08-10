@@ -13,5 +13,7 @@ namespace JCertPreApplication.Application.Contracts
         string? searchTerm,
         int pageIndex,
         int pageSize);
+        Task<Test?> GetTestByLessonIdAsync(Guid lessonId);
+        Task<bool> IsUserPassedTestAsync(Guid userId, Guid testId);
     }
 }

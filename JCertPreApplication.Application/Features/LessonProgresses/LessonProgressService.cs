@@ -67,23 +67,41 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
                 if (existing != null)
                     throw ApiException.BadRequest("LESSON_PROGRESS_EXISTS", "User already has a progress record for this lesson.");
 
-                // Use generic repo for lesson lookup
                 var lesson = await _lessonRepo.GetByIdAsync(dto.LessonId);
                 if (lesson == null)
                     throw ApiException.NotFound("Lesson", dto.LessonId);
 
-                // Check enrollment using enrollment repo
                 var isEnrolled = await _enrollmentRepo.IsUserEnrolledInCourseAsync(dto.UserId, lesson.courseId);
                 if (!isEnrolled)
                     throw ApiException.BadRequest("USER_NOT_ENROLLED", "User is not enrolled in the course for this lesson.");
 
-                // Get lessonIds for the course
-                var lessonIds = (await _lessonRepo.GetAllAsync(l => l.courseId == dto.CourseId)).Select(l => l.lessonId).ToList();
+                // Check lesson order constraint
+                var previousProgress = await _repo.GetHighestPreviousLessonProgressAsync(dto.UserId, lesson.courseId);
+                if (previousProgress != null)
+                {
+                    int expectedOrder = (previousProgress?.LessonOrder ?? 0) + 1;
+                    if (lesson.lessonOrder != expectedOrder)
+                    {
+                        throw ApiException.BadRequest("LESSON_ORDER_INVALID", $"You must complete lesson order {expectedOrder} before adding progress for lesson order {lesson.lessonOrder}.");
+                    }
+                }
+                else if (lesson.lessonOrder != 1)
+                {
+                    throw ApiException.BadRequest("LESSON_ORDER_INVALID", "You must start with lesson order 1.");
+                }
 
-                var userProgressesCount = (await _repo.GetAllAsync(lp => lp.userId == dto.UserId && lessonIds.Contains(lp.lessonId))).Count;
-                // Calculate completion rate as if the new progress is already added
-                var completionRate = lessonIds.Count == 0 ? 0.0m :
-                    Math.Round((decimal)(userProgressesCount + 1) / lessonIds.Count * 100, 2);
+                // Check if lesson has a test and if user passed it
+                var test = await _lessonRepo.GetTestByLessonIdAsync(dto.LessonId);
+                if (test != null)
+                {
+                    // Check if user has a passing attempt for this test
+                    var isPassed = await _lessonRepo.IsUserPassedTestAsync(dto.UserId, test.testId);
+                    if (!isPassed)
+                        throw ApiException.BadRequest("TEST_NOT_PASSED", "You must pass the test for this lesson before adding progress.");
+                }
+
+                // Calculate completion rate in repository for performance
+                var completionRate = await _repo.CalculateCompletionRateAfterAddAsync(dto.UserId, lesson.courseId);
 
                 var entity = new LessonProgress
                 {
