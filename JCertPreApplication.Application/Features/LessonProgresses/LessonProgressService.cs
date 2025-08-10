@@ -79,7 +79,7 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
                 var previousProgress = await _repo.GetHighestPreviousLessonProgressAsync(dto.UserId, lesson.courseId);
                 if (previousProgress != null)
                 {
-                    int expectedOrder = previousProgress?.LessonOrder + 1 ?? 1;
+                    int expectedOrder = (previousProgress?.LessonOrder ?? 0) + 1;
                     if (lesson.lessonOrder != expectedOrder)
                     {
                         throw ApiException.BadRequest("LESSON_ORDER_INVALID", $"You must complete lesson order {expectedOrder} before adding progress for lesson order {lesson.lessonOrder}.");
