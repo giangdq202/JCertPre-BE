@@ -76,6 +76,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ILessonProgressRepository, LessonProgressRepository>();
             services.AddScoped<IPaymentRepository, PaymentRepository>();
             services.AddScoped<ICreditTransactionRepository, CreditTransactionRepository>();
+            services.AddScoped<IQuestionAttachmentRepository, QuestionAttachmentRepository>();
 
             // Infrastructure Services - File Service using Appwrite
             services.AddScoped<IFileService, AppwriteFileService>();

@@ -41,7 +41,8 @@ namespace JCertPreApplication.API.Controllers
     /// Create a new question.
     /// </summary>
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateQuestionDto dto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Create([FromForm] CreateQuestionDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);
@@ -54,7 +55,8 @@ namespace JCertPreApplication.API.Controllers
     /// Update an existing question.
     /// </summary>
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateQuestionDto dto)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Update(Guid id, [FromForm] UpdateQuestionDto dto)
     {
         if (!ModelState.IsValid)
             return BadRequest(ModelState);

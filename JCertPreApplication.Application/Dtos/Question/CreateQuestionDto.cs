@@ -1,5 +1,6 @@
 using JCertPreApplication.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Dtos.Question
 {
@@ -23,5 +24,7 @@ namespace JCertPreApplication.Application.Dtos.Question
         public CourseLevel Level { get; set; }
         [Required]
         public SubContentName SubContentName { get; set; }
+
+        public IFormFile? AudioFile { get; set; }
     }
 }

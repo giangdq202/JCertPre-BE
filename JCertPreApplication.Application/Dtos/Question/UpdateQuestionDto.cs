@@ -1,5 +1,5 @@
 using JCertPreApplication.Domain.Enums;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Dtos.Question
 {
@@ -10,10 +10,11 @@ namespace JCertPreApplication.Application.Dtos.Question
         public int? Points { get; set; }
         public QuestionDifficulty? Difficulty { get; set; }
         public bool? IsActive { get; set; }
-
-        // Optional: allow updating subcontent
         public ContentName? ContentName { get; set; }
         public CourseLevel? Level { get; set; }
         public SubContentName? SubContentName { get; set; }
+
+        // For audio upload
+        public IFormFile? AudioFile { get; set; }
     }
 }
