@@ -67,6 +67,7 @@ public class LiveKitController : ControllerBase
         var settings = new RoomSettings
         {
             EmptyTimeout = TimeSpan.FromMinutes(request.EmptyTimeoutMinutes ?? 5),
+            DepartureTimeout = TimeSpan.FromMinutes(request.DepartureTimeoutMinutes ?? 5),
             MaxParticipants = request.MaxParticipants ?? 100,
             Metadata = request.Metadata ?? string.Empty
         };
@@ -156,6 +157,7 @@ public class CreateRoomRequest
     [Required]
     public string RoomName { get; set; } = string.Empty;
     public int? EmptyTimeoutMinutes { get; set; }
+    public int? DepartureTimeoutMinutes { get; set; }
     public int? MaxParticipants { get; set; }
     public string? Metadata { get; set; }
 } 

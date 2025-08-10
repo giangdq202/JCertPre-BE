@@ -36,6 +36,7 @@ namespace JCertPreApplication.Application.Contracts
     public class RoomSettings
     {
         public TimeSpan? EmptyTimeout { get; set; } = TimeSpan.FromMinutes(5);
+        public TimeSpan? DepartureTimeout { get; set; } = TimeSpan.FromMinutes(5);
         public int? MaxParticipants { get; set; } = 100;
         public string Metadata { get; set; } = string.Empty;
     }

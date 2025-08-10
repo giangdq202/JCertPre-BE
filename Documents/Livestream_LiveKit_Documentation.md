@@ -52,11 +52,11 @@ SCHEDULED → LIVE → COMPLETED
 #### SCHEDULED → LIVE
 - **Trigger**: 15 minutes before scheduled time
 - **Action**: Background service creates LiveKit room
-- **Room Settings**: 24-hour timeout, max 100 participants
+- **Room Settings**: 24-hour empty and departure timeout, max 100 participants
 - **Access**: Users can join the room
 
 #### LIVE → COMPLETED  
-- **Trigger**: After scheduled end time (scheduledDateTime + durationMinutes)
+- **Trigger**: After scheduled end time + 10 minutes buffer (scheduledDateTime + durationMinutes + 10 minutes)
 - **Action**: Background service deletes LiveKit room
 - **Access**: Room becomes unavailable
 
@@ -67,6 +67,7 @@ SCHEDULED → LIVE → COMPLETED
 - **Purpose**: Automatic livestream lifecycle management
 - **Features**:
   - Creates rooms 15 minutes before start time
+  - Sets 24-hour empty and departure timeout to prevent premature closure
   - Deletes rooms after end time
   - Handles edge cases (already expired livestreams)
   - Comprehensive logging
@@ -76,7 +77,8 @@ SCHEDULED → LIVE → COMPLETED
 // Room creation with long timeout
 var roomSettings = new RoomSettings
 {
-    EmptyTimeout = TimeSpan.FromHours(24), // Prevent auto-close
+    EmptyTimeout = TimeSpan.FromHours(24), // Prevent auto-close when empty
+    DepartureTimeout = TimeSpan.FromHours(24), // Prevent auto-close when all participants leave
     MaxParticipants = 100,
     Metadata = $"{{\"livestreamId\":\"{livestreamId}\",\"courseId\":\"{courseId}\"}}"
 };
@@ -198,6 +200,7 @@ Content-Type: application/json
 {
     "roomName": "string",
     "emptyTimeoutMinutes": 60,
+    "departureTimeoutMinutes": 60,
     "maxParticipants": 100,
     "metadata": "string"
 }

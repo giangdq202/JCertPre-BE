@@ -91,6 +91,7 @@ namespace JCertPreApplication.Persistence.Services.LiveKit
             {
                 Name = roomName,
                 EmptyTimeout = (uint)(settings?.EmptyTimeout?.TotalSeconds ?? 300),
+                DepartureTimeout = (uint)(settings?.DepartureTimeout?.TotalSeconds ?? 300),
                 MaxParticipants = (uint)(settings?.MaxParticipants ?? 100),
                 Metadata = settings?.Metadata ?? string.Empty
             };
