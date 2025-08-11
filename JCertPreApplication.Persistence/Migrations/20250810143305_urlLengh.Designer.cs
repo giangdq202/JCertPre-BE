@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250810143305_urlLengh")]
+    partial class urlLengh
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

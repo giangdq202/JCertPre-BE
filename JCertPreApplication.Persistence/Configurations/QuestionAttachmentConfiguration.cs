@@ -14,7 +14,7 @@ namespace JCertPreApplication.Persistence.Configurations
 
             // Configure required properties and constraints
             builder.Property(qa => qa.questionId).IsRequired();
-            builder.Property(qa => qa.mediaUrl).IsRequired().HasMaxLength(100);
+            builder.Property(qa => qa.mediaUrl).IsRequired();
             builder.Property(qa => qa.mediaType).IsRequired();
 
             // Configure foreign key relationship

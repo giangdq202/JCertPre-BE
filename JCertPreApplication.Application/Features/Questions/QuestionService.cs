@@ -5,6 +5,7 @@ using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Http;
 using System.Linq.Expressions;
 
 namespace JCertPreApplication.Application.Features.Questions
@@ -17,11 +18,19 @@ namespace JCertPreApplication.Application.Features.Questions
     {
         private readonly IQuestionRepository _questionRepository;
         private readonly ISubContentRepository _subContentRepository;
+        private readonly IQuestionAttachmentRepository _questionAttachmentRepository;
+        private readonly IFileService _fileService;
 
-        public QuestionService(IQuestionRepository questionRepository, ISubContentRepository subContentRepository)
+        public QuestionService(
+            IQuestionRepository questionRepository,
+            ISubContentRepository subContentRepository,
+            IQuestionAttachmentRepository questionAttachmentRepository,
+            IFileService fileService)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
             _subContentRepository = subContentRepository ?? throw new ArgumentNullException(nameof(subContentRepository));
+            _questionAttachmentRepository = questionAttachmentRepository ?? throw new ArgumentNullException(nameof(questionAttachmentRepository));
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
         }
 
         /// <summary>
@@ -64,7 +73,6 @@ namespace JCertPreApplication.Application.Features.Questions
                 if (subContent == null)
                     throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
 
-                // Efficiently check for duplicate question text
                 var isExisted = await _questionRepository.AnyAsync(q => q.questionText == createDto.Content);
                 if (isExisted)
                     throw ApiException.BadRequest("QUESTION_TEXT_EXISTS", "A question with the same text already exists.");
@@ -84,7 +92,27 @@ namespace JCertPreApplication.Application.Features.Questions
                 var created = await _questionRepository.InsertAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                var result = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == created.questionId, "SubContent");
+                // Handle audio upload for listening questions
+                if (createDto.ContentName == ContentName.Listening && createDto.AudioFile != null)
+                {
+                    // Use questionId as filename for uniqueness
+                    var customFormFile = CreateCustomFormFile(createDto.AudioFile, question.questionId.ToString());
+                    var uploadResult = await _fileService.UploadVideoAsync(customFormFile);
+                    if (!uploadResult.Success || string.IsNullOrEmpty(uploadResult.Url))
+                        throw ApiException.InternalServerError("AUDIO_UPLOAD_FAILED", uploadResult.ErrorMessage ?? "Audio upload failed.");
+
+                    var attachment = new QuestionAttachment
+                    {
+                        attachmentId = Guid.NewGuid(),
+                        questionId = created.questionId,
+                        mediaUrl = uploadResult.SecureUrl ?? uploadResult.Url,
+                        mediaType = "audio"
+                    };
+                    await _questionAttachmentRepository.InsertAsync(attachment);
+                    await _questionAttachmentRepository.SaveChangesAsync();
+                }
+
+                var result = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == created.questionId, "SubContent,QuestionAttachments");
                 if (result == null)
                     throw ApiException.InternalServerError("QUESTION_CREATION_ERROR", "Failed to retrieve the created question.");
 
@@ -105,7 +133,7 @@ namespace JCertPreApplication.Application.Features.Questions
         {
             try
             {
-                var question = await _questionRepository.GetByIdAsync(id);
+                var question = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == id, "SubContent,QuestionAttachments");
                 if (question == null)
                     throw ApiException.NotFound("Question", id);
 
@@ -137,11 +165,52 @@ namespace JCertPreApplication.Application.Features.Questions
                         throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided ContentName, Level, and SubContentName.");
                     question.SubContentId = subContent.SubContentId;
                 }
+                var newContentName = updateDto.ContentName ?? question.SubContent?.ContentName;
+                // Handle audio update for listening questions
+                if (newContentName == ContentName.Listening && updateDto.AudioFile != null)
+                {
+                    // Find existing audio attachment
+                    var existingAttachment = question.QuestionAttachments.FirstOrDefault(a => a.mediaType == "audio");
+                    if (existingAttachment != null)
+                    {
+                        // Delete old audio file from storage
+                        var oldPublicId = ExtractAppwritePublicId(existingAttachment.mediaUrl);
+                        if (!string.IsNullOrWhiteSpace(oldPublicId))
+                        {
+                            await _fileService.DeleteFileAsync(oldPublicId);
+                        }
+                    }
+
+                    // Use questionId as filename for uniqueness
+                    var customFormFile = CreateCustomFormFile(updateDto.AudioFile, question.questionId.ToString());
+                    var uploadResult = await _fileService.UploadVideoAsync(customFormFile);
+                    if (!uploadResult.Success || string.IsNullOrEmpty(uploadResult.Url))
+                        throw ApiException.InternalServerError("AUDIO_UPLOAD_FAILED", uploadResult.ErrorMessage ?? "Audio upload failed.");
+
+                    if (existingAttachment != null)
+                    {
+                        // Update existing attachment
+                        existingAttachment.mediaUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                    }
+                    else
+                    {
+                        // Create new attachment
+                        var newAttachment = new QuestionAttachment
+                        {
+                            attachmentId = Guid.NewGuid(),
+                            questionId = question.questionId,
+                            mediaUrl = uploadResult.SecureUrl ?? uploadResult.Url,
+                            mediaType = "audio"
+                        };
+                        await _questionAttachmentRepository.InsertAsync(newAttachment);
+                    }
+                    await _questionAttachmentRepository.SaveChangesAsync();
+                }
 
                 await _questionRepository.UpdateAsync(question);
                 await _questionRepository.SaveChangesAsync();
 
-                var updated = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == question.questionId, "SubContent");
+                var updated = await _questionRepository.GetFirstOrDefaultAsync(q => q.questionId == question.questionId, "SubContent,QuestionAttachments");
                 if (updated == null)
                     throw ApiException.InternalServerError("QUESTION_UPDATE_ERROR", "Failed to retrieve the updated question.");
 
@@ -360,6 +429,51 @@ namespace JCertPreApplication.Application.Features.Questions
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving active paginated questions: {ex.Message}");
             }
+        }
+
+        // --- Helper for custom file name ---
+        private static IFormFile CreateCustomFormFile(IFormFile originalFile, string customFileName)
+        {
+            var extension = Path.GetExtension(originalFile.FileName);
+            var newFileName = customFileName + extension;
+            return new CustomFormFile(originalFile, newFileName);
+        }
+
+        // --- Helper for extracting Appwrite public ID from URL ---
+        private static string? ExtractAppwritePublicId(string? url)
+        {
+            if (string.IsNullOrWhiteSpace(url)) return null;
+            // Example: https://appwrite-endpoint/storage/buckets/{bucketId}/files/{fileId}/view?project={projectId}
+            var segments = url.Split('/');
+            var filesIdx = Array.IndexOf(segments, "files");
+            if (filesIdx != -1 && filesIdx < segments.Length - 1)
+                return segments[filesIdx + 1];
+            return null;
+        }
+
+        // --- CustomFormFile implementation ---
+        internal class CustomFormFile : IFormFile
+        {
+            private readonly IFormFile _originalFile;
+            private readonly string _customFileName;
+
+            public CustomFormFile(IFormFile originalFile, string customFileName)
+            {
+                _originalFile = originalFile;
+                _customFileName = customFileName;
+            }
+
+            public string ContentType => _originalFile.ContentType;
+            public string ContentDisposition => _originalFile.ContentDisposition;
+            public IHeaderDictionary Headers => _originalFile.Headers;
+            public long Length => _originalFile.Length;
+            public string Name => _originalFile.Name;
+            public string FileName => _customFileName;
+
+            public void CopyTo(Stream target) => _originalFile.CopyTo(target);
+            public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default) =>
+                _originalFile.CopyToAsync(target, cancellationToken);
+            public Stream OpenReadStream() => _originalFile.OpenReadStream();
         }
     }
 }
