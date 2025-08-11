@@ -122,5 +122,33 @@ namespace JCertPreApplication.Persistence.Repositories
                 (scheduledDateTime <= ls.scheduledDateTime && endDateTime >= ls.scheduledDateTime.AddMinutes(ls.durationMinutes))
             );
         }
+
+        public async Task<List<Livestream>> GetFutureLivestreamsByCourseIdAsync(Guid courseId)
+        {
+            var now = DateTime.UtcNow;
+            return await _dbSet
+                .Include(ls => ls.Course)
+                .Where(ls => ls.courseId == courseId && ls.scheduledDateTime > now)
+                .OrderBy(ls => ls.scheduledDateTime)
+                .ToListAsync();
+        }
+
+        public async Task<List<Livestream>> GetFutureLivestreamsByInstructorIdAsync(Guid instructorId)
+        {
+            var now = DateTime.UtcNow;
+            
+            // Get all course IDs where the instructor is currently active
+            var activeCourseIds = await _context.Set<CourseInstructor>()
+                .Where(ci => ci.InstructorId == instructorId && ci.IsActive)
+                .Select(ci => ci.CourseId)
+                .ToListAsync();
+
+            // Get future livestreams from those courses
+            return await _dbSet
+                .Include(ls => ls.Course)
+                .Where(ls => activeCourseIds.Contains(ls.courseId) && ls.scheduledDateTime > now)
+                .OrderBy(ls => ls.scheduledDateTime)
+                .ToListAsync();
+        }
     }
 }

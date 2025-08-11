@@ -14,12 +14,14 @@ namespace JCertPreApplication.Application.Features.Course
         private readonly ICourseRepository _courseRepository;
         private readonly IUserRepository _userRepository;
         private readonly IFileService _fileService;
+        private readonly ILivestreamRepository _livestreamRepository;
 
-        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository, IFileService fileService)
+        public CourseService(ICourseRepository courseRepository, IUserRepository userRepository, IFileService fileService, ILivestreamRepository livestreamRepository)
         {
             _courseRepository = courseRepository;
             _userRepository = userRepository;
             _fileService = fileService;
+            _livestreamRepository = livestreamRepository;
         }
 
         public async Task<CourseDto> CreateCourseAsync(CreateCourseDto createCourseDto)
@@ -257,6 +259,9 @@ namespace JCertPreApplication.Application.Features.Course
             if (activeInstructors.Any())
                 throw ApiException.BadRequest("COURSE_HAS_ACTIVE_INSTRUCTOR", "Course already has an active instructor. Please remove the current instructor before assigning a new one.");
 
+            // Check for schedule conflicts with instructor's existing livestreams
+            await CheckForScheduleConflictAsync(instructorId, courseId);
+
             await _courseRepository.AddInstructorToCourseAsync(courseId, instructorId);
             await _courseRepository.SaveChangesAsync();
         }
@@ -433,6 +438,52 @@ namespace JCertPreApplication.Application.Features.Course
             catch
             {
                 return null;
+            }
+        }
+
+        /// <summary>
+        /// Checks if there are any schedule conflicts between the instructor's existing livestreams 
+        /// and the future livestreams of the target course
+        /// </summary>
+        /// <param name="instructorId">ID of the instructor to be assigned</param>
+        /// <param name="courseId">ID of the target course</param>
+        /// <returns>Task that throws ApiException if conflict is found</returns>
+        private async Task CheckForScheduleConflictAsync(Guid instructorId, Guid courseId)
+        {
+            // Get future livestreams for the target course
+            var courseLivestreams = await _livestreamRepository.GetFutureLivestreamsByCourseIdAsync(courseId);
+            
+            // Get future livestreams where the instructor is already assigned
+            var instructorLivestreams = await _livestreamRepository.GetFutureLivestreamsByInstructorIdAsync(instructorId);
+
+            // If either list is empty, no conflict possible
+            if (!courseLivestreams.Any() || !instructorLivestreams.Any())
+            {
+                return;
+            }
+
+            // Check for conflicts between course streams and instructor streams
+            foreach (var courseStream in courseLivestreams)
+            {
+                var courseStreamEndTime = courseStream.scheduledDateTime.AddMinutes(courseStream.durationMinutes);
+
+                foreach (var instructorStream in instructorLivestreams)
+                {
+                    var instructorStreamEndTime = instructorStream.scheduledDateTime.AddMinutes(instructorStream.durationMinutes);
+
+                    // Check for time overlap: two time ranges overlap if start1 < end2 AND start2 < end1
+                    bool hasConflict = courseStream.scheduledDateTime < instructorStreamEndTime &&
+                                     instructorStream.scheduledDateTime < courseStreamEndTime;
+
+                    if (hasConflict)
+                    {
+                        throw ApiException.BadRequest(
+                            "SCHEDULE_CONFLICT",
+                            $"Không thể gán giảng viên: Lịch livestream bị trùng. " +
+                            $"Khóa học này có livestream vào {courseStream.scheduledDateTime:dd/MM/yyyy HH:mm} " +
+                            $"trùng với lịch hiện tại của giảng viên vào {instructorStream.scheduledDateTime:dd/MM/yyyy HH:mm}.");
+                    }
+                }
             }
         }
     }
