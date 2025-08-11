@@ -8,7 +8,7 @@ namespace JCertPreApplication.Application.Dtos.Lesson
         [MaxLength(200, ErrorMessage = "Lesson title cannot exceed 200 characters.")]
         public string? Title { get; set; }
 
-        [Range(1, int.MaxValue, ErrorMessage = "Lesson order must be a positive integer starting at 1.")]
+        [Range(1, 10000, ErrorMessage = "Lesson order must be a positive integer between 1 and 10000.")]
         public int? LessonOrder { get; set; }
 
         [MinLength(1, ErrorMessage = "Lesson content cannot be empty.")]
