@@ -147,10 +147,13 @@ namespace JCertPreApplication.Application.Features.Course
                     {
                         try
                         {
-                            var oldFileId = ExtractFileIdFromUrl(course.thumbnailUrl);
-                            if (!string.IsNullOrWhiteSpace(oldFileId))
+                            // Use the new DeleteFileByUrlAsync method which handles URL parsing internally
+                            var deleteResult = await _fileService.DeleteFileByUrlAsync(course.thumbnailUrl);
+                            
+                            if (!deleteResult.Success)
                             {
-                                await _fileService.DeleteFileAsync(oldFileId);
+                                // Log warning but don't fail the update if old image deletion fails
+                                System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old thumbnail: {deleteResult.ErrorMessage}");
                             }
                         }
                         catch (Exception ex)
@@ -398,23 +401,6 @@ namespace JCertPreApplication.Application.Features.Course
             var newFileName = customFileName + extension;
 
             return new CustomFormFile(originalFile, newFileName);
-        }
-
-        private static string? ExtractFileIdFromUrl(string? url)
-        {
-            if (string.IsNullOrWhiteSpace(url)) return null;
-
-            try
-            {
-                var uri = new Uri(url);
-                // Extract file ID from the URL path
-                var fileName = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
-                return fileName;
-            }
-            catch
-            {
-                return null;
-            }
         }
 
         /// <summary>

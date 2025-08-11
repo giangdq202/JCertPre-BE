@@ -43,6 +43,22 @@ namespace JCertPreApplication.Application.Contracts
         Task<FileDeletionResult> DeleteFileAsync(string publicId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Deletes a file from the storage provider using its URL.
+        /// Automatically extracts the public ID from the URL.
+        /// </summary>
+        /// <param name="fileUrl">The full URL of the file to delete.</param>
+        /// <param name="cancellationToken">Cancellation token for the operation.</param>
+        /// <returns>Result indicating success or failure of the deletion operation.</returns>
+        Task<FileDeletionResult> DeleteFileByUrlAsync(string fileUrl, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Extracts the public ID from a file URL.
+        /// </summary>
+        /// <param name="fileUrl">The full URL of the file.</param>
+        /// <returns>The public ID extracted from the URL, or null if extraction fails.</returns>
+        string? ExtractPublicIdFromUrl(string fileUrl);
+
+        /// <summary>
         /// Retrieves a paginated list of files from the storage provider.
         /// </summary>
         /// <param name="maxResults">Maximum number of items per page (1-500).</param>

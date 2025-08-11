@@ -173,11 +173,16 @@ namespace JCertPreApplication.Application.Features.Questions
                     var existingAttachment = question.QuestionAttachments.FirstOrDefault(a => a.mediaType == "audio");
                     if (existingAttachment != null)
                     {
-                        // Delete old audio file from storage
-                        var oldPublicId = ExtractAppwritePublicId(existingAttachment.mediaUrl);
-                        if (!string.IsNullOrWhiteSpace(oldPublicId))
+                        // Delete old audio file from storage using URL
+                        if (!string.IsNullOrWhiteSpace(existingAttachment.mediaUrl))
                         {
-                            await _fileService.DeleteFileAsync(oldPublicId);
+                            var deleteResult = await _fileService.DeleteFileByUrlAsync(existingAttachment.mediaUrl);
+                            
+                            if (!deleteResult.Success)
+                            {
+                                // Log warning but don't fail the update if old file deletion fails
+                                System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old audio file: {deleteResult.ErrorMessage}");
+                            }
                         }
                     }
 
@@ -437,18 +442,6 @@ namespace JCertPreApplication.Application.Features.Questions
             var extension = Path.GetExtension(originalFile.FileName);
             var newFileName = customFileName + extension;
             return new CustomFormFile(originalFile, newFileName);
-        }
-
-        // --- Helper for extracting Appwrite public ID from URL ---
-        private static string? ExtractAppwritePublicId(string? url)
-        {
-            if (string.IsNullOrWhiteSpace(url)) return null;
-            // Example: https://appwrite-endpoint/storage/buckets/{bucketId}/files/{fileId}/view?project={projectId}
-            var segments = url.Split('/');
-            var filesIdx = Array.IndexOf(segments, "files");
-            if (filesIdx != -1 && filesIdx < segments.Length - 1)
-                return segments[filesIdx + 1];
-            return null;
         }
 
         // --- CustomFormFile implementation ---

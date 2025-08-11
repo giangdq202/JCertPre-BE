@@ -265,9 +265,21 @@ namespace JCertPreApplication.Application.Features.Documents
 
             try
             {
-                // Delete file from cloud storage using publicId
-                if (!string.IsNullOrEmpty(document.documentName))
+                // Delete file from cloud storage
+                // First try using the URL (more reliable), fallback to publicId if needed
+                if (!string.IsNullOrEmpty(document.fileUrl))
                 {
+                    var deleteResult = await _fileService.DeleteFileByUrlAsync(document.fileUrl);
+                    
+                    // If URL-based deletion fails and we have a documentName (publicId), try that
+                    if (!deleteResult.Success && !string.IsNullOrEmpty(document.documentName))
+                    {
+                        await _fileService.DeleteFileAsync(document.documentName);
+                    }
+                }
+                else if (!string.IsNullOrEmpty(document.documentName))
+                {
+                    // Fallback: use publicId if URL is not available
                     await _fileService.DeleteFileAsync(document.documentName);
                 }
 
