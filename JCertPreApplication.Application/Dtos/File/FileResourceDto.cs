@@ -1,5 +1,3 @@
-using CloudinaryDotNet.Actions;
-
 namespace JCertPreApplication.Application.Dtos.File
 {
     /// <summary>
@@ -63,40 +61,6 @@ namespace JCertPreApplication.Application.Dtos.File
         public int Version { get; set; }
 
         /// <summary>
-        /// Chuyển đổi từ Cloudinary Resource sang DTO
-        /// </summary>
-        /// <param name="resource">Cloudinary Resource object</param>
-        /// <returns>FileResourceDto</returns>
-        public static FileResourceDto FromCloudinaryResource(Resource resource)
-        {
-            var resourceType = resource.ResourceType?.ToString() ?? string.Empty;
-            var format = resource.Format ?? string.Empty;
-            
-            // Enhanced format handling for raw files
-            if (resourceType.Equals("raw", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(format))
-            {
-                // Extract extension from publicId for raw files when format is empty
-                var ext = System.IO.Path.GetExtension(resource.PublicId)?.TrimStart('.').ToLowerInvariant();
-                format = ext ?? string.Empty;
-            }
-            
-            return new FileResourceDto
-            {
-                PublicId = resource.PublicId ?? string.Empty,
-                SecureUrl = resource.SecureUrl?.ToString() ?? string.Empty,
-                ResourceType = resourceType,
-                Format = format, // Enhanced format với xử lý đặc biệt cho raw files
-                Bytes = resource.Bytes,
-                Width = resource.Width,
-                Height = resource.Height,
-                CreatedAt = ParseCreatedAt(resource.CreatedAt),
-                Folder = ExtractFolderFromPublicId(resource.PublicId),
-                Tags = resource.Tags?.ToList() ?? new List<string>(),
-                Version = int.TryParse(resource.Version, out var version) ? version : 1
-            };
-        }
-
-        /// <summary>
         /// Creates a FileResourceDto from Appwrite file data
         /// </summary>
         /// <param name="appwriteFile">The Appwrite file object</param>
@@ -124,8 +88,8 @@ namespace JCertPreApplication.Application.Dtos.File
                 Format = Path.GetExtension(getName).TrimStart('.'),
                 Bytes = sizeOriginal,
                 CreatedAt = DateTime.TryParse(getCreatedAt, out var created) ? created : DateTime.UtcNow,
-                Folder = null, // Appwrite doesn't have folder concept like Cloudinary
-                Tags = new List<string>(), // Appwrite doesn't have tags like Cloudinary
+                Folder = null, // Appwrite doesn't have folder concept
+                Tags = new List<string>(), // Appwrite doesn't have tags
                 Version = 1 // Default version for Appwrite files
             };
         }
@@ -133,7 +97,7 @@ namespace JCertPreApplication.Application.Dtos.File
         /// <summary>
         /// Parse Created date string to DateTime
         /// </summary>
-        /// <param name="created">Created date string from Cloudinary</param>
+        /// <param name="created">Created date string</param>
         /// <returns>DateTime</returns>
         private static DateTime ParseCreatedAt(string created)
         {
