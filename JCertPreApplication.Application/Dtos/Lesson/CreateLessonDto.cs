@@ -10,7 +10,7 @@ namespace JCertPreApplication.Application.Dtos.Lesson
         public string Title { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "Lesson order is required.")]
-        [Range(1, int.MaxValue, ErrorMessage = "Lesson order must be a positive integer starting at 1.")]
+        [Range(1, 10000, ErrorMessage = "Lesson order must be a positive integer between 1 and 10000.")]
         public int LessonOrder { get; set; }
 
         [Required(ErrorMessage = "Lesson content is required.")]
