@@ -185,23 +185,20 @@ namespace JCertPreApplication.Application.Features.Users
                 // Delete old avatar if exists
                 if (!string.IsNullOrWhiteSpace(user.avatarUrl))
                 {
-                    if (IsCloudinaryUrl(user.avatarUrl))
+                    try
                     {
-                        try
+                        // Extract file ID from existing avatar URL for deletion
+                        var oldFileId = ExtractPublicIdFromUrl(user.avatarUrl);
+                        if (!string.IsNullOrWhiteSpace(oldFileId))
                         {
-                            // Extract public ID from existing avatar URL
-                            var oldPublicId = ExtractCloudinaryPublicId(user.avatarUrl);
-                            if (!string.IsNullOrWhiteSpace(oldPublicId))
-                            {
-                                await _fileService.DeleteFileAsync(oldPublicId);
-                            }
+                            await _fileService.DeleteFileAsync(oldFileId);
                         }
-                        catch (Exception ex)
-                        {
-                            // Log warning but don't fail the update if old image deletion fails
-                            // This could happen if the image was already deleted or doesn't exist
-                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {ex.Message}");
-                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        // Log warning but don't fail the update if old image deletion fails
+                        // This could happen if the image was already deleted or doesn't exist
+                        System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {ex.Message}");
                     }
                     // Clear the old URL regardless of source
                     user.avatarUrl = null;
@@ -270,53 +267,6 @@ namespace JCertPreApplication.Application.Features.Users
 
         #region Private Helper Methods
 
-        private static bool IsCloudinaryUrl(string? url)
-        {
-            return !string.IsNullOrWhiteSpace(url)
-                   && url.Contains("res.cloudinary.com", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string? ExtractCloudinaryPublicId(string? url)
-        {
-            if (string.IsNullOrWhiteSpace(url)) return null;
-
-            try
-            {
-                var uri = new Uri(url);
-                var segments = uri.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-                var uploadIdx = Array.IndexOf(segments, "upload");
-
-                if (uploadIdx == -1 || uploadIdx >= segments.Length - 1)
-                    return null;
-
-                // Get everything after upload/ as potential public ID
-                var publicIdParts = segments.Skip(uploadIdx + 1).ToArray();
-
-                // Skip version if present (starts with 'v' followed by numbers)
-                if (publicIdParts.Length > 0 && publicIdParts[0].StartsWith("v") &&
-                    publicIdParts[0].Length > 1 && publicIdParts[0].Skip(1).All(char.IsDigit))
-                {
-                    publicIdParts = publicIdParts.Skip(1).ToArray();
-                }
-
-                if (publicIdParts.Length == 0) return null;
-
-                // Remove file extension from the last part
-                var lastPart = publicIdParts.Last();
-                var dotIndex = lastPart.LastIndexOf('.');
-                if (dotIndex > 0)
-                {
-                    publicIdParts[publicIdParts.Length - 1] = lastPart.Substring(0, dotIndex);
-                }
-                
-                return string.Join("/", publicIdParts);
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
         private static IFormFile CreateCustomFormFile(IFormFile originalFile, string customFileName)
         {
             // Get the file extension from original file
@@ -326,10 +276,21 @@ namespace JCertPreApplication.Application.Features.Users
             return new CustomFormFile(originalFile, newFileName);
         }
 
-        private static string? ExtractPublicIdFromUrl(string cloudinaryUrl)
+        private static string? ExtractPublicIdFromUrl(string? url)
         {
-            // Keep existing method for backward compatibility
-            return ExtractCloudinaryPublicId(cloudinaryUrl);
+            if (string.IsNullOrWhiteSpace(url)) return null;
+
+            try
+            {
+                var uri = new Uri(url);
+                // Extract file ID from the URL path
+                var fileName = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
+                return fileName;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
 // Removed unused methods IsImageFile and IsVideoFile

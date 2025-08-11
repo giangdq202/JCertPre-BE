@@ -15,5 +15,7 @@ namespace JCertPreApplication.Application.Contracts
             int pageIndex = 1,
             int pageSize = 10);
         Task<bool> HasScheduleConflictAsync(Guid courseId, DateTime scheduledDateTime, int durationMinutes, Guid? excludeLivestreamId = null);
+        Task<List<Livestream>> GetFutureLivestreamsByCourseIdAsync(Guid courseId);
+        Task<List<Livestream>> GetFutureLivestreamsByInstructorIdAsync(Guid instructorId);
     }
 }

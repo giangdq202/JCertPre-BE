@@ -10,13 +10,22 @@ namespace JCertPreApplication.Persistence.Configurations
         {
             builder.ToTable("course_instructor");
 
-            // Configure composite primary key
-            builder.HasKey(ci => new { ci.CourseId, ci.InstructorId, ci.AssignedOn });
+            // Configure primary key - Use Id as single primary key
+            builder.HasKey(ci => ci.Id);
 
             // Configure required properties
+            builder.Property(ci => ci.CourseId).IsRequired();
+            builder.Property(ci => ci.InstructorId).IsRequired();
             builder.Property(ci => ci.AssignedOn).IsRequired();
             builder.Property(ci => ci.IsActive).IsRequired();
             builder.Property(ci => ci.Notes).HasMaxLength(500);
+
+            // Add index for common queries
+            builder.HasIndex(ci => new { ci.CourseId, ci.IsActive })
+                .HasDatabaseName("IX_CourseInstructor_CourseId_IsActive");
+
+            builder.HasIndex(ci => new { ci.InstructorId, ci.IsActive })
+                .HasDatabaseName("IX_CourseInstructor_InstructorId_IsActive");
 
             // Configure relationships
             builder.HasOne(ci => ci.Course)

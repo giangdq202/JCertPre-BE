@@ -1,18 +1,23 @@
-using CloudinaryDotNet.Actions;
 using System.Text.Json.Serialization;
 
 namespace JCertPreApplication.Application.Dtos.File.Appwrite
 {
     /// <summary>
-    /// Appwrite file upload response that mimics Cloudinary's ImageUploadResult
+    /// Appwrite file upload response for images
     /// </summary>
-    public class AppwriteImageUploadResult : ImageUploadResult
+    public class AppwriteImageUploadResult
     {
         /// <summary>
-        /// Appwrite file ID (mapped to PublicId for compatibility)
+        /// Appwrite file ID
         /// </summary>
         [JsonPropertyName("fileId")]
         public string FileId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Public ID for compatibility
+        /// </summary>
+        [JsonPropertyName("publicId")]
+        public string PublicId { get; set; } = string.Empty;
 
         /// <summary>
         /// Original file name
@@ -21,13 +26,13 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Bucket ID where the file is stored
+        /// Bucket ID where file is stored
         /// </summary>
         [JsonPropertyName("bucketId")]
         public string BucketId { get; set; } = string.Empty;
 
         /// <summary>
-        /// MIME type of the file
+        /// File MIME type
         /// </summary>
         [JsonPropertyName("mimeType")]
         public string MimeType { get; set; } = string.Empty;
@@ -37,36 +42,6 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         /// </summary>
         [JsonPropertyName("sizeOriginal")]
         public long SizeOriginal { get; set; }
-
-        /// <summary>
-        /// File creation timestamp
-        /// </summary>
-        [JsonPropertyName("createdAt")]
-        public new DateTime CreatedAt { get; set; }
-
-        /// <summary>
-        /// File last update timestamp
-        /// </summary>
-        [JsonPropertyName("updatedAt")]
-        public DateTime UpdatedAt { get; set; }
-
-        /// <summary>
-        /// View URL for the file
-        /// </summary>
-        [JsonPropertyName("viewUrl")]
-        public string ViewUrl { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Download URL for the file (when applicable)
-        /// </summary>
-        [JsonPropertyName("downloadUrl")]
-        public string? DownloadUrl { get; set; }
-
-        /// <summary>
-        /// Formatted file size for display
-        /// </summary>
-        [JsonPropertyName("sizeFormatted")]
-        public string SizeFormatted { get; set; } = string.Empty;
 
         /// <summary>
         /// File extension
@@ -75,43 +50,78 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public string Extension { get; set; } = string.Empty;
 
         /// <summary>
-        /// File type (image, video, document)
+        /// File creation date
         /// </summary>
-        [JsonPropertyName("fileType")]
-        public string FileType { get; set; } = string.Empty;
+        [JsonPropertyName("$createdAt")]
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
-        /// Initialize Appwrite result and map to Cloudinary-compatible fields
+        /// File update date
         /// </summary>
-        public void MapToCloudinaryFields()
+        [JsonPropertyName("$updatedAt")]
+        public DateTime UpdatedAt { get; set; }
+
+        /// <summary>
+        /// View URL for the file
+        /// </summary>
+        [JsonPropertyName("viewUrl")]
+        public string ViewUrl { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Secure URL (same as ViewUrl for compatibility)
+        /// </summary>
+        public Uri? SecureUrl { get; set; }
+
+        /// <summary>
+        /// URL (same as SecureUrl for compatibility)
+        /// </summary>
+        public Uri? Url { get; set; }
+
+        /// <summary>
+        /// File format (extension without dot)
+        /// </summary>
+        public string Format { get; set; } = string.Empty;
+
+        /// <summary>
+        /// File size in bytes (alias for SizeOriginal)
+        /// </summary>
+        public long Bytes { get; set; }
+
+        /// <summary>
+        /// Initialize Appwrite result and map to compatible fields
+        /// </summary>
+        public void MapToCompatibleFields()
         {
-            // Map Appwrite fields to Cloudinary-compatible fields
+            // Map Appwrite fields to compatible fields
             PublicId = FileId;
             Bytes = SizeOriginal;
             Format = Extension;
-            
-            // Create URLs
+
+            // Set URLs if ViewUrl is available
             if (!string.IsNullOrEmpty(ViewUrl))
             {
                 SecureUrl = new Uri(ViewUrl);
                 Url = SecureUrl;
             }
-
-            // Set creation time
-            base.CreatedAt = CreatedAt;
         }
     }
 
     /// <summary>
-    /// Appwrite video upload result that mimics Cloudinary's VideoUploadResult
+    /// Appwrite video upload result
     /// </summary>
-    public class AppwriteVideoUploadResult : VideoUploadResult
+    public class AppwriteVideoUploadResult
     {
         /// <summary>
-        /// Appwrite file ID (mapped to PublicId for compatibility)
+        /// Appwrite file ID
         /// </summary>
         [JsonPropertyName("fileId")]
         public string FileId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Public ID for compatibility
+        /// </summary>
+        [JsonPropertyName("publicId")]
+        public string PublicId { get; set; } = string.Empty;
 
         /// <summary>
         /// Original file name
@@ -120,13 +130,13 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Bucket ID where the file is stored
+        /// Bucket ID where file is stored
         /// </summary>
         [JsonPropertyName("bucketId")]
         public string BucketId { get; set; } = string.Empty;
 
         /// <summary>
-        /// MIME type of the file
+        /// File MIME type
         /// </summary>
         [JsonPropertyName("mimeType")]
         public string MimeType { get; set; } = string.Empty;
@@ -138,15 +148,21 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public long SizeOriginal { get; set; }
 
         /// <summary>
-        /// File creation timestamp
+        /// File extension
         /// </summary>
-        [JsonPropertyName("createdAt")]
-        public new DateTime CreatedAt { get; set; }
+        [JsonPropertyName("extension")]
+        public string Extension { get; set; } = string.Empty;
 
         /// <summary>
-        /// File last update timestamp
+        /// File creation date
         /// </summary>
-        [JsonPropertyName("updatedAt")]
+        [JsonPropertyName("$createdAt")]
+        public DateTime CreatedAt { get; set; }
+
+        /// <summary>
+        /// File update date
+        /// </summary>
+        [JsonPropertyName("$updatedAt")]
         public DateTime UpdatedAt { get; set; }
 
         /// <summary>
@@ -156,43 +172,60 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public string ViewUrl { get; set; } = string.Empty;
 
         /// <summary>
-        /// File type (image, video, document)
+        /// Secure URL (same as ViewUrl for compatibility)
         /// </summary>
-        [JsonPropertyName("fileType")]
-        public string FileType { get; set; } = string.Empty;
+        public Uri? SecureUrl { get; set; }
 
         /// <summary>
-        /// Initialize Appwrite result and map to Cloudinary-compatible fields
+        /// URL (same as SecureUrl for compatibility)
         /// </summary>
-        public void MapToCloudinaryFields()
+        public Uri? Url { get; set; }
+
+        /// <summary>
+        /// File format (extension without dot)
+        /// </summary>
+        public string Format { get; set; } = string.Empty;
+
+        /// <summary>
+        /// File size in bytes (alias for SizeOriginal)
+        /// </summary>
+        public long Bytes { get; set; }
+
+        /// <summary>
+        /// Initialize Appwrite result and map to compatible fields
+        /// </summary>
+        public void MapToCompatibleFields()
         {
-            // Map Appwrite fields to Cloudinary-compatible fields
+            // Map Appwrite fields to compatible fields
             PublicId = FileId;
             Bytes = SizeOriginal;
             Format = System.IO.Path.GetExtension(Name).TrimStart('.');
-            
-            // Create URLs
+
+            // Set URLs if ViewUrl is available
             if (!string.IsNullOrEmpty(ViewUrl))
             {
                 SecureUrl = new Uri(ViewUrl);
                 Url = SecureUrl;
             }
-
-            // Set creation time
-            base.CreatedAt = CreatedAt;
         }
     }
 
     /// <summary>
-    /// Appwrite raw file upload result that mimics Cloudinary's RawUploadResult
+    /// Appwrite raw file upload result
     /// </summary>
-    public class AppwriteRawUploadResult : RawUploadResult
+    public class AppwriteRawUploadResult
     {
         /// <summary>
-        /// Appwrite file ID (mapped to PublicId for compatibility)
+        /// Appwrite file ID
         /// </summary>
         [JsonPropertyName("fileId")]
         public string FileId { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Public ID for compatibility
+        /// </summary>
+        [JsonPropertyName("publicId")]
+        public string PublicId { get; set; } = string.Empty;
 
         /// <summary>
         /// Original file name
@@ -201,13 +234,13 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public string Name { get; set; } = string.Empty;
 
         /// <summary>
-        /// Bucket ID where the file is stored
+        /// Bucket ID where file is stored
         /// </summary>
         [JsonPropertyName("bucketId")]
         public string BucketId { get; set; } = string.Empty;
 
         /// <summary>
-        /// MIME type of the file
+        /// File MIME type
         /// </summary>
         [JsonPropertyName("mimeType")]
         public string MimeType { get; set; } = string.Empty;
@@ -219,15 +252,21 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public long SizeOriginal { get; set; }
 
         /// <summary>
-        /// File creation timestamp
+        /// File extension
         /// </summary>
-        [JsonPropertyName("createdAt")]
-        public new DateTime CreatedAt { get; set; }
+        [JsonPropertyName("extension")]
+        public string Extension { get; set; } = string.Empty;
 
         /// <summary>
-        /// File last update timestamp
+        /// File creation date
         /// </summary>
-        [JsonPropertyName("updatedAt")]
+        [JsonPropertyName("$createdAt")]
+        public DateTime CreatedAt { get; set; }
+
+        /// <summary>
+        /// File update date
+        /// </summary>
+        [JsonPropertyName("$updatedAt")]
         public DateTime UpdatedAt { get; set; }
 
         /// <summary>
@@ -237,69 +276,64 @@ namespace JCertPreApplication.Application.Dtos.File.Appwrite
         public string ViewUrl { get; set; } = string.Empty;
 
         /// <summary>
-        /// Download URL for the file
+        /// Secure URL (same as ViewUrl for compatibility)
         /// </summary>
-        [JsonPropertyName("downloadUrl")]
-        public string? DownloadUrl { get; set; }
+        public Uri? SecureUrl { get; set; }
 
         /// <summary>
-        /// File type (image, video, document)
+        /// URL (same as SecureUrl for compatibility)
         /// </summary>
-        [JsonPropertyName("fileType")]
-        public string FileType { get; set; } = string.Empty;
+        public Uri? Url { get; set; }
 
         /// <summary>
-        /// Initialize Appwrite result and map to Cloudinary-compatible fields
+        /// File format (extension without dot)
         /// </summary>
-        public void MapToCloudinaryFields()
+        public string Format { get; set; } = string.Empty;
+
+        /// <summary>
+        /// File size in bytes (alias for SizeOriginal)
+        /// </summary>
+        public long Bytes { get; set; }
+
+        /// <summary>
+        /// Initialize Appwrite result and map to compatible fields
+        /// </summary>
+        public void MapToCompatibleFields()
         {
-            // Map Appwrite fields to Cloudinary-compatible fields
+            // Map Appwrite fields to compatible fields
             PublicId = FileId;
             Bytes = SizeOriginal;
             Format = System.IO.Path.GetExtension(Name).TrimStart('.');
-            
-            // Create URLs
+
+            // Set URLs if ViewUrl is available
             if (!string.IsNullOrEmpty(ViewUrl))
             {
                 SecureUrl = new Uri(ViewUrl);
                 Url = SecureUrl;
             }
-
-            // Set creation time
-            base.CreatedAt = CreatedAt;
         }
     }
 
     /// <summary>
-    /// Appwrite deletion result that mimics Cloudinary's DeletionResult
+    /// Appwrite file deletion result
     /// </summary>
-    public class AppwriteDeletionResult : DeletionResult
+    public class AppwriteDeletionResult
     {
         /// <summary>
-        /// Whether the deletion was successful
+        /// Result status
         /// </summary>
-        [JsonPropertyName("success")]
-        public bool Success { get; set; }
+        [JsonPropertyName("result")]
+        public string Result { get; set; } = string.Empty;
 
         /// <summary>
-        /// File ID that was deleted
+        /// Whether deletion was successful
         /// </summary>
-        [JsonPropertyName("fileId")]
-        public string FileId { get; set; } = string.Empty;
+        public bool IsSuccess => Result == "success";
 
         /// <summary>
         /// Error message if deletion failed
         /// </summary>
         [JsonPropertyName("error")]
-        public new string? Error { get; set; }
-
-        /// <summary>
-        /// Initialize Appwrite result and map to Cloudinary-compatible fields
-        /// </summary>
-        public void MapToCloudinaryFields()
-        {
-            // Map success to Cloudinary's Result field
-            Result = Success ? "ok" : "not found";
-        }
+        public string? Error { get; set; }
     }
 }

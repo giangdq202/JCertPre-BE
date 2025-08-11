@@ -4,6 +4,8 @@ namespace JCertPreApplication.Domain.Entities
 {
     public class CourseInstructor
     {
+        public Guid Id { get; set; } // Primary key for each assignment record
+        
         public Guid CourseId { get; set; }
         public virtual Course Course { get; set; } = null!;
 

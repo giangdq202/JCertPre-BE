@@ -122,10 +122,12 @@ namespace JCertPreApplication.Persistence.Repositories
 
             var courseInstructor = new CourseInstructor
             {
+                Id = Guid.NewGuid(), // Generate new unique ID for this assignment
                 CourseId = courseId,
                 InstructorId = instructorId,
                 AssignedOn = DateTime.UtcNow,
-                IsActive = true
+                IsActive = true,
+                Notes = "Newly assigned"
             };
 
             await _context.Set<CourseInstructor>().AddAsync(courseInstructor);
@@ -144,7 +146,7 @@ namespace JCertPreApplication.Persistence.Repositories
 
             courseInstructor.IsActive = false;
             courseInstructor.LeftOn = DateTime.UtcNow;
-            courseInstructor.Notes = notes;
+            courseInstructor.Notes = notes ?? "Manually removed";
 
             return true;
         }

@@ -20,7 +20,6 @@
   <!-- These packages are needed for core functionality like DI, JWT, and Options pattern -->
   <ItemGroup>
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
-    <PackageReference Include="CloudinaryDotNet" Version="1.27.6" />
     <PackageReference Include="Livekit.Server.Sdk.Dotnet" Version="1.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.17" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
