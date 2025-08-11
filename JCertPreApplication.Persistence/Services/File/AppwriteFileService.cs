@@ -4,6 +4,7 @@ using Appwrite.Services;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.File;
 using JCertPreApplication.Application.Exceptions;
+using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Http;
@@ -336,6 +337,73 @@ namespace JCertPreApplication.Persistence.Services.File
                     ErrorMessage = "An unexpected error occurred during file deletion" 
                 };
             }
+        }
+
+        /// <summary>
+        /// Deletes a file from Appwrite using its URL by extracting the public ID
+        /// </summary>
+        public async Task<FileDeletionResult> DeleteFileByUrlAsync(string fileUrl, CancellationToken cancellationToken = default)
+        {
+            if (string.IsNullOrWhiteSpace(fileUrl))
+            {
+                _logger.LogWarning("File deletion by URL failed: fileUrl is null or empty");
+                return new FileDeletionResult
+                {
+                    Success = false,
+                    PublicId = string.Empty,
+                    ErrorMessage = "File URL is required"
+                };
+            }
+
+            // Validate URL format and project
+            if (!FileUrlParser.IsValidAppwriteUrl(fileUrl))
+            {
+                _logger.LogWarning("File deletion by URL failed: Invalid Appwrite URL format. URL: {FileUrl}", fileUrl);
+                return new FileDeletionResult
+                {
+                    Success = false,
+                    PublicId = string.Empty,
+                    ErrorMessage = "Invalid Appwrite file URL format"
+                };
+            }
+
+            if (!FileUrlParser.IsFromExpectedProject(fileUrl, _config.ProjectId))
+            {
+                _logger.LogWarning("File deletion by URL failed: URL does not belong to current project. URL: {FileUrl}, ExpectedProject: {ProjectId}", 
+                    fileUrl, _config.ProjectId);
+                return new FileDeletionResult
+                {
+                    Success = false,
+                    PublicId = string.Empty,
+                    ErrorMessage = "File URL does not belong to the current project"
+                };
+            }
+
+            // Extract public ID
+            var publicId = ExtractPublicIdFromUrl(fileUrl);
+            if (string.IsNullOrEmpty(publicId))
+            {
+                _logger.LogWarning("File deletion by URL failed: Could not extract public ID from URL. URL: {FileUrl}", fileUrl);
+                return new FileDeletionResult
+                {
+                    Success = false,
+                    PublicId = string.Empty,
+                    ErrorMessage = "Could not extract file ID from URL"
+                };
+            }
+
+            _logger.LogInformation("Extracted public ID {PublicId} from URL {FileUrl}", publicId, fileUrl);
+
+            // Use the existing DeleteFileAsync method
+            return await DeleteFileAsync(publicId, cancellationToken);
+        }
+
+        /// <summary>
+        /// Extracts the public ID from an Appwrite file URL
+        /// </summary>
+        public string? ExtractPublicIdFromUrl(string fileUrl)
+        {
+            return FileUrlParser.ExtractAppwriteFileId(fileUrl);
         }
 
         /// <summary>

@@ -161,6 +161,69 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
+        /// Deletes a file by its URL. Automatically extracts the public ID from the URL.
+        /// </summary>
+        /// <param name="request">Delete request containing the file URL.</param>
+        /// <returns>Deletion result.</returns>
+        [HttpDelete("delete/by-url")]
+        public async Task<IActionResult> DeleteFileByUrl([FromBody] DeleteResourceByUrlDto request)
+        {
+            var result = await _fileService.DeleteFileByUrlAsync(request.FileUrl);
+            
+            if (!result.Success)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = result.ErrorMessage ?? "File deletion by URL failed"
+                });
+            }
+            
+            return Ok(new
+            {
+                success = true,
+                message = "File deleted successfully",
+                data = new
+                {
+                    fileUrl = request.FileUrl,
+                    publicId = result.PublicId,
+                    result = result.Result
+                }
+            });
+        }
+
+        /// <summary>
+        /// Extracts the public ID from a file URL for testing purposes.
+        /// </summary>
+        /// <param name="request">Request containing the file URL.</param>
+        /// <returns>Extracted public ID.</returns>
+        [HttpPost("extract-public-id")]
+        public IActionResult ExtractPublicId([FromBody] ExtractPublicIdDto request)
+        {
+            var publicId = _fileService.ExtractPublicIdFromUrl(request.FileUrl);
+            
+            if (string.IsNullOrEmpty(publicId))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Could not extract public ID from the provided URL"
+                });
+            }
+            
+            return Ok(new
+            {
+                success = true,
+                message = "Public ID extracted successfully",
+                data = new
+                {
+                    fileUrl = request.FileUrl,
+                    publicId = publicId
+                }
+            });
+        }
+
+        /// <summary>
         /// Gets a paginated list of resources.
         /// </summary>
         /// <param name="maxResults">Maximum number of results per page (1-500). Default: 100.</param>

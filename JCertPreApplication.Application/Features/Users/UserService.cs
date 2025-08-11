@@ -187,11 +187,13 @@ namespace JCertPreApplication.Application.Features.Users
                 {
                     try
                     {
-                        // Extract file ID from existing avatar URL for deletion
-                        var oldFileId = ExtractPublicIdFromUrl(user.avatarUrl);
-                        if (!string.IsNullOrWhiteSpace(oldFileId))
+                        // Use the new DeleteFileByUrlAsync method which handles URL parsing internally
+                        var deleteResult = await _fileService.DeleteFileByUrlAsync(user.avatarUrl);
+                        
+                        if (!deleteResult.Success)
                         {
-                            await _fileService.DeleteFileAsync(oldFileId);
+                            // Log warning but don't fail the update if old image deletion fails
+                            System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {deleteResult.ErrorMessage}");
                         }
                     }
                     catch (Exception ex)
@@ -200,8 +202,6 @@ namespace JCertPreApplication.Application.Features.Users
                         // This could happen if the image was already deleted or doesn't exist
                         System.Diagnostics.Debug.WriteLine($"Warning: Failed to delete old avatar: {ex.Message}");
                     }
-                    // Clear the old URL regardless of source
-                    user.avatarUrl = null;
                 }
 
                 // Create a custom FormFile with userId as filename
@@ -276,24 +276,6 @@ namespace JCertPreApplication.Application.Features.Users
             return new CustomFormFile(originalFile, newFileName);
         }
 
-        private static string? ExtractPublicIdFromUrl(string? url)
-        {
-            if (string.IsNullOrWhiteSpace(url)) return null;
-
-            try
-            {
-                var uri = new Uri(url);
-                // Extract file ID from the URL path
-                var fileName = Path.GetFileNameWithoutExtension(uri.AbsolutePath);
-                return fileName;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-// Removed unused methods IsImageFile and IsVideoFile
         #endregion
     }
 
