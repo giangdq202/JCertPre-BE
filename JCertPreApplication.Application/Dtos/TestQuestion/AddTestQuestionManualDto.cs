@@ -1,7 +1,14 @@
 using System;
+using System.ComponentModel.DataAnnotations;
+using JCertPreApplication.Application.Dtos;
 
 public class AddTestQuestionManualDto
 {
+    [Required(ErrorMessage = "TestId is required.")]
+    [NotDefaultGuid(ErrorMessage = "TestId must be a valid GUID.")]
     public Guid TestId { get; set; }
+
+    [Required(ErrorMessage = "QuestionId is required.")]
+    [NotDefaultGuid(ErrorMessage = "QuestionId must be a valid GUID.")]
     public Guid QuestionId { get; set; }
 }

@@ -1,6 +1,16 @@
-namespace JCertPreApplication.Application.Dtos.AttemptAnswer;
-public class UpdateAttemptAnswerDto
+using System.ComponentModel.DataAnnotations;
+using JCertPreApplication.Application.Dtos;
+
+namespace JCertPreApplication.Application.Dtos.AttemptAnswer
 {
-    public Guid AnswerId { get; set; }
-    public Guid ChoiceId { get; set; }
+    public class UpdateAttemptAnswerDto
+    {
+        [Required(ErrorMessage = "AnswerId is required.")]
+        [NotDefaultGuid(ErrorMessage = "AnswerId must be a valid GUID.")]
+        public Guid AnswerId { get; set; }
+
+        [Required(ErrorMessage = "ChoiceId is required.")]
+        [NotDefaultGuid(ErrorMessage = "ChoiceId must be a valid GUID.")]
+        public Guid ChoiceId { get; set; }
+    }
 }

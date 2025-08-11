@@ -10,15 +10,15 @@ namespace JCertPreApplication.Domain.Enums
     public enum ContentName
     {
         
-        [Description("chữ hán")]
+        [Description("Chữ Hán")]
         Kanji,
-        [Description("từ vựng")]
+        [Description("Từ Vựng")]
         Vocabulary,
-        [Description("ngữ pháp")]
+        [Description("Ngữ Pháp")]
         Grammar,
-        [Description("đọc hiểu")]
+        [Description("Đọc Hiểu")]
         Reading,
-        [Description("nghe hiểu")]
+        [Description("Nghe Hiểu")]
         Listening
     }
 }
