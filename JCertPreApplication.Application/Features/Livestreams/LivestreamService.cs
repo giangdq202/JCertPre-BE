@@ -45,6 +45,16 @@ namespace JCertPreApplication.Application.Features.Livestreams
                 if (createDto.ScheduledDateTime <= DateTime.UtcNow)
                     throw ApiException.BadRequest("INVALID_SCHEDULE_TIME", "Scheduled time must be in the future");
 
+                // Validate livestream is scheduled within course duration
+                if (createDto.ScheduledDateTime.Date < course.startDate.Date)
+                    throw ApiException.BadRequest("LIVESTREAM_BEFORE_COURSE", 
+                        $"Livestream cannot be scheduled before course start date ({course.startDate:dd/MM/yyyy})");
+
+                var livestreamEndTime = createDto.ScheduledDateTime.AddMinutes(createDto.DurationMinutes);
+                if (livestreamEndTime.Date > course.endDate.Date)
+                    throw ApiException.BadRequest("LIVESTREAM_AFTER_COURSE", 
+                        $"Livestream cannot end after course end date ({course.endDate:dd/MM/yyyy})");
+
                 // Check for schedule conflicts
                 var hasConflict = await _livestreamRepository.HasScheduleConflictAsync(
                     createDto.CourseId, 
@@ -117,6 +127,21 @@ namespace JCertPreApplication.Application.Features.Livestreams
                     if (updateDto.ScheduledDateTime.Value <= DateTime.UtcNow)
                         throw ApiException.BadRequest("INVALID_SCHEDULE_TIME", "Scheduled time must be in the future");
 
+                    // Get course info to validate schedule within course duration
+                    var course = await _courseRepository.GetByIdAsync(livestream.courseId);
+                    if (course != null)
+                    {
+                        // Validate livestream is scheduled within course duration
+                        if (updateDto.ScheduledDateTime.Value.Date < course.startDate.Date)
+                            throw ApiException.BadRequest("LIVESTREAM_BEFORE_COURSE", 
+                                $"Livestream cannot be scheduled before course start date ({course.startDate:dd/MM/yyyy})");
+
+                        var livestreamEndTime = updateDto.ScheduledDateTime.Value.AddMinutes(updateDto.DurationMinutes ?? livestream.durationMinutes);
+                        if (livestreamEndTime.Date > course.endDate.Date)
+                            throw ApiException.BadRequest("LIVESTREAM_AFTER_COURSE", 
+                                $"Livestream cannot end after course end date ({course.endDate:dd/MM/yyyy})");
+                    }
+
                     // Check for conflicts when updating schedule
                     var hasConflict = await _livestreamRepository.HasScheduleConflictAsync(
                         livestream.courseId,
@@ -131,7 +156,19 @@ namespace JCertPreApplication.Application.Features.Livestreams
                 }
 
                 if (updateDto.DurationMinutes.HasValue)
+                {
+                    // Get course info to validate duration doesn't extend beyond course end date
+                    var course = await _courseRepository.GetByIdAsync(livestream.courseId);
+                    if (course != null)
+                    {
+                        var livestreamEndTime = livestream.scheduledDateTime.AddMinutes(updateDto.DurationMinutes.Value);
+                        if (livestreamEndTime.Date > course.endDate.Date)
+                            throw ApiException.BadRequest("LIVESTREAM_AFTER_COURSE", 
+                                $"Livestream duration cannot extend beyond course end date ({course.endDate:dd/MM/yyyy})");
+                    }
+                    
                     livestream.durationMinutes = updateDto.DurationMinutes.Value;
+                }
 
                 await _livestreamRepository.UpdateAsync(livestream);
                 await _livestreamRepository.SaveChangesAsync();
