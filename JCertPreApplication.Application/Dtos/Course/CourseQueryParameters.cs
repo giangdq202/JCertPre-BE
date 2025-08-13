@@ -54,12 +54,12 @@ namespace JCertPreApplication.Application.Dtos.Course
         public CourseType? CourseType { get; set; }
 
         /// <summary>
-        /// Filter courses by start date (UTC). Only courses with startDate >= this value will be returned.
+        /// Filter courses by start date (UTC). Only courses with startDate greater than or equal to this value will be returned.
         /// </summary>
         public DateTime? StartDate { get; set; }
 
         /// <summary>
-        /// Filter courses by end date (UTC). Only courses with endDate <= this value will be returned.
+        /// Filter courses by end date (UTC). Only courses with endDate less than or equal to this value will be returned.
         /// </summary>
         public DateTime? EndDate { get; set; }
         
