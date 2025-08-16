@@ -12,21 +12,25 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.ToTable("feedback");
             builder.HasKey(f => f.feedbackId);
 
-            // Configure required properties
+            // Required properties
             builder.Property(f => f.courseId).IsRequired();
             builder.Property(f => f.userId).IsRequired();
             builder.Property(f => f.rating).IsRequired();
-            builder.Property(f => f.comment).IsRequired();
             builder.Property(f => f.createdAt).IsRequired();
 
-            // Configure foreign key relationships
+            // Nullable property
+            builder.Property(f => f.comment).IsRequired(false);
+
+            // Foreign key relationships
             builder.HasOne(f => f.Course)
                    .WithMany(c => c.Feedbacks)
-                   .HasForeignKey(f => f.courseId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(f => f.courseId)
+                   .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(f => f.User)
-                   .WithMany(c => c.Feedbacks)
-                   .HasForeignKey(f => f.userId).OnDelete(DeleteBehavior.NoAction);
+                   .WithMany(u => u.Feedbacks)
+                   .HasForeignKey(f => f.userId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

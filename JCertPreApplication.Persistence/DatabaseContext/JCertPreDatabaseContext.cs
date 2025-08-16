@@ -29,7 +29,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<QuestionAttachment> QuestionAttachments { get; set; }
-        public DbSet<Report> Reports { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<StudentProfile> StudentProfiles { get; set; }
         public DbSet<StudyPlan> StudyPlans { get; set; }
@@ -49,7 +48,6 @@ namespace JCertPreApplication.Persistence.DatabaseContext
         {
             base.OnModelCreating(modelBuilder);
             // Additional model configurations can be done here
-            modelBuilder.ApplyConfiguration(new ReportConfiguration());
             modelBuilder.ApplyConfiguration(new AttemptAnswerConfiguration());
             modelBuilder.ApplyConfiguration(new ConversationConfiguration());
             modelBuilder.ApplyConfiguration(new CourseConfiguration());

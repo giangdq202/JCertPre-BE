@@ -8,6 +8,7 @@ using JCertPreApplication.Application.Features.Conversation;
 using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Application.Features.Documents;
 using JCertPreApplication.Application.Features.Enrollment;
+using JCertPreApplication.Application.Features.Feedbacks;
 using JCertPreApplication.Application.Features.InstructorProfile;
 using JCertPreApplication.Application.Features.LessonProgresses;
 using JCertPreApplication.Application.Features.Lessons;
@@ -21,6 +22,7 @@ using JCertPreApplication.Application.Features.TestAttempts;
 using JCertPreApplication.Application.Features.Tests;
 using JCertPreApplication.Application.Features.TestTemplateConfigs;
 using JCertPreApplication.Application.Features.Users;
+using JCertPreApplication.Domain.Entities;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace JCertPreApplication.Application
@@ -56,6 +58,7 @@ namespace JCertPreApplication.Application
             services.AddScoped<ILivestreamService, LivestreamService>();
             services.AddScoped<ILessonProgressService, LessonProgressService>();
             services.AddScoped<IPaymentService, PaymentService>();
+            services.AddScoped<IFeedbackService, FeedbackService>();
 
             // Add AutoMapper
             services.AddAutoMapper(typeof(DependencyInjection).Assembly);
