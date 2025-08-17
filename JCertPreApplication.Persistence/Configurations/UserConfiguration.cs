@@ -54,16 +54,6 @@ namespace JCertPreApplication.Persistence.Configurations
                    .WithMany(cp => cp.Participants)
                    .UsingEntity(j => j.ToTable("conversation_participant"));
 
-            builder.HasMany(u => u.StudentReports)
-                   .WithOne(sr => sr.StudentUser)
-                   .HasForeignKey(sr => sr.reporterStudentId)
-                   .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasMany(u => u.InstructorReports)
-                   .WithOne(sr => sr.InstructorUser)
-                   .HasForeignKey(sr => sr.reportedInstructorId)
-                   .OnDelete(DeleteBehavior.NoAction);
-
             builder.HasMany(u => u.Messages)
                    .WithOne(m => m.User)
                    .HasForeignKey(m => m.senderId)
