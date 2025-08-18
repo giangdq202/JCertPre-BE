@@ -119,5 +119,36 @@ public async Task<IActionResult> GetPagingActiveWithDetails(
     var dto = await _questionService.GetPaginatedActiveWithDetailsAsync(search, pageIndex, pageSize, contentName, level, subContentName, difficulty);
     return Ok(dto);
 }
+
+[HttpPost("import")]
+[Consumes("multipart/form-data")]
+public async Task<IActionResult> ImportQuestions([FromForm] ImportQuestionsRequestDto dto)
+{
+    if (!ModelState.IsValid)
+        return BadRequest(ModelState);
+
+    var result = await _questionService.ImportQuestionsAsync(dto);
+
+    if (result.FailedCount > 0 && !string.IsNullOrEmpty(result.FailedFileUrl))
+    {
+        var fileBytes = await System.IO.File.ReadAllBytesAsync(Path.Combine(Path.GetTempPath(), result.FailedFileUrl));
+        System.IO.File.Delete(Path.Combine(Path.GetTempPath(), result.FailedFileUrl));
+
+        // Add summary info to response headers
+        Response.Headers.Append("X-Total-Count", result.TotalCount.ToString());
+        Response.Headers.Append("X-Success-Count", result.SuccessCount.ToString());
+        Response.Headers.Append("X-Failed-Count", result.FailedCount.ToString());
+
+        return File(fileBytes, "application/json", "import_failed.json");
+    }
+
+    // No failed questions, return summary as JSON
+    return Ok(new
+    {
+        totalCount = result.TotalCount,
+        successCount = result.SuccessCount,
+        failedCount = result.FailedCount
+    });
+}
 }
 }

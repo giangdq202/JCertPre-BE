@@ -3,6 +3,7 @@ using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using System;
+using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Questions
 {
@@ -31,5 +32,6 @@ namespace JCertPreApplication.Application.Features.Questions
             QuestionDifficulty? difficulty = null
 );
         Task<QuestionForTestDto?> GetByIdForTestAsync(Guid id);
+        Task<ImportQuestionsResultDto> ImportQuestionsAsync(ImportQuestionsRequestDto dto);
     }
 }

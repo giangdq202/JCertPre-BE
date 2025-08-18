@@ -1,0 +1,70 @@
+[
+  {
+    "Content": "What is the capital of France?",
+    "Explanation": "Paris is the capital city.",
+    "Points": 5,
+    "Difficulty": 1,
+    "IsActive": true,
+    "ContentName": 0, 
+    "Level": 0,
+    "SubContentName": 0, 
+    "Choices": [
+      {
+        "Content": "Paris",
+        "IsCorrect": true
+      },
+      {
+        "Content": "London",
+        "IsCorrect": false
+      },
+      {
+        "Content": "Berlin",
+        "IsCorrect": false
+      }
+    ]
+  },
+  {
+    "Content": "Which planet is known as the Red Planet?",
+    "Explanation": "Mars is called the Red Planet.",
+    "Points": 5,
+    "Difficulty": 2,
+    "IsActive": true,
+    "ContentName": 0,
+    "Level": 0,
+    "SubContentName": 0,
+    "Choices": [
+      {
+        "Content": "Mars",
+        "IsCorrect": true
+      },
+      {
+        "Content": "Venus",
+        "IsCorrect": false
+      },
+      {
+        "Content": "Jupiter",
+        "IsCorrect": false
+      }
+    ]
+  },
+  {
+    "Content": "This will fail because it's Listening type.",
+    "Explanation": "Listening import is not supported.",
+    "Points": 5,
+    "Difficulty": 1,
+    "IsActive": true,
+    "ContentName": 2, 
+    "Level": 0,
+    "SubContentName": 0,
+    "Choices": [
+      {
+        "Content": "A",
+        "IsCorrect": true
+      },
+      {
+        "Content": "B",
+        "IsCorrect": false
+      }
+    ]
+  }
+]
