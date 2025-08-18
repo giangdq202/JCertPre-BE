@@ -7,6 +7,8 @@ using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using System.Linq.Expressions;
+using System.Text.Json;
+using System.IO;
 
 namespace JCertPreApplication.Application.Features.Questions
 {
@@ -19,17 +21,20 @@ namespace JCertPreApplication.Application.Features.Questions
         private readonly IQuestionRepository _questionRepository;
         private readonly ISubContentRepository _subContentRepository;
         private readonly IQuestionAttachmentRepository _questionAttachmentRepository;
+        private readonly IChoiceRepository _choiceRepository;
         private readonly IFileService _fileService;
 
         public QuestionService(
             IQuestionRepository questionRepository,
             ISubContentRepository subContentRepository,
             IQuestionAttachmentRepository questionAttachmentRepository,
+            IChoiceRepository choiceRepository,
             IFileService fileService)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
             _subContentRepository = subContentRepository ?? throw new ArgumentNullException(nameof(subContentRepository));
             _questionAttachmentRepository = questionAttachmentRepository ?? throw new ArgumentNullException(nameof(questionAttachmentRepository));
+            _choiceRepository = choiceRepository ?? throw new ArgumentNullException(nameof(choiceRepository));
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
         }
 
@@ -433,6 +438,130 @@ namespace JCertPreApplication.Application.Features.Questions
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("QUESTION_SERVICE_ERROR", $"An error occurred while retrieving active paginated questions: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Imports questions from a JSON file. Supports batch import with error reporting.
+        /// </summary>
+        public async Task<ImportQuestionsResultDto> ImportQuestionsAsync(ImportQuestionsRequestDto dto)
+        {
+            var result = new ImportQuestionsResultDto();
+            var failedList = new List<ImportQuestionErrorDto>();
+            int success = 0, failed = 0, total = 0;
+
+            try
+            {
+                if (dto.File == null || dto.File.Length == 0)
+                    throw ApiException.BadRequest("IMPORT_FILE_EMPTY", "No file uploaded.");
+
+                List<ImportQuestionJsonDto>? questions;
+                using (var stream = dto.File.OpenReadStream())
+                {
+                    questions = await JsonSerializer.DeserializeAsync<List<ImportQuestionJsonDto>>(stream, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+
+                if (questions == null)
+                    throw ApiException.BadRequest("IMPORT_FILE_INVALID", "File content is invalid or empty.");
+
+                total = questions.Count;
+
+                foreach (var q in questions)
+                {
+                    try
+                    {
+                        // Skip Listening questions
+                        if (q.ContentName == ContentName.Listening)
+                            throw new Exception("Importing Listening questions is not supported.");
+
+                        // Validate required fields
+                        if (string.IsNullOrWhiteSpace(q.Content) || q.Content.Length < 10)
+                            throw new Exception("Question content is required and must be at least 10 characters.");
+                        if (q.Points < 1 || q.Points > 100)
+                            throw new Exception("Points must be between 1 and 100.");
+                        if (q.Choices == null || q.Choices.Count < 2)
+                            throw new Exception("At least 2 choices are required.");
+                        if (!q.Choices.Any(c => c.IsCorrect))
+                            throw new Exception("At least one correct choice is required.");
+
+                        // Check for duplicate question
+                        var isExisted = await _questionRepository.AnyAsync(x => x.questionText == q.Content);
+                        if (isExisted)
+                            throw new Exception("A question with the same text already exists.");
+
+                        // Find SubContent
+                        var subContent = await _subContentRepository.GetFirstOrDefaultAsync(
+                            s => s.ContentName == q.ContentName
+                              && s.Level == q.Level
+                              && s.SubContentName == q.SubContentName
+                        );
+                        if (subContent == null)
+                            throw new Exception("SubContent does not exist for the provided ContentName, Level, and SubContentName.");
+
+                        // Create Question
+                        var question = new Question
+                        {
+                            questionId = Guid.NewGuid(),
+                            questionText = q.Content,
+                            explanation = q.Explanation ?? string.Empty,
+                            questionType = "multiple-choice",
+                            points = q.Points,
+                            difficulty = q.Difficulty,
+                            SubContentId = subContent.SubContentId,
+                            isActive = q.IsActive
+                        };
+                        await _questionRepository.InsertAsync(question);
+
+                        // Create Choices
+                        foreach (var c in q.Choices)
+                        {
+                            var choice = new Choice
+                            {
+                                choiceId = Guid.NewGuid(),
+                                questionId = question.questionId,
+                                choiceText = c.Content,
+                                isCorrect = c.IsCorrect
+                            };
+                            await _choiceRepository.InsertAsync(choice);
+                        }
+
+                        await _questionRepository.SaveChangesAsync();
+                        success++;
+                    }
+                    catch (Exception ex)
+                    {
+                        failed++;
+                        failedList.Add(new ImportQuestionErrorDto
+                        {
+                            QuestionText = q.Content,
+                            Error = ex.Message
+                        });
+                    }
+                }
+
+                // Write failedList to a file and return its path
+                if (failedList.Count > 0)
+                {
+                    var failedJson = JsonSerializer.Serialize(failedList, new JsonSerializerOptions { WriteIndented = true });
+                    var fileName = $"import_failed_{DateTime.UtcNow:yyyyMMddHHmmss}.json";
+                    var filePath = Path.Combine(Path.GetTempPath(), fileName);
+                    await File.WriteAllTextAsync(filePath, failedJson);
+                    result.FailedFileUrl = fileName;
+                }
+
+                result.TotalCount = total;
+                result.SuccessCount = success;
+                result.FailedCount = failed;
+                result.FailedQuestions = failedList;
+                return result;
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("IMPORT_QUESTIONS_ERROR", $"Error importing questions: {ex.Message}");
             }
         }
 
