@@ -608,10 +608,11 @@ namespace JCertPreApplication.Application.Features.Questions
         {
             try
             {
-                // 1. Generate question using AI (pass string parameters only)
+                // 1. Generate question using AI (pass string parameters including description)
                 var aiResult = await _aiIntegration.GenerateQuestionAsync(
                     requestDto.Level,
-                    requestDto.ContentName);
+                    requestDto.ContentName,
+                    requestDto.Description);
 
                 if (!aiResult.IsValid || aiResult.Choices.Count != 4)
                     throw ApiException.InternalServerError("AI_GENERATION_FAILED", 

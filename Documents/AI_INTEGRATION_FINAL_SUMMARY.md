@@ -1,6 +1,138 @@
 # 🎯 AI Integration - Final Summary
 
-## 📋 **Giải thích vấn đề GeminiConfiguration:**
+## 🆕 **NEW: Added Description Field for Question Types**
+
+### **✅ Updated Request DTO:**
+```csharp
+public class GenerateQuestionRequestDto : IValidatableObject
+{
+    [Required] public string Level { get; set; }        // N5, N4, N3, N2, N1
+    [Required] public string ContentName { get; set; }  // Kanji, Vocabulary, Grammar, Reading  
+    [Required] public string Description { get; set; }  // NEW: Question type description
+}
+```
+
+### **📋 Available Description Values:**
+```
+# Kanji (Chữ Hán):
+- "Đọc chữ Hán"
+- "Nhớ chữ Hán"
+
+# Vocabulary (Từ vựng):
+- "Chọn từ phù hợp với câu"
+- "Tìm câu có cách diễn đạt giống"
+
+# Grammar (Ngữ pháp):
+- "Chọn ngữ pháp phù hợp với câu"
+- "Sắp xếp câu"
+- "Tìm đáp án đúng để hoàn thành đoạn văn"
+
+# Reading (Đọc hiểu):
+- "Đoạn văn ngắn"
+- "Trung văn"
+- "Tìm kiếm thông tin"
+
+# Listening (Nghe hiểu):
+- "Hiểu đề bài"
+- "Hiểu điểm chính"
+- "Diễn đạt bằng lời nói"
+- "Phản hồi tức thời"
+```
+
+## 🎯 **Enhanced AI Prompt:**
+
+### **New Prompt Structure:**
+```
+**Context:**
+- JLPT Level: "N3"
+- Content Type: "Grammar"  
+- Question Type: "Chọn ngữ pháp phù hợp với câu"  ← NEW!
+
+**Question Type Guidelines:**  ← NEW SECTION!
+- Create a sentence with a grammar point to test
+- Provide grammar pattern options
+- Test specific grammar structures for the JLPT level
+- Include common grammar mistakes as wrong options
+```
+
+### **Benefits:**
+- 🎯 **More Specific Questions**: AI generates questions matching exact question types
+- 📚 **Better JLPT Alignment**: Questions follow official JLPT question patterns
+- 🔧 **Improved Accuracy**: Specific guidelines for each question type
+- 📊 **Consistent Quality**: Standardized question formats
+
+## 🛠️ **Usage Examples:**
+
+### **Example 1: Grammar Question**
+```bash
+POST /api/questions/generate-ai
+{
+  "level": "N3",
+  "contentName": "Grammar",
+  "description": "Chọn ngữ pháp phù hợp với câu"
+}
+```
+
+**Expected Response:**
+```json
+{
+  "questionText": "次の文の（　）に入る最も適切な語を選びなさい。\n彼は毎日一生懸命（　）勉強している。",
+  "choices": [
+    { "choiceText": "に", "isCorrect": true },
+    { "choiceText": "で", "isCorrect": false },
+    { "choiceText": "を", "isCorrect": false },
+    { "choiceText": "が", "isCorrect": false }
+  ]
+}
+```
+
+### **Example 2: Vocabulary Question**
+```bash
+POST /api/questions/generate-ai
+{
+  "level": "N4",
+  "contentName": "Vocabulary", 
+  "description": "Chọn từ phù hợp với câu"
+}
+```
+
+**Expected Response:**
+```json
+{
+  "questionText": "次の文の（　）に入る最も適切な語を選びなさい。\n今日は天気が（　）、散歩に行きましょう。",
+  "choices": [
+    { "choiceText": "いい", "isCorrect": true },
+    { "choiceText": "悪い", "isCorrect": false },
+    { "choiceText": "高い", "isCorrect": false },
+    { "choiceText": "低い", "isCorrect": false }
+  ]
+}
+```
+
+### **Example 3: Kanji Question**
+```bash
+POST /api/questions/generate-ai
+{
+  "level": "N5",
+  "contentName": "Kanji",
+  "description": "Đọc chữ Hán"
+}
+```
+
+**Expected Response:**
+```json
+{
+  "questionText": "次の漢字の読み方として正しいものを選びなさい。\n学校",
+  "choices": [
+    { "choiceText": "がっこう", "isCorrect": true },
+    { "choiceText": "がくこう", "isCorrect": false },
+    { "choiceText": "がくしょう", "isCorrect": false },
+    { "choiceText": "がっしょう", "isCorrect": false }
+  ]
+}
+```
+
+## 📋 **Previous Configuration Issues (FIXED):**
 
 ### 🔍 **1. Lý do không register ở Program.cs (trước đây):**
 
@@ -41,67 +173,6 @@ builder.Services.AddValidatedConfiguration<GeminiConfiguration>(config);
 - 📊 **Debug Log**: Hiện trong LogEnvironmentVariables khi `Api__ShowConfigurationStatus=true`
 - 🧹 **Consistency**: Tất cả config đều dùng pattern giống nhau
 
-## 📊 **LogEnvironmentVariables Method Explained:**
-
-### **Mục đích:**
-```csharp
-static void LogEnvironmentVariables(IConfiguration config)
-{
-    // Chỉ log khi Api__ShowConfigurationStatus=true
-    // Group theo section (e.g., "Jwt", "GeminiAI", "Api")  
-    // Hiển thị GIÁ TRỊ THỰC từ environment variables
-    // Dùng để debug configuration issues
-}
-```
-
-### **Output Example:**
-```
-=== ENVIRONMENT VARIABLES DEBUG ===
-
-[Api Configuration]
-Environment: Development
-Urls: http://localhost:5001
-ShowConfigurationStatus: true
-
-[GeminiAI Configuration]  ← NÀY GIỜ MỚI HIỆN!
-ApiKey: your-gemini-api-key-here
-BaseUrl: https://generativelanguage.googleapis.com/v1beta
-Model: gemini-2.5-flash
-RateLimitRPM: 10
-TimeoutSeconds: 30
-MaxRetries: 3
-
-[Jwt Configuration]
-SecretKey: your-super-secret-jwt-key...
-Issuer: JCertPre-API
-Audience: JCertPre-Client
-ExpiryInMinutes: 60
-```
-
-## 🎯 **API Response - Ultra Simplified:**
-
-### **Request:**
-```bash
-POST /api/questions/generate-ai
-{
-  "level": "N3",
-  "contentName": "Grammar"
-}
-```
-
-### **Response:**
-```json
-{
-  "questionText": "次の文の空欄に入る最も適切な語を選びなさい。",
-  "choices": [
-    { "choiceText": "一生懸命に", "isCorrect": true },
-    { "choiceText": "一生懸命で", "isCorrect": false },
-    { "choiceText": "一生懸命な", "isCorrect": false },
-    { "choiceText": "一生懸命を", "isCorrect": false }
-  ]
-}
-```
-
 ## 🛠️ **How to Enable Configuration Debug:**
 
 ### **1. Set environment variable:**
@@ -125,10 +196,11 @@ ApiKey: your-gemini-api-key-here
 ```
 
 ## 🎉 **Final Status:**
-- ✅ **Build**: 0 errors, 9 warnings (pre-existing)
+- ✅ **Build**: 0 errors, 19 warnings (pre-existing)
 - ✅ **Configuration**: Proper validation + debug logging
-- ✅ **API**: Ultra-clean response format
-- ✅ **Documentation**: Clean project structure
+- ✅ **API**: Enhanced with description field for better question targeting
+- ✅ **AI Prompts**: Specific guidelines for each question type
+- ✅ **Documentation**: Complete usage examples
 
 ---
-**Perfect! Configuration được manage đúng cách, API response siêu clean! 🎯✨**
+**Perfect! API giờ có thể tạo câu hỏi theo đúng loại và format mong muốn! 🎯✨**

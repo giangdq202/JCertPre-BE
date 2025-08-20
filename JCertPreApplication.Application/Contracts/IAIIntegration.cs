@@ -10,8 +10,9 @@ namespace JCertPreApplication.Application.Contracts
         /// </summary>
         /// <param name="level">JLPT level as string (N5, N4, N3, N2, N1)</param>
         /// <param name="contentName">Content type as string (Kanji, Vocabulary, Grammar, Reading)</param>
+        /// <param name="description">Question type description (e.g., "Đọc chữ Hán", "Chọn từ phù hợp với câu")</param>
         /// <returns>Generated question data with choices</returns>
-        Task<AIGeneratedQuestionResult> GenerateQuestionAsync(string level, string contentName);
+        Task<AIGeneratedQuestionResult> GenerateQuestionAsync(string level, string contentName, string description);
     }
 
     /// <summary>

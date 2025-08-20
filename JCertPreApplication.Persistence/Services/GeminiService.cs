@@ -32,7 +32,7 @@ namespace JCertPreApplication.Persistence.Services
             _httpClient.DefaultRequestHeaders.Add("x-goog-api-key", _config.ApiKey);
         }
 
-        public async Task<AIGeneratedQuestionResult> GenerateQuestionAsync(string level, string contentName)
+        public async Task<AIGeneratedQuestionResult> GenerateQuestionAsync(string level, string contentName, string description)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace JCertPreApplication.Persistence.Services
                 await _rateLimitSemaphore.WaitAsync();
                 try
                 {
-                    var prompt = BuildPrompt(level, contentName);
+                    var prompt = BuildPrompt(level, contentName, description);
                     var response = await CallGeminiApiAsync(prompt);
                     return ProcessGeminiResponse(response);
                 }
@@ -63,7 +63,7 @@ namespace JCertPreApplication.Persistence.Services
             }
         }
 
-        private string BuildPrompt(string level, string contentName)
+        private string BuildPrompt(string level, string contentName, string description)
         {
             return $@"
 You are an expert in Japanese language education and JLPT (Japanese Language Proficiency Test) content creation.
@@ -72,9 +72,11 @@ Your task is to generate a high-quality multiple-choice question based on the fo
 **Context:**
 - JLPT Level: ""{level}"" (N5, N4, N3, N2, or N1)
 - Content Type: ""{contentName}""
+- Question Type: ""{description}""
 
 **Requirements:**
 - The question must be appropriate for JLPT {level} level.
+- The question must follow the type: ""{description}""
 - The question must have exactly 4 choices.
 - Exactly 1 of the choices must be correct (single correct answer format).
 - All content must be accurate according to standard Japanese grammar and usage.
@@ -82,6 +84,9 @@ Your task is to generate a high-quality multiple-choice question based on the fo
 
 **Content-Specific Guidelines:**
 {GetContentSpecificGuidelines(contentName)}
+
+**Question Type Guidelines:**
+{GetQuestionTypeGuidelines(description)}
 
 **Output Format:**
 Please return ONLY a single, raw JSON object with the following structure. Do not include any explanations, comments, or markdown formatting:
@@ -136,6 +141,84 @@ Please return ONLY a single, raw JSON object with the following structure. Do no
 - Test reading skills appropriate for the level",
                 
                 _ => "Follow standard JLPT question format."
+            };
+        }
+
+        private string GetQuestionTypeGuidelines(string description)
+        {
+            return description switch
+            {
+                "Đọc chữ Hán" => @"- Create a question testing kanji reading (pronunciation)
+- Show a kanji or compound and ask for the correct reading
+- Include hiragana options for different readings
+- Focus on common readings for the JLPT level",
+
+                "Nhớ chữ Hán" => @"- Create a question testing kanji meaning or recognition
+- Show a meaning/context and ask for the correct kanji
+- Include similar-looking kanji as distractors
+- Test kanji knowledge appropriate for the level",
+
+                "Chọn từ phù hợp với câu" => @"- Create a sentence with a blank to fill in
+- Provide vocabulary options that fit grammatically but only one fits contextually
+- Test understanding of word usage and meaning
+- Include similar words as distractors",
+
+                "Tìm câu có cách diễn đạt giống" => @"- Present a sentence and ask for the equivalent expression
+- Test understanding of synonymous expressions
+- Include options with similar grammar but different meanings
+- Focus on natural Japanese expressions",
+
+                "Chọn ngữ pháp phù hợp với câu" => @"- Create a sentence with a grammar point to test
+- Provide grammar pattern options
+- Test specific grammar structures for the JLPT level
+- Include common grammar mistakes as wrong options",
+
+                "Sắp xếp câu" => @"- Provide scrambled sentence parts to arrange
+- Test understanding of Japanese word order and sentence structure
+- Include grammar particles in the arrangement
+- Focus on natural sentence flow",
+
+                "Tìm đáp án đúng để hoàn thành đoạn văn" => @"- Create a short passage with missing parts
+- Test reading comprehension and context understanding
+- Provide options that fit grammatically but only one fits contextually
+- Test coherence and flow of ideas",
+
+                "Đoạn văn ngắn" => @"- Create a short passage (2-3 sentences) with a comprehension question
+- Ask about main ideas, details, or specific information
+- Test basic reading comprehension skills
+- Include questions about explicit information",
+
+                "Trung văn" => @"- Create a medium-length passage with comprehension questions
+- Test deeper understanding of content and context
+- Ask about inference, main ideas, or author's intent
+- Include more complex vocabulary and grammar",
+
+                "Tìm kiếm thông tin" => @"- Create a passage where students need to locate specific information
+- Test ability to scan and find details quickly
+- Ask questions that require identifying specific facts or data
+- Focus on information retrieval skills",
+
+                "Hiểu đề bài" => @"- Create a listening comprehension scenario about understanding instructions
+- Test ability to comprehend task requirements or directions
+- Include questions about what action should be taken
+- Focus on practical listening situations",
+
+                "Hiểu điểm chính" => @"- Create a listening scenario testing main idea comprehension
+- Ask about the central theme or key message
+- Test ability to distinguish main points from details
+- Focus on overall understanding of content",
+
+                "Diễn đạt bằng lời nói" => @"- Create a scenario testing understanding of spoken expressions
+- Test comprehension of natural speech patterns
+- Include questions about tone, intention, or implied meaning
+- Focus on conversational Japanese",
+
+                "Phản hồi tức thời" => @"- Create a dialogue scenario requiring immediate response comprehension
+- Test understanding of quick exchanges or reactions
+- Include questions about appropriate responses
+- Focus on real-time communication skills",
+
+                _ => "Follow the general question format appropriate for the content type and JLPT level."
             };
         }
 
