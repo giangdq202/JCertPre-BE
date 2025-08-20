@@ -8,24 +8,35 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<Choice> builder)
         {
-            // Configure primary key
             builder.ToTable("choice");
             builder.HasKey(c => c.choiceId);
 
-            // Configure required properties
-            builder.Property(c => c.questionId).IsRequired();
-            builder.Property(c => c.choiceText).IsRequired();
-            builder.Property(c => c.isCorrect).IsRequired();
+            // Properties
+            builder.Property(c => c.questionId)
+                .IsRequired();
 
-            // Configure foreign key relationship
+            builder.Property(c => c.choiceText)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            builder.Property(c => c.isCorrect)
+                .IsRequired();
+
+            // Relationships
             builder.HasOne(c => c.Question)
                    .WithMany(q => q.Choices)
-                   .HasForeignKey(c => c.questionId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(c => c.questionId)
+                   .OnDelete(DeleteBehavior.NoAction);
 
-            // Configure navigation property
             builder.HasMany(c => c.AttemptAnswers)
                    .WithOne(aa => aa.Choice)
-                   .HasForeignKey(aa => aa.choiceId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(aa => aa.choiceId)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            // Indexes for performance
+            builder.HasIndex(c => c.questionId); // For fast lookup by question
+            builder.HasIndex(c => c.isCorrect); // For correctness checks
+            builder.HasIndex(c => new { c.questionId, c.isCorrect }); // For fast correct/incorrect choice lookup per question
         }
     }
 }

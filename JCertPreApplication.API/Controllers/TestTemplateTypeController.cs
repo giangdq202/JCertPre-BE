@@ -82,5 +82,15 @@ namespace JCertPreApplication.API.Controllers
                 return NotFound();
             return Ok(result);
         }
+
+        /// <summary>
+        /// Verify a test template type by id.
+        /// </summary>
+        [HttpPost("{testTemplateTypeId:guid}/verify")]
+        public async Task<IActionResult> Verify(Guid testTemplateTypeId, [FromQuery] Guid userId)
+        {
+            var result = await _service.VerifyAsync(testTemplateTypeId, userId);
+            return Ok(result);
+        }
     }
 }

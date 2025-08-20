@@ -61,6 +61,13 @@ namespace JCertPreApplication.Persistence.Configurations
             .WithOne(aa => aa.Question)
             .HasForeignKey(aa => aa.questionId)
             .OnDelete(DeleteBehavior.SetNull);
+
+
+        builder.HasIndex(q => q.SubContentId);
+        builder.HasIndex(q => q.isActive);
+        builder.HasIndex(q => q.difficulty);
+        builder.HasIndex(q => q.questionText);
+        builder.HasIndex(q => new { q.isActive, q.SubContentId, q.difficulty });
     }
 }
 }

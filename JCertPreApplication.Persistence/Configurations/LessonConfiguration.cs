@@ -36,6 +36,12 @@ namespace JCertPreApplication.Persistence.Configurations
                 .WithOne(lp => lp.Lesson)
                 .HasForeignKey(lp => lp.lessonId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.HasIndex(l => l.courseId);
+            builder.HasIndex(l => l.title);
+            builder.HasIndex(l => l.lessonOrder);
+            builder.HasIndex(l => new { l.courseId, l.title });
+            builder.HasIndex(l => new { l.courseId, l.lessonOrder });
         }
     }
 }

@@ -10,6 +10,7 @@ public interface ITestTemplateTypeService
     Task<TestTemplateTypeDto> UpdateAsync(Guid testTemplateTypeId, UpdateTestTemplateTypeDto dto);
     Task DeleteAsync(Guid testTemplateTypeId);
     Task<TestTemplateTypeDto> UpdateIsActiveAsync(Guid testTemplateTypeId, bool isActive);
+    Task<TestTemplateTypeDto> VerifyAsync(Guid testTemplateTypeId, Guid userId);
 
     /// <summary>
     /// Gets summary info for a test template type and its templates.

@@ -13,10 +13,18 @@ namespace JCertPreApplication.Persistence.Repositories
     {
         public FeedbackRepository(JCertPreDatabaseContext context) : base(context) { }
 
-        public async Task<Pagination<Feedback>> GetPagingByCourseIdAsync(Guid courseId, int pageIndex, int pageSize)
+        public async Task<Pagination<Feedback>> GetPagingByCourseIdAsync(Guid courseId, int pageIndex, int pageSize, string includeProperties = "")
         {
-            var query = _dbSet.Where(f => f.courseId == courseId)
-                              .OrderByDescending(f => f.createdAt);
+            IQueryable<Feedback> query = _dbSet.Where(f => f.courseId == courseId)
+                                               .OrderByDescending(f => f.createdAt);
+
+            if (!string.IsNullOrWhiteSpace(includeProperties))
+            {
+                foreach (var includeProperty in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty.Trim());
+                }
+            }
 
             var totalItems = await query.CountAsync();
             var items = await query.Skip((pageIndex - 1) * pageSize)
@@ -35,7 +43,9 @@ namespace JCertPreApplication.Persistence.Repositories
 
         public async Task<Feedback?> GetByUserAndCourseAsync(Guid userId, Guid courseId)
         {
-            return await _dbSet.FirstOrDefaultAsync(f => f.userId == userId && f.courseId == courseId);
+            // Eager load User for mapping user info if needed
+            return await _dbSet.Include(f => f.User)
+                               .FirstOrDefaultAsync(f => f.userId == userId && f.courseId == courseId);
         }
 
         public async Task<decimal> GetCourseAverageRatingAsync(Guid courseId)

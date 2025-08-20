@@ -26,6 +26,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasOne(e => e.Course)
                    .WithMany(c => c.Enrollments)
                    .HasForeignKey(e => e.courseId).OnDelete(DeleteBehavior.NoAction);
+
+            // Indexes for performance and uniqueness
+            builder.HasIndex(e => e.userId);
+            builder.HasIndex(e => e.courseId);
+            builder.HasIndex(e => new { e.userId, e.courseId }).IsUnique();
         }
     }
 }

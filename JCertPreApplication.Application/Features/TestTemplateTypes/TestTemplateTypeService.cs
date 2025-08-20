@@ -46,9 +46,10 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                     && (!isActive.HasValue || t.isActive == isActive.Value);
             }
 
+            // Eager load CreatedByUser and VerifiedByUser
             var paginated = await _repo.GetPaginationAsync(
                 predicate,
-                null,
+                includeProperties: "CreatedByUser,VerifiedByUser",
                 pageIndex,
                 pageSize,
                 orderBy: q => q.OrderByDescending(t => t.createdAt)
@@ -201,6 +202,11 @@ public class TestTemplateTypeService : ITestTemplateTypeService
 
             if (isActive)
             {
+                // Only allow activation if verified
+                if (!entity.verifiedUserId.HasValue)
+                    throw ApiException.BadRequest("NOT_VERIFIED", "Cannot activate: This template type is not verified.");
+
+
                 // Check if any TestTemplate exists for this type
                 var hasTestTemplate = await _testTemplateRepository.AnyAsync(
                     t => t.TestTemplateTypeId == testTemplateTypeId
@@ -223,7 +229,6 @@ public class TestTemplateTypeService : ITestTemplateTypeService
             }
 
             entity.isActive = isActive;
-
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();
             return MapToDto(entity);
@@ -300,11 +305,40 @@ public class TestTemplateTypeService : ITestTemplateTypeService
             throw ApiException.InternalServerError("GET_TEMPLATE_TYPE_SUMMARY_ERROR", ex.Message);
         }
     }
+    /// <summary>
+    /// Verify a test template type by id, associating it with a user.
+    /// </summary>
+    public async Task<TestTemplateTypeDto> VerifyAsync(Guid testTemplateTypeId, Guid userId)
+    {
+        try
+        {
+            var entity = await _repo.GetByIdAsync(testTemplateTypeId);
+            if (entity == null)
+                throw ApiException.NotFound("TestTemplateType", testTemplateTypeId);
+
+            // Prevent self-verification
+            if (entity.userId == userId)
+                throw ApiException.BadRequest("SELF_VERIFY_NOT_ALLOWED", "The creator cannot verify their own template type.");
+
+            entity.verifiedUserId = userId;
+            await _repo.UpdateAsync(entity);
+            await _repo.SaveChangesAsync();
+            return MapToDto(entity);
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("VERIFY_TEST_TEMPLATE_TYPE_ERROR", ex.Message);
+        }
+    }
 
     private static TestTemplateTypeDto MapToDto(TestTemplateType t) => new()
     {
         TestTemplateTypeId = t.TestTemplateTypeId,
         userId = t.userId,
+        CreatedByUserName = t.CreatedByUser?.fullName, // NEW
+        verifiedUserId = t.verifiedUserId,
+        VerifiedByUserName = t.VerifiedByUser?.fullName, // NEW
         typeName = t.typeName,
         courseLevel = t.courseLevel,
         testType = t.testType,
@@ -314,7 +348,6 @@ public class TestTemplateTypeService : ITestTemplateTypeService
         totalTestScore = t.totalTestScore,
         totalPassPercentage = t.totalPassPercentage,
     };
+
+    
 }
-
-
-

@@ -15,10 +15,14 @@ namespace JCertPreApplication.Application.Features.Feedbacks
     public class FeedbackService : IFeedbackService
     {
         private readonly IFeedbackRepository _feedbackRepository;
+        private readonly IEnrollmentRepository _enrollmentRepository;
 
-        public FeedbackService(IFeedbackRepository feedbackRepository)
+        public FeedbackService(
+            IFeedbackRepository feedbackRepository,
+            IEnrollmentRepository enrollmentRepository)
         {
             _feedbackRepository = feedbackRepository;
+            _enrollmentRepository = enrollmentRepository;
         }
 
         /// <summary>
@@ -28,7 +32,7 @@ namespace JCertPreApplication.Application.Features.Feedbacks
         {
             try
             {
-                var page = await _feedbackRepository.GetPagingByCourseIdAsync(courseId, pageIndex, pageSize);
+                var page = await _feedbackRepository.GetPagingByCourseIdAsync(courseId, pageIndex, pageSize, "User");
                 return new Pagination<FeedbackDto>
                 {
                     PageIndex = page.PageIndex,
@@ -50,6 +54,11 @@ namespace JCertPreApplication.Application.Features.Feedbacks
         {
             try
             {
+                // Check enrollment
+                var isEnrolled = await _enrollmentRepository.IsUserEnrolledAsync(dto.UserId, dto.CourseId);
+                if (!isEnrolled)
+                    throw ApiException.Forbidden("USER_NOT_ENROLLED", "User must be enrolled in the course to leave feedback.");
+
                 var existed = await _feedbackRepository.GetByUserAndCourseAsync(dto.UserId, dto.CourseId);
                 if (existed != null)
                     throw ApiException.BadRequest("FEEDBACK_EXISTS", "Feedback already exists for this user and course.");
@@ -67,7 +76,9 @@ namespace JCertPreApplication.Application.Features.Feedbacks
                 await _feedbackRepository.InsertAsync(feedback);
                 await _feedbackRepository.SaveChangesAsync();
 
-                return MapToDto(feedback);
+                // Reload with User navigation property for mapping
+                var created = await _feedbackRepository.GetByUserAndCourseAsync(dto.UserId, dto.CourseId);
+                return MapToDto(created!);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -97,7 +108,9 @@ namespace JCertPreApplication.Application.Features.Feedbacks
                 await _feedbackRepository.UpdateAsync(feedback);
                 await _feedbackRepository.SaveChangesAsync();
 
-                return MapToDto(feedback);
+                // Reload with User navigation property for mapping
+                var updated = await _feedbackRepository.GetByUserAndCourseAsync(userId, courseId);
+                return MapToDto(updated!);
             }
             catch (ApiException) { throw; }
             catch (Exception ex)
@@ -149,7 +162,9 @@ namespace JCertPreApplication.Application.Features.Feedbacks
             UserId = f.userId,
             Rating = f.rating,
             Comment = f.comment,
-            CreatedAt = f.createdAt
+            CreatedAt = f.createdAt,
+            UserFullName = f.User?.fullName,
+            UserAvatarUrl = f.User?.avatarUrl
         };
     }
 }

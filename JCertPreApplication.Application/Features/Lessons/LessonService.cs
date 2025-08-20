@@ -66,20 +66,56 @@ namespace JCertPreApplication.Application.Features.Lessons
 
                 if (!string.IsNullOrEmpty(updateLessonDto.Title))
                     lesson.title = updateLessonDto.Title;
-                if (updateLessonDto.LessonOrder.HasValue)
-                    lesson.lessonOrder = updateLessonDto.LessonOrder.Value;
                 if (!string.IsNullOrEmpty(updateLessonDto.Content))
                     lesson.content = updateLessonDto.Content;
+
+                if (updateLessonDto.LessonOrder.HasValue && updateLessonDto.LessonOrder.Value != lesson.lessonOrder)
+                {
+                    int oldOrder = lesson.lessonOrder;
+                    int newOrder = updateLessonDto.LessonOrder.Value;
+
+                    // Count lessons in course
+                    var totalLessons = await _lessonRepository.AnyAsync(l => l.courseId == lesson.courseId)
+                        ? await _lessonRepository.GetAllAsync(l => l.courseId == lesson.courseId)
+                            .ContinueWith(t => t.Result.Count)
+                        : 0;
+
+                    if (newOrder < 1) newOrder = 1;
+                    if (newOrder > totalLessons) newOrder = totalLessons;
+
+                    if (newOrder < oldOrder)
+                    {
+                        // Shift up lessons between newOrder and oldOrder-1
+                        var lessonsToShift = await _lessonRepository.GetAllAsync(
+                            l => l.courseId == lesson.courseId && l.lessonOrder >= newOrder && l.lessonOrder < oldOrder
+                        );
+                        foreach (var l in lessonsToShift)
+                        {
+                            l.lessonOrder++;
+                            await _lessonRepository.UpdateAsync(l);
+                        }
+                    }
+                    else if (newOrder > oldOrder)
+                    {
+                        // Shift down lessons between oldOrder+1 and newOrder
+                        var lessonsToShift = await _lessonRepository.GetAllAsync(
+                            l => l.courseId == lesson.courseId && l.lessonOrder > oldOrder && l.lessonOrder <= newOrder
+                        );
+                        foreach (var l in lessonsToShift)
+                        {
+                            l.lessonOrder--;
+                            await _lessonRepository.UpdateAsync(l);
+                        }
+                    }
+                    lesson.lessonOrder = newOrder;
+                }
 
                 await _lessonRepository.UpdateAsync(lesson);
                 await _lessonRepository.SaveChangesAsync();
 
                 return lesson;
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("LESSON_SERVICE_ERROR", $"An error occurred while updating the lesson: {ex.Message}");
@@ -97,12 +133,32 @@ namespace JCertPreApplication.Application.Features.Lessons
                 if (course == null)
                     throw ApiException.NotFound("Course", courseId);
 
+                // Count lessons in course
+                var totalLessons = await _lessonRepository.AnyAsync(l => l.courseId == courseId)
+                    ? await _lessonRepository.GetAllAsync(l => l.courseId == courseId)
+                        .ContinueWith(t => t.Result.Count)
+                    : 0;
+
+                int insertOrder = createLessonDto.LessonOrder;
+                if (insertOrder < 1) insertOrder = 1;
+                if (insertOrder > totalLessons + 1) insertOrder = totalLessons + 1;
+
+                // Shift lessons at or after insertOrder (batch update)
+                var lessonsToShift = await _lessonRepository.GetAllAsync(
+                    l => l.courseId == courseId && l.lessonOrder >= insertOrder
+                );
+                foreach (var l in lessonsToShift)
+                {
+                    l.lessonOrder++;
+                    await _lessonRepository.UpdateAsync(l);
+                }
+
                 var lesson = new Lesson
                 {
                     lessonId = Guid.NewGuid(),
                     courseId = courseId,
                     title = createLessonDto.Title,
-                    lessonOrder = createLessonDto.LessonOrder,
+                    lessonOrder = insertOrder,
                     content = createLessonDto.Content
                 };
 
@@ -111,10 +167,7 @@ namespace JCertPreApplication.Application.Features.Lessons
 
                 return lesson;
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("LESSON_SERVICE_ERROR", $"An error occurred while creating the lesson: {ex.Message}");
@@ -156,13 +209,24 @@ namespace JCertPreApplication.Application.Features.Lessons
                 if (lesson == null)
                     throw ApiException.NotFound("Lesson", lessonId);
 
+                int deletedOrder = lesson.lessonOrder;
+                var courseId = lesson.courseId;
+
                 await _lessonRepository.DeleteAsync(lesson);
+
+                // Efficiently shift down only affected lessons
+                var lessonsToShift = await _lessonRepository.GetAllAsync(
+                    l => l.courseId == courseId && l.lessonOrder > deletedOrder
+                );
+                foreach (var l in lessonsToShift)
+                {
+                    l.lessonOrder--;
+                    await _lessonRepository.UpdateAsync(l);
+                }
+
                 await _lessonRepository.SaveChangesAsync();
             }
-            catch (ApiException)
-            {
-                throw;
-            }
+            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("LESSON_SERVICE_ERROR", $"An error occurred while deleting the lesson: {ex.Message}");
