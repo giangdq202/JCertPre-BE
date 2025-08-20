@@ -1,5 +1,4 @@
 using JCertPreApplication.Application.Contracts;
-using JCertPreApplication.Application.Dtos.Lesson;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Persistence.DatabaseContext;
@@ -58,6 +57,11 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             return await _context.Set<TestAttempt>()
                 .AnyAsync(a => a.testId == testId && a.userId == userId && a.isPass == true);
+        }
+
+        public async Task<int> CountAsync(Expression<Func<Lesson, bool>> predicate)
+        {
+            return await _dbSet.CountAsync(predicate);
         }
     }
 }

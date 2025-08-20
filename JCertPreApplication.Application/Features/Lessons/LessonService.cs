@@ -75,10 +75,7 @@ namespace JCertPreApplication.Application.Features.Lessons
                     int newOrder = updateLessonDto.LessonOrder.Value;
 
                     // Count lessons in course
-                    var totalLessons = await _lessonRepository.AnyAsync(l => l.courseId == lesson.courseId)
-                        ? await _lessonRepository.GetAllAsync(l => l.courseId == lesson.courseId)
-                            .ContinueWith(t => t.Result.Count)
-                        : 0;
+                    var totalLessons = await _lessonRepository.CountAsync(l => l.courseId == lesson.courseId);
 
                     if (newOrder < 1) newOrder = 1;
                     if (newOrder > totalLessons) newOrder = totalLessons;
@@ -134,10 +131,7 @@ namespace JCertPreApplication.Application.Features.Lessons
                     throw ApiException.NotFound("Course", courseId);
 
                 // Count lessons in course
-                var totalLessons = await _lessonRepository.AnyAsync(l => l.courseId == courseId)
-                    ? await _lessonRepository.GetAllAsync(l => l.courseId == courseId)
-                        .ContinueWith(t => t.Result.Count)
-                    : 0;
+                var totalLessons = await _lessonRepository.CountAsync(l => l.courseId == courseId);
 
                 int insertOrder = createLessonDto.LessonOrder;
                 if (insertOrder < 1) insertOrder = 1;

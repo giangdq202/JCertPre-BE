@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Dtos.Lesson;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
+using System.Linq.Expressions;
 
 namespace JCertPreApplication.Application.Contracts
 {
@@ -15,5 +16,6 @@ namespace JCertPreApplication.Application.Contracts
         int pageSize);
         Task<Test?> GetTestByLessonIdAsync(Guid lessonId);
         Task<bool> IsUserPassedTestAsync(Guid userId, Guid testId);
+        Task<int> CountAsync(Expression<Func<Lesson, bool>> predicate);
     }
 }
