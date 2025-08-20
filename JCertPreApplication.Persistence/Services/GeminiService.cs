@@ -81,6 +81,7 @@ Your task is to generate a high-quality multiple-choice question based on the fo
 - Exactly 1 of the choices must be correct (single correct answer format).
 - All content must be accurate according to standard Japanese grammar and usage.
 - Use appropriate Japanese characters (hiragana, katakana, kanji) suitable for the specified level.
+- Provide a clear explanation in Vietnamese explaining why the correct answer is right.
 
 **Content-Specific Guidelines:**
 {GetContentSpecificGuidelines(contentName)}
@@ -93,7 +94,7 @@ Please return ONLY a single, raw JSON object with the following structure. Do no
 
 {{
   ""questionText"": ""[Your question text here]"",
-  ""explanation"": ""[Brief explanation of the correct answer]"",
+  ""explanation"": ""[Giải thích ngắn gọn tại sao đáp án này đúng bằng tiếng Việt]"",
   ""choices"": [
     {{
       ""content"": ""[Choice 1 text]"",
