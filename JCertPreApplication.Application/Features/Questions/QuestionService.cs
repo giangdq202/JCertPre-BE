@@ -23,19 +23,22 @@ namespace JCertPreApplication.Application.Features.Questions
         private readonly IQuestionAttachmentRepository _questionAttachmentRepository;
         private readonly IChoiceRepository _choiceRepository;
         private readonly IFileService _fileService;
+        private readonly IAIIntegration _aiIntegration;
 
         public QuestionService(
             IQuestionRepository questionRepository,
             ISubContentRepository subContentRepository,
             IQuestionAttachmentRepository questionAttachmentRepository,
             IChoiceRepository choiceRepository,
-            IFileService fileService)
+            IFileService fileService,
+            IAIIntegration aiIntegration)
         {
             _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
             _subContentRepository = subContentRepository ?? throw new ArgumentNullException(nameof(subContentRepository));
             _questionAttachmentRepository = questionAttachmentRepository ?? throw new ArgumentNullException(nameof(questionAttachmentRepository));
             _choiceRepository = choiceRepository ?? throw new ArgumentNullException(nameof(choiceRepository));
             _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
+            _aiIntegration = aiIntegration ?? throw new ArgumentNullException(nameof(aiIntegration));
         }
 
         /// <summary>
@@ -596,6 +599,47 @@ namespace JCertPreApplication.Application.Features.Questions
             public Task CopyToAsync(Stream target, CancellationToken cancellationToken = default) =>
                 _originalFile.CopyToAsync(target, cancellationToken);
             public Stream OpenReadStream() => _originalFile.OpenReadStream();
+        }
+
+        /// <summary>
+        /// Generates a new question using AI based on the specified parameters - Returns formatted content only, does not save to database
+        /// </summary>
+        public async Task<GeneratedQuestionResponseDto> GenerateQuestionWithAIAsync(GenerateQuestionRequestDto requestDto)
+        {
+            try
+            {
+                // 1. Generate question using AI (pass string parameters including description)
+                var aiResult = await _aiIntegration.GenerateQuestionAsync(
+                    requestDto.Level,
+                    requestDto.ContentName,
+                    requestDto.Description);
+
+                if (!aiResult.IsValid || aiResult.Choices.Count != 4)
+                    throw ApiException.InternalServerError("AI_GENERATION_FAILED", 
+                        aiResult.ErrorMessage ?? "Failed to generate valid question from AI service");
+
+                // 2. Validate AI response - must have exactly 1 correct answer
+                var correctChoicesCount = aiResult.Choices.Count(c => c.IsCorrect);
+                if (correctChoicesCount != 1)
+                    throw ApiException.InternalServerError("AI_VALIDATION_FAILED", 
+                        $"AI generated question must have exactly 1 correct answer, but got {correctChoicesCount}");
+
+                // 3. Return formatted response (NO DATABASE SAVE) - Only QuestionText and Choices
+                return new GeneratedQuestionResponseDto
+                {
+                    QuestionText = aiResult.QuestionText,
+                    Choices = aiResult.Choices.Select(c => new GeneratedChoiceDto
+                    {
+                        ChoiceText = c.Content,
+                        IsCorrect = c.IsCorrect
+                    }).ToList()
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("AI_QUESTION_SERVICE_ERROR", $"An error occurred while generating question with AI: {ex.Message}");
+            }
         }
     }
 }

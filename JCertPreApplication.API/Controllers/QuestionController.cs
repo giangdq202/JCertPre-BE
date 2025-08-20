@@ -52,6 +52,20 @@ namespace JCertPreApplication.API.Controllers
     }
 
     /// <summary>
+    /// Generate a new question using AI based on JLPT criteria. Returns formatted content only, does not save to database.
+    /// </summary>
+    [HttpPost("generate-ai")]
+    [Consumes("application/json")]
+    public async Task<IActionResult> GenerateWithAI([FromBody] GenerateQuestionRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var generatedQuestion = await _questionService.GenerateQuestionWithAIAsync(dto);
+        return Ok(generatedQuestion);
+    }
+
+    /// <summary>
     /// Update an existing question.
     /// </summary>
     [HttpPut("{id:guid}")]
