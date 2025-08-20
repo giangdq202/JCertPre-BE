@@ -66,6 +66,20 @@ namespace JCertPreApplication.API.Controllers
     }
 
     /// <summary>
+    /// Generate an explanation for a question using AI. Takes question text and choices, returns explanation in Vietnamese.
+    /// </summary>
+    [HttpPost("generate-explanation")]
+    [Consumes("application/json")]
+    public async Task<IActionResult> GenerateExplanation([FromBody] ExplanationRequestDto dto)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var explanation = await _questionService.GenerateExplanationAsync(dto);
+        return Ok(explanation);
+    }
+
+    /// <summary>
     /// Update an existing question.
     /// </summary>
     [HttpPut("{id:guid}")]

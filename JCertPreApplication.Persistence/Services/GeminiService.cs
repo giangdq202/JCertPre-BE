@@ -63,6 +63,33 @@ namespace JCertPreApplication.Persistence.Services
             }
         }
 
+        public async Task<string> GenerateExplanationAsync(string questionText, List<AIGeneratedChoice> choices)
+        {
+            try
+            {
+                _logger.LogInformation("Generating explanation for question");
+
+                // Rate limiting
+                await _rateLimitSemaphore.WaitAsync();
+                try
+                {
+                    var prompt = BuildExplanationPrompt(questionText, choices);
+                    var response = await CallGeminiApiForExplanationAsync(prompt);
+                    return ProcessExplanationResponse(response);
+                }
+                finally
+                {
+                    // Release rate limit after 6 seconds
+                    _ = Task.Delay(6000).ContinueWith(_ => _rateLimitSemaphore.Release());
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error generating explanation with AI");
+                return "Không thể tạo giải thích lúc này. Vui lòng thử lại sau.";
+            }
+        }
+
         private string BuildPrompt(string level, string contentName, string description)
         {
             return $@"
@@ -388,6 +415,121 @@ Please return ONLY a single, raw JSON object with the following structure. Do no
                     IsValid = false,
                     ErrorMessage = ex.Message
                 };
+            }
+        }
+
+        private string BuildExplanationPrompt(string questionText, List<AIGeneratedChoice> choices)
+        {
+            var correctChoice = choices.FirstOrDefault(c => c.IsCorrect);
+
+            var choicesText = new StringBuilder();
+            for (int i = 0; i < choices.Count; i++)
+            {
+                choicesText.AppendLine($"- {choices[i].Content}");
+            }
+
+            return $@"
+You are an AI assistant for a Japanese learning platform. Your task is to provide a clear and concise explanation for a multiple-choice question.
+
+Analyze the following question:
+
+**Question:**
+{questionText}
+
+**Choices:**
+{choicesText}
+
+**The correct answer is:**
+{correctChoice?.Content}
+
+**Your Task:**
+Write a detailed but easy-to-understand explanation in **Vietnamese**. Explain why the provided answer is correct and why the other options are incorrect if relevant. The tone should be educational and encouraging for a student learning Japanese.
+
+**Requirements:**
+- Write ONLY the explanation text in Vietnamese
+- Keep it concise but informative (2-4 sentences)
+- Use simple, clear language
+- Focus on the learning aspect
+- Do not include any JSON formatting or additional text
+- Do not repeat the question or choices in your response
+
+Please provide only the explanation text:
+";
+        }
+
+        private async Task<string> CallGeminiApiForExplanationAsync(string prompt)
+        {
+            try
+            {
+                var requestBody = new GeminiRequest
+                {
+                    contents = new[]
+                    {
+                        new GeminiContent
+                        {
+                            parts = new[] { new GeminiPart { text = prompt } }
+                        }
+                    },
+                    generationConfig = new GeminiGenerationConfig()
+                };
+
+                var jsonContent = JsonSerializer.Serialize(requestBody, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var url = $"{_config.BaseUrl}/models/{_config.Model}:generateContent";
+
+                var response = await _httpClient.PostAsync(url, content);
+                
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Gemini API error: {StatusCode} - {Content}", response.StatusCode, errorContent);
+                    throw new HttpRequestException($"Gemini API error: {response.StatusCode}");
+                }
+
+                return await response.Content.ReadAsStringAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error calling Gemini API for explanation");
+                throw;
+            }
+        }
+
+        private string ProcessExplanationResponse(string responseContent)
+        {
+            try
+            {
+                var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseContent, new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+
+                var generatedText = geminiResponse?.candidates?[0]?.content?.parts?[0]?.text;
+                
+                if (string.IsNullOrEmpty(generatedText))
+                {
+                    _logger.LogWarning("Empty response from Gemini API");
+                    return "Không thể tạo giải thích lúc này. Vui lòng thử lại sau.";
+                }
+
+                // Clean up the response - remove any extra formatting
+                var cleanedText = generatedText.Trim();
+                
+                return cleanedText;
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Failed to parse Gemini response");
+                return "Không thể tạo giải thích lúc này. Vui lòng thử lại sau.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing Gemini response");
+                return "Không thể tạo giải thích lúc này. Vui lòng thử lại sau.";
             }
         }
 

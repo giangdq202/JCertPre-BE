@@ -34,5 +34,6 @@ namespace JCertPreApplication.Application.Features.Questions
         Task<QuestionForTestDto?> GetByIdForTestAsync(Guid id);
         Task<ImportQuestionsResultDto> ImportQuestionsAsync(ImportQuestionsRequestDto dto);
         Task<GeneratedQuestionResponseDto> GenerateQuestionWithAIAsync(GenerateQuestionRequestDto requestDto);
+        Task<ExplanationResponseDto> GenerateExplanationAsync(ExplanationRequestDto requestDto);
     }
 }
