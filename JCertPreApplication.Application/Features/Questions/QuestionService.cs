@@ -624,10 +624,11 @@ namespace JCertPreApplication.Application.Features.Questions
                     throw ApiException.InternalServerError("AI_VALIDATION_FAILED", 
                         $"AI generated question must have exactly 1 correct answer, but got {correctChoicesCount}");
 
-                // 3. Return formatted response (NO DATABASE SAVE) - Only QuestionText and Choices
+                // 3. Return formatted response (NO DATABASE SAVE) - Only QuestionText, Explanation and Choices
                 return new GeneratedQuestionResponseDto
                 {
                     QuestionText = aiResult.QuestionText,
+                    Explanation = aiResult.Explanation,
                     Choices = aiResult.Choices.Select(c => new GeneratedChoiceDto
                     {
                         ChoiceText = c.Content,
