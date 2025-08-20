@@ -13,6 +13,7 @@ using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Npgsql.NameTranslation;
 
 namespace JCertPreApplication.Persistence
@@ -78,6 +79,11 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<ICreditTransactionRepository, CreditTransactionRepository>();
             services.AddScoped<IQuestionAttachmentRepository, QuestionAttachmentRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+
+            // AI Integration Services
+            services.Configure<GeminiConfiguration>(configuration.GetSection(GeminiConfiguration.SectionName));
+            services.AddHttpClient<GeminiService>();
+            services.AddScoped<IAIIntegration, GeminiService>();
 
             // Infrastructure Services - File Service using Appwrite
             services.AddScoped<IFileService, AppwriteFileService>();
