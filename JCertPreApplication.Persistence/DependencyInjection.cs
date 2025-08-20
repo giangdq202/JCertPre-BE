@@ -80,8 +80,7 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IQuestionAttachmentRepository, QuestionAttachmentRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
 
-            // AI Integration Services
-            services.Configure<GeminiConfiguration>(configuration.GetSection(GeminiConfiguration.SectionName));
+            // AI Integration Services (GeminiConfiguration is registered in Program.cs with validation)
             services.AddHttpClient<GeminiService>();
             services.AddScoped<IAIIntegration, GeminiService>();
 

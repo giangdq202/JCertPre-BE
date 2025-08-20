@@ -69,6 +69,9 @@ static void RegisterConfigurations(WebApplicationBuilder builder)
     builder.Services.AddValidatedConfiguration<RedisConfiguration>(config);
     builder.Services.AddValidatedConfiguration<SmtpConfiguration>(config);
     
+    // Add Gemini AI Configuration with validation
+    builder.Services.AddValidatedConfiguration<GeminiConfiguration>(config);
+    
     // Get API configuration to check if we should show debug info
     var apiConfig = new ApiConfiguration();
     config.GetSection(ApiConfiguration.SectionName).Bind(apiConfig);
