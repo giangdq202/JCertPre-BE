@@ -54,6 +54,12 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasForeignKey(tss => tss.TestAttemptId)
                 .IsRequired(false)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes for performance
+            builder.HasIndex(ta => ta.userId);
+            builder.HasIndex(ta => ta.testId);
+            builder.HasIndex(ta => ta.status);
+            builder.HasIndex(ta => new { ta.testId, ta.userId });
         }
     }
 }

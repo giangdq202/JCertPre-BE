@@ -8,6 +8,8 @@ namespace JCertPreApplication.Domain.Entities
     {
         public Guid TestTemplateTypeId { get; set; }
         public Guid userId { get; set; }
+        public Guid? verifiedUserId { get; set; } // NEW FIELD
+
         public string typeName { get; set; } = null!;
         public CourseLevel courseLevel { get; set; }
         public TestType testType { get; set; }
@@ -17,11 +19,9 @@ namespace JCertPreApplication.Domain.Entities
         public bool isActive { get; set; }
         public DateTime createdAt { get; set; }
 
-        // Navigation property: One type has many templates
-
         public virtual User CreatedByUser { get; set; } = null!;
+        public virtual User? VerifiedByUser { get; set; } // NEW NAVIGATION
         public virtual ICollection<TestTemplate> TestTemplates { get; set; } = new List<TestTemplate>();
         public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
-
     }
 }

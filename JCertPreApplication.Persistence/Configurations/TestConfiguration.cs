@@ -67,7 +67,7 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasForeignKey(t => t.createdByUserId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.NoAction);
-                
+
             builder.HasOne(t => t.TestTemplateType)
                 .WithMany(ttt => ttt.Tests)
                 .HasForeignKey(t => t.TestTemplateTypeId)
@@ -93,6 +93,16 @@ namespace JCertPreApplication.Persistence.Configurations
                 .WithOne(tss => tss.Test)
                 .HasForeignKey(tss => tss.TestId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // Indexes for performance
+            builder.HasIndex(t => t.TestTemplateTypeId);
+            builder.HasIndex(t => t.lessonId);
+            builder.HasIndex(t => t.createdByUserId);
+            builder.HasIndex(t => t.status);
+            builder.HasIndex(t => t.testType);
+            builder.HasIndex(t => t.courseLevel);
+            builder.HasIndex(t => t.availableFrom);
+            builder.HasIndex(t => new { t.TestTemplateTypeId, t.status });
         }
     }
 }

@@ -46,6 +46,11 @@ namespace JCertPreApplication.Application.Features.Choices
         {
             try
             {
+                // Get current number of choices for the question
+                var existingChoices = await _choiceRepo.GetAllAsync(c => c.questionId == questionId);
+                if (existingChoices.Count() >= 4)
+                    throw ApiException.BadRequest("CHOICE_LIMIT", "A question can only have 4 choices.");
+
                 var choice = new Choice
                 {
                     choiceId = Guid.NewGuid(),
@@ -55,6 +60,17 @@ namespace JCertPreApplication.Application.Features.Choices
                 };
                 var created = await _choiceRepo.InsertAsync(choice);
                 await _choiceRepo.SaveChangesAsync();
+
+                // After creation, ensure the total is not more than 4 (for concurrency safety)
+                var totalChoices = await _choiceRepo.GetAllAsync(c => c.questionId == questionId);
+                if (totalChoices.Count() > 4)
+                {
+                    // Rollback the insert (optional: or just throw)
+                    await _choiceRepo.DeleteAsync(created);
+                    await _choiceRepo.SaveChangesAsync();
+                    throw ApiException.BadRequest("CHOICE_LIMIT", "A question can only have 4 choices.");
+                }
+
                 return MapToChoiceReadDto(created);
             }
             catch (ApiException) { throw; }

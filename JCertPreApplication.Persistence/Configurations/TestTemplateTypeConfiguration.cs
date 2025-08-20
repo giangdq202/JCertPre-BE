@@ -14,6 +14,9 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(t => t.userId)
                 .IsRequired();
 
+            builder.Property(t => t.verifiedUserId)
+                .IsRequired(false); // NEW FIELD
+
             builder.Property(t => t.typeName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -45,6 +48,11 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasOne(t => t.CreatedByUser)
                 .WithMany(u => u.TestTemplateTypes)
                 .HasForeignKey(t => t.userId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(t => t.VerifiedByUser) // NEW RELATION
+                .WithMany()
+                .HasForeignKey(t => t.verifiedUserId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(t => t.TestTemplates)

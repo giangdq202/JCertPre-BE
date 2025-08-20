@@ -10,5 +10,7 @@ namespace JCertPreApplication.Application.Dtos.Feedback
         public decimal Rating { get; set; }
         public string? Comment { get; set; }
         public DateTime CreatedAt { get; set; }
+        public string? UserFullName { get; set; }      // Add this
+        public string? UserAvatarUrl { get; set; }     // Add this
     }
 }

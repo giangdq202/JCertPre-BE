@@ -98,6 +98,13 @@ namespace JCertPreApplication.Persistence.Configurations
                    .WithOne(ttt => ttt.CreatedByUser)
                    .HasForeignKey(ttt => ttt.userId)
                    .OnDelete(DeleteBehavior.NoAction);
-        }
+
+            builder.HasIndex(u => u.email).IsUnique(); // For login/registration
+            builder.HasIndex(u => u.roleId);           // For filtering by role
+            builder.HasIndex(u => u.status);           // For filtering by status
+            builder.HasIndex(u => u.createdAt);        // For sorting/filtering by registration date
+            builder.HasIndex(u => new { u.roleId, u.status }); // For admin/user management
+        
+    }
     }
 }
