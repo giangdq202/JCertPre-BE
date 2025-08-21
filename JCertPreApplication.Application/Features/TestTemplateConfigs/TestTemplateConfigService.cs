@@ -1,6 +1,8 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.SubContent;
 using JCertPreApplication.Application.Dtos.TestTemplateConfig;
 using JCertPreApplication.Application.Exceptions;
+using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Features.TestTemplateConfigs
@@ -21,10 +23,10 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
             ITestTemplateTypeRepository typeRepo,
             IQuestionRepository questionRepo)
         {
-            _repo = repo;
-            _templateRepo = templateRepo;
-            _typeRepo = typeRepo;
-            _questionRepo = questionRepo;
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+            _templateRepo = templateRepo ?? throw new ArgumentNullException(nameof(templateRepo));
+            _typeRepo = typeRepo ?? throw new ArgumentNullException(nameof(typeRepo));
+            _questionRepo = questionRepo ?? throw new ArgumentNullException(nameof(questionRepo));
         }
 
         public async Task<List<TestTemplateConfigDto>> GetAllByTemplateIdAsync(Guid templateId)

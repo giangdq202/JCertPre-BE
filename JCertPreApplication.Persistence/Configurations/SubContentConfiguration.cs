@@ -1,5 +1,4 @@
 using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

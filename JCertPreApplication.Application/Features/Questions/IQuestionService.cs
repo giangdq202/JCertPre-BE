@@ -1,9 +1,6 @@
 using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
-using System;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Questions
 {

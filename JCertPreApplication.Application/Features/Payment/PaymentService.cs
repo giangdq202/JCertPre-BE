@@ -26,12 +26,12 @@ namespace JCertPreApplication.Application.Features.Payment
             IPaymentGateway paymentGateway,
             IOptions<FrontendConfiguration> frontendConfig)
         {
-            _paymentRepository = paymentRepository;
-            _creditTransactionRepository = creditTransactionRepository;
-            _userRepository = userRepository;
-            _logger = logger;
-            _paymentGateway = paymentGateway;
-            _frontendConfig = frontendConfig.Value;
+            _paymentRepository = paymentRepository ?? throw new ArgumentNullException(nameof(paymentRepository));
+            _creditTransactionRepository = creditTransactionRepository ?? throw new ArgumentNullException(nameof(creditTransactionRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _paymentGateway = paymentGateway ?? throw new ArgumentNullException(nameof(paymentGateway));
+            _frontendConfig = frontendConfig?.Value ?? throw new ArgumentNullException(nameof(frontendConfig));
         }
 
         public async Task<bool> HasSufficientCreditAsync(Guid userId, decimal requiredAmount)

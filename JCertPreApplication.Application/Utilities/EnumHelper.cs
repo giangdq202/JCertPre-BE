@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
+using JCertPreApplication.Application.Dtos;
 using System.ComponentModel;
-using System.Linq;
-
+namespace JCertPreApplication.Application.Utilities;
 public static class EnumHelper
 {
     public static List<EnumValueDto> GetEnumValuesWithDescriptions<T>() where T : Enum

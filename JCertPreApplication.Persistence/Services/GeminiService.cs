@@ -1,10 +1,8 @@
-using System.Net;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Polly;
-using Polly.Extensions.Http;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Persistence.Models;

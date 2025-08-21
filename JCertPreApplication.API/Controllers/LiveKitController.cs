@@ -18,7 +18,7 @@ public class LiveKitController : ControllerBase
 
     public LiveKitController(ILiveKitService liveKitService)
     {
-        _liveKitService = liveKitService;
+        _liveKitService = liveKitService ?? throw new ArgumentNullException(nameof(liveKitService));
     }
 
     /// <summary>

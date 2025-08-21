@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos;
+using JCertPreApplication.Application.Dtos.SubContent;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
-
+namespace JCertPreApplication.Application.Features.SubContents;
 public class SubContentService : ISubContentService
 {
     private readonly IGenericRepository<SubContent> _repo;
 
     public SubContentService(IGenericRepository<SubContent> repo)
     {
-        _repo = repo;
+        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
     }
 
     /// <summary>
@@ -122,4 +124,13 @@ public class SubContentService : ISubContentService
             throw ApiException.InternalServerError("SUBCONTENT_SERVICE_ERROR", $"Error deleting subcontent: {ex.Message}");
         }
     }
+
+    public Task<List<EnumValueDto>> GetSubContentNameEnumValuesAsync()
+        => Task.FromResult(EnumHelper.GetEnumValuesWithDescriptions<SubContentName>());
+
+    public Task<List<EnumValueDto>> GetLevelEnumValuesAsync()
+        => Task.FromResult(EnumHelper.GetEnumValuesWithDescriptions<CourseLevel>());
+
+    public Task<List<EnumValueDto>> GetContentNameEnumValuesAsync()
+        => Task.FromResult(EnumHelper.GetEnumValuesWithDescriptions<ContentName>());
 }

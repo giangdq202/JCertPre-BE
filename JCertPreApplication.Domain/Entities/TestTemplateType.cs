@@ -1,6 +1,4 @@
 using JCertPreApplication.Domain.Enums;
-using System;
-using System.Collections.Generic;
 
 namespace JCertPreApplication.Domain.Entities
 {

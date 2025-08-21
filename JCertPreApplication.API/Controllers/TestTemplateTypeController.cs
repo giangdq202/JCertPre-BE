@@ -1,7 +1,8 @@
 using JCertPreApplication.Application.Dtos.TestTemplateType;
+using JCertPreApplication.Application.Dtos.TestTemplateTypes;
+using JCertPreApplication.Application.Features.TestTemplateTypes;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -18,7 +19,7 @@ namespace JCertPreApplication.API.Controllers
 
         public TestTemplateTypeController(ITestTemplateTypeService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         /// <summary>

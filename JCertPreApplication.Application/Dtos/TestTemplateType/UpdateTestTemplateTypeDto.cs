@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using JCertPreApplication.Domain.Enums;
 
+namespace JCertPreApplication.Application.Dtos.TestTemplateTypes;
 public class UpdateTestTemplateTypeDto
 {
     [MinLength(3, ErrorMessage = "Type name must be at least 3 characters.")]

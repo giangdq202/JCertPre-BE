@@ -1,25 +1,21 @@
 ﻿using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.TestAttempt;
 using JCertPreApplication.Application.Exceptions;
-using JCertPreApplication.Application.Features.TestAttempts;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.Extensions.Logging;
-
+namespace JCertPreApplication.Application.Features.TestAttempts;
 public class TestAttemptService : ITestAttemptService
 {
     private readonly ITestAttemptRepository _testAttemptRepository;
     private readonly ITestRepository _testRepository;
     private readonly IEnrollmentRepository _enrollmentRepository;
     private readonly IAttemptAnswerRepository _attemptAnswerRepository;
-    private readonly IQuestionRepository _questionRepository;
-    private readonly IChoiceRepository _choiceRepository;
     private readonly ITestAttemptAutoSubmitController _autoSubmitController;
     private readonly ILogger<TestAttemptService> _logger;
     private readonly ITestScoreSummaryRepository _testScoreSummaryRepository;
     private readonly ILessonRepository _lessonRepository;
     private readonly ITestTemplateRepository _testTemplateRepository;
-    private readonly ITestTemplateConfigRepository _testTemplateConfigRepository;
-    private readonly ISubContentRepository _subContentRepository;
     private readonly ITestQuestionRepository _testQuestionRepository;
     private readonly ITestTemplateTypeRepository _testTemplateTypeRepository;
 
@@ -28,33 +24,25 @@ public class TestAttemptService : ITestAttemptService
         ITestRepository testRepository,
         IEnrollmentRepository enrollmentRepository,
         IAttemptAnswerRepository attemptAnswerRepository,
-        IQuestionRepository questionRepository,
-        IChoiceRepository choiceRepository,
         ITestAttemptAutoSubmitController autoSubmitController,
         ILogger<TestAttemptService> logger,
         ITestScoreSummaryRepository testScoreSummaryRepository,
         ILessonRepository lessonRepository,
         ITestTemplateRepository testTemplateRepository,
-        ITestTemplateConfigRepository testTemplateConfigRepository,
-        ISubContentRepository subContentRepository,
         ITestQuestionRepository testQuestionRepository,
         ITestTemplateTypeRepository testTemplateTypeRepository)
     {
-        _testAttemptRepository = testAttemptRepository;
-        _testRepository = testRepository;
-        _enrollmentRepository = enrollmentRepository;
-        _attemptAnswerRepository = attemptAnswerRepository;
-        _questionRepository = questionRepository;
-        _choiceRepository = choiceRepository;
-        _autoSubmitController = autoSubmitController;
-        _logger = logger;
-        _testScoreSummaryRepository = testScoreSummaryRepository;
-        _lessonRepository = lessonRepository;
-        _testTemplateRepository = testTemplateRepository;
-        _testTemplateConfigRepository = testTemplateConfigRepository;
-        _subContentRepository = subContentRepository;
-        _testQuestionRepository = testQuestionRepository;
-        _testTemplateTypeRepository = testTemplateTypeRepository;
+        _testAttemptRepository = testAttemptRepository ?? throw new ArgumentNullException(nameof(testAttemptRepository));
+        _testRepository = testRepository ?? throw new ArgumentNullException(nameof(testRepository));
+        _enrollmentRepository = enrollmentRepository ?? throw new ArgumentNullException(nameof(enrollmentRepository));
+        _attemptAnswerRepository = attemptAnswerRepository ?? throw new ArgumentNullException(nameof(attemptAnswerRepository));
+        _autoSubmitController = autoSubmitController ?? throw new ArgumentNullException(nameof(autoSubmitController));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _testScoreSummaryRepository = testScoreSummaryRepository ?? throw new ArgumentNullException(nameof(testScoreSummaryRepository));
+        _lessonRepository = lessonRepository ?? throw new ArgumentNullException(nameof(lessonRepository));
+        _testTemplateRepository = testTemplateRepository ?? throw new ArgumentNullException(nameof(testTemplateRepository));
+        _testQuestionRepository = testQuestionRepository ?? throw new ArgumentNullException(nameof(testQuestionRepository));
+        _testTemplateTypeRepository = testTemplateTypeRepository ?? throw new ArgumentNullException(nameof(testTemplateTypeRepository));
     }
 
     /// <summary>

@@ -19,9 +19,9 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
             IEnrollmentRepository enrollmentRepo,
             ILessonRepository lessonRepo)
         {
-            _repo = repo;
-            _enrollmentRepo = enrollmentRepo;
-            _lessonRepo = lessonRepo;
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+            _enrollmentRepo = enrollmentRepo ?? throw new ArgumentNullException(nameof(enrollmentRepo));
+            _lessonRepo = lessonRepo ?? throw new ArgumentNullException(nameof(lessonRepo));
         }
 
         /// <summary>

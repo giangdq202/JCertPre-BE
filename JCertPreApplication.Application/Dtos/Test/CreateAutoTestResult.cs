@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Dtos.Test
 {

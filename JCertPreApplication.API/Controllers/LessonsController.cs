@@ -19,7 +19,7 @@ namespace JCertPreApplication.API.Controllers
 
         public LessonsController(ILessonService lessonService)
         {
-            _lessonService = lessonService;
+            _lessonService = lessonService ?? throw new ArgumentNullException(nameof(lessonService));
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
+using JCertPreApplication.Application.Dtos.SubContent;
+using JCertPreApplication.Application.Features.SubContents;
 using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +19,7 @@ namespace JCertPreApplication.API.Controllers
 
     public SubContentsController(ISubContentService service)
     {
-        _service = service;
+        _service = service ?? throw new ArgumentNullException(nameof(service));
     }
 
     /// <summary>
@@ -113,9 +114,9 @@ namespace JCertPreApplication.API.Controllers
     /// Get all values and descriptions for SubContentName enum.
     /// </summary>
     [HttpGet("enum-values/subcontent-name")]
-    public IActionResult GetSubContentNameEnumValues()
+    public async Task<IActionResult> GetSubContentNameEnumValues()
     {
-        var values = EnumHelper.GetEnumValuesWithDescriptions<SubContentName>();
+        var values = await _service.GetSubContentNameEnumValuesAsync();
         return Ok(values);
     }
 
@@ -123,9 +124,9 @@ namespace JCertPreApplication.API.Controllers
     /// Get all values and descriptions for CourseLevel enum.
     /// </summary>
     [HttpGet("enum-values/level")]
-    public IActionResult GetLevelEnumValues()
+    public async Task<IActionResult> GetLevelEnumValues()
     {
-        var values = EnumHelper.GetEnumValuesWithDescriptions<CourseLevel>();
+        var values = await _service.GetLevelEnumValuesAsync();
         return Ok(values);
     }
 
@@ -133,9 +134,9 @@ namespace JCertPreApplication.API.Controllers
     /// Get all values and descriptions for ContentName enum.
     /// </summary>
     [HttpGet("enum-values/content-name")]
-    public IActionResult GetContentNameEnumValues()
+    public async Task<IActionResult> GetContentNameEnumValues()
     {
-        var values = EnumHelper.GetEnumValuesWithDescriptions<ContentName>();
+        var values = await _service.GetContentNameEnumValuesAsync();
         return Ok(values);
     }
 }}

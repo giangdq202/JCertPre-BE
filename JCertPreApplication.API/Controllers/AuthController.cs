@@ -1,5 +1,3 @@
-using JCertPreApplication.API.Common;
-using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Features.Auth;
 using Microsoft.AspNetCore.Mvc;

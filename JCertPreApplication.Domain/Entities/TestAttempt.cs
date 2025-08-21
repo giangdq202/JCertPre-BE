@@ -1,4 +1,5 @@
-﻿using JCertPreApplication.Domain.Enums;
+﻿
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Domain.Entities
 {

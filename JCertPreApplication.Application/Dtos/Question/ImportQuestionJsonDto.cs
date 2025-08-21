@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Dtos.Question

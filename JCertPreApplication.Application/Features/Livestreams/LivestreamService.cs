@@ -24,12 +24,12 @@ namespace JCertPreApplication.Application.Features.Livestreams
             IUserRepository userRepository,
             ILiveKitService liveKitService)
         {
-            _livestreamRepository = livestreamRepository;
-            _courseRepository = courseRepository;
-            _enrollmentRepository = enrollmentRepository;
-            _courseInstructorRepository = courseInstructorRepository;
-            _userRepository = userRepository;
-            _liveKitService = liveKitService;
+            _livestreamRepository = livestreamRepository ?? throw new ArgumentNullException(nameof(livestreamRepository));
+            _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
+            _enrollmentRepository = enrollmentRepository ?? throw new ArgumentNullException(nameof(enrollmentRepository));
+            _courseInstructorRepository = courseInstructorRepository ?? throw new ArgumentNullException(nameof(courseInstructorRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _liveKitService = liveKitService ?? throw new ArgumentNullException(nameof(liveKitService));
         }
 
         public async Task<LivestreamDto> CreateLivestreamAsync(CreateLivestreamDto createDto)

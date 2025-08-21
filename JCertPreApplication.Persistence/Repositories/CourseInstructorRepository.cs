@@ -2,10 +2,6 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Persistence.Repositories
 {

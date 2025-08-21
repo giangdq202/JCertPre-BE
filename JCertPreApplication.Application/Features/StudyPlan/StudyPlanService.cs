@@ -1,7 +1,6 @@
 ﻿using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Exceptions;
-using JCertPreApplication.Domain.Entities;
 
 namespace JCertPreApplication.Application.Features.StudyPlan
 {

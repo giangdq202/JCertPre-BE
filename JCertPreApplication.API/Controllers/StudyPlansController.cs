@@ -1,5 +1,4 @@
-﻿using JCertPreApplication.API.Common;
-using JCertPreApplication.Application.Dtos.StudyPlan;
+﻿using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlan;
 using Microsoft.AspNetCore.Mvc;
 

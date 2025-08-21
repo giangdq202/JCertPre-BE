@@ -1,4 +1,3 @@
-using JCertPreApplication.Application.Dtos.Question;
 
 namespace JCertPreApplication.Application.Dtos.Question
 {

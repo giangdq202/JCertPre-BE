@@ -1,9 +1,5 @@
-using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.Question;
-using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Application.Features.Questions;
-using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -22,7 +18,7 @@ namespace JCertPreApplication.API.Controllers
 
     public QuestionController(IQuestionService questionService)
     {
-        _questionService = questionService;
+        _questionService = questionService ?? throw new ArgumentNullException(nameof(questionService));
     }
 
     /// <summary>

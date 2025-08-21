@@ -2,7 +2,6 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Enrollment;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Features.Payment;
-using JCertPreApplication.Domain.Entities;
 using Microsoft.Extensions.Logging;
 
 namespace JCertPreApplication.Application.Features.Enrollment
@@ -22,11 +21,11 @@ namespace JCertPreApplication.Application.Features.Enrollment
             IPaymentService paymentService,
             ILogger<EnrollmentService> logger)
         {
-            _enrollmentRepository = enrollmentRepository;
-            _userRepository = userRepository;
-            _courseRepository = courseRepository;
-            _paymentService = paymentService;
-            _logger = logger;
+            _enrollmentRepository = enrollmentRepository ?? throw new ArgumentNullException(nameof(enrollmentRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
+            _paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task<EnrollmentResponseDto> EnrollUserAsync(Guid userId, Guid courseId)

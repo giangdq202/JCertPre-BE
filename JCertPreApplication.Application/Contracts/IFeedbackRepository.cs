@@ -1,9 +1,5 @@
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Application.Utilities;
-using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
 namespace JCertPreApplication.Application.Contracts
 {
     public interface IFeedbackRepository : IGenericRepository<Feedback>

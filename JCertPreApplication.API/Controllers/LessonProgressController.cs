@@ -17,7 +17,7 @@ namespace JCertPreApplication.API.Controllers
 
         public LessonProgressController(ILessonProgressService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         /// <summary>

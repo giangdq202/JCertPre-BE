@@ -1,8 +1,5 @@
-using JCertPreApplication.API.Common;
 using JCertPreApplication.Application.Dtos.Course;
-using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Features.Course;
-using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +20,7 @@ namespace JCertPreApplication.API.Controllers
 
         public CoursesController(ICourseService courseService)
         {
-            _courseService = courseService;
+            _courseService = courseService ?? throw new ArgumentNullException(nameof(courseService));
         }
 
         /// <summary>

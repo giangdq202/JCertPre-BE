@@ -1,5 +1,4 @@
-using JCertPreApplication.Domain.Enums;
-
+namespace JCertPreApplication.Application.Dtos.SubContent;
 public class SubContentDto
 {
     public Guid SubContentId { get; set; }

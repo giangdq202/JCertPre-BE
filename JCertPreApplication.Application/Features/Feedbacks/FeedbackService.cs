@@ -3,9 +3,6 @@ using JCertPreApplication.Application.Dtos.Feedback;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
-using System;
-using System.Threading.Tasks;
-using System.Linq;
 
 namespace JCertPreApplication.Application.Features.Feedbacks
 {
@@ -21,8 +18,8 @@ namespace JCertPreApplication.Application.Features.Feedbacks
             IFeedbackRepository feedbackRepository,
             IEnrollmentRepository enrollmentRepository)
         {
-            _feedbackRepository = feedbackRepository;
-            _enrollmentRepository = enrollmentRepository;
+            _feedbackRepository = feedbackRepository ?? throw new ArgumentNullException(nameof(feedbackRepository));
+            _enrollmentRepository = enrollmentRepository ?? throw new ArgumentNullException(nameof(enrollmentRepository));
         }
 
         /// <summary>
