@@ -1,5 +1,4 @@
-using System;
-
+namespace JCertPreApplication.Application.Dtos.Choice;
 public class ChoiceReadDto
 {
     public Guid ChoiceId { get; set; }

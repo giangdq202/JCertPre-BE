@@ -1,7 +1,5 @@
 using JCertPreApplication.Application.Dtos.Feedback;
 using JCertPreApplication.Application.Utilities;
-using System;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Feedbacks
 {

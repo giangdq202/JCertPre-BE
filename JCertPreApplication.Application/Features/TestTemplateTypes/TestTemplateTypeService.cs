@@ -1,11 +1,12 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.TestTemplateType;
+using JCertPreApplication.Application.Dtos.TestTemplateTypes;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using System.Linq.Expressions;
-
+namespace JCertPreApplication.Application.Features.TestTemplateTypes;
 /// <summary>
 /// Service for handling business logic related to TestTemplateType entities.
 /// Implements exception handling and follows Clean Architecture best practices.
@@ -23,10 +24,10 @@ public class TestTemplateTypeService : ITestTemplateTypeService
         IGenericRepository<TestTemplate> testTemplateRepository,
         IGenericRepository<TestTemplateConfig> testTemplateConfigRepository)
     {
-        _repo = repo;
-        _testRepository = testRepository;
-        _testTemplateRepository = testTemplateRepository;
-        _testTemplateConfigRepository = testTemplateConfigRepository;
+        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        _testRepository = testRepository ?? throw new ArgumentNullException(nameof(testRepository));
+        _testTemplateRepository = testTemplateRepository ?? throw new ArgumentNullException(nameof(testTemplateRepository));
+        _testTemplateConfigRepository = testTemplateConfigRepository ?? throw new ArgumentNullException(nameof(testTemplateConfigRepository));
     }
 
     /// <summary>

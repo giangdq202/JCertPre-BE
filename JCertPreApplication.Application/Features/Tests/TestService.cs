@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Test;
 using JCertPreApplication.Application.Exceptions;
+using JCertPreApplication.Application.Features.TestQuestions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
@@ -27,13 +28,13 @@ namespace JCertPreApplication.Application.Features.Tests
             ITestTemplateTypeRepository testTemplateTypeRepository,
             ITestQuestionService testQuestionService)
         {
-            _testRepository = testRepository;
-            _lessonRepository = lessonRepository;
-            _testTemplateRepository = testTemplateRepository;
-            _testQuestionRepository = testQuestionRepository;
-            _testAttemptRepository = testAttemptRepository;
-            _testTemplateTypeRepository = testTemplateTypeRepository;
-            _testQuestionService = testQuestionService;
+            _testRepository = testRepository ?? throw new ArgumentNullException(nameof(testRepository));
+            _lessonRepository = lessonRepository ?? throw new ArgumentNullException(nameof(lessonRepository));
+            _testTemplateRepository = testTemplateRepository ?? throw new ArgumentNullException(nameof(testTemplateRepository));
+            _testQuestionRepository = testQuestionRepository ?? throw new ArgumentNullException(nameof(testQuestionRepository));
+            _testAttemptRepository = testAttemptRepository ?? throw new ArgumentNullException(nameof(testAttemptRepository));
+            _testTemplateTypeRepository = testTemplateTypeRepository ?? throw new ArgumentNullException(nameof(testTemplateTypeRepository));
+            _testQuestionService = testQuestionService ?? throw new ArgumentNullException(nameof(testQuestionService));
         }
 
         /// <summary>

@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using JCertPreApplication.Domain.Enums;
-using System;
 
 namespace JCertPreApplication.Application.Dtos.Test
 {

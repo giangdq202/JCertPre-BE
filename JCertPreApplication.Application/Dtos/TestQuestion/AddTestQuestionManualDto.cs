@@ -1,6 +1,6 @@
-using System;
 using System.ComponentModel.DataAnnotations;
-using JCertPreApplication.Application.Dtos;
+
+namespace JCertPreApplication.Application.Dtos.TestQuestion;
 
 public class AddTestQuestionManualDto
 {

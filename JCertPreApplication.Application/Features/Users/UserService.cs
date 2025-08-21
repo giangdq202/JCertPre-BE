@@ -25,12 +25,13 @@ namespace JCertPreApplication.Application.Features.Users
             IMapper mapper, 
             IFileService fileService)
         {
-            _userRepository = userRepository;
-            _roleRepository = roleRepository;
-            _passwordService = passwordService;
-            _mapper = mapper;
-            _fileService = fileService;
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _roleRepository = roleRepository ?? throw new ArgumentNullException(nameof(roleRepository));
+            _passwordService = passwordService ?? throw new ArgumentNullException(nameof(passwordService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
         }
+        
 
         public async Task<Pagination<AppUserDto>> GetAllUsersAsync(UserQueryParameters parameters)
         {

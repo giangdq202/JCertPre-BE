@@ -1,4 +1,6 @@
+using JCertPreApplication.Application.Dtos.TestAttempt;
 using JCertPreApplication.Application.Features.TestAttempts;
+using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -13,14 +15,12 @@ namespace JCertPreApplication.API.Controllers
     public class TestAttemptController : ControllerBase
 {
     private readonly ITestAttemptService _service;
-    private readonly ILogger<TestAttemptController> _logger;
 
     public TestAttemptController(
-        ITestAttemptService service,
-        ILogger<TestAttemptController> logger)
+        ITestAttemptService service)
     {
-        _service = service;
-        _logger = logger;
+        _service = service ?? throw new ArgumentNullException(nameof(service));
+        
     }
 
     /// <summary>
@@ -37,7 +37,6 @@ namespace JCertPreApplication.API.Controllers
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to start test attempt for user {UserId}, test {TestId}", dto.UserId, dto.TestId);
             throw;
         }
     }
@@ -55,7 +54,6 @@ namespace JCertPreApplication.API.Controllers
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to submit test attempt {AttemptId}", dto.AttemptId);
             throw;
         }
     }
@@ -73,7 +71,7 @@ namespace JCertPreApplication.API.Controllers
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to get test attempts for user {UserId}", userId);
+           
             throw;
         }
     }
@@ -91,7 +89,7 @@ namespace JCertPreApplication.API.Controllers
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Failed to update status for test attempt {AttemptId}", attemptId);
+           
             throw;
         }
     }

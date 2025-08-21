@@ -7,14 +7,11 @@ using JCertPreApplication.Persistence.Services;
 using JCertPreApplication.Persistence.Services.BackgroudServices;
 using JCertPreApplication.Persistence.Services.File;
 using JCertPreApplication.Persistence.Services.Firebase;
-using JCertPreApplication.Persistence.Services.LiveKit;
 using JCertPreApplication.Persistence.Services.Mail;
 using JCertPreApplication.Persistence.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
-using Npgsql.NameTranslation;
 
 namespace JCertPreApplication.Persistence
 {

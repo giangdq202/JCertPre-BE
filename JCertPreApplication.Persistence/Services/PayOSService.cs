@@ -2,7 +2,6 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Payment;
 using JCertPreApplication.Application.Exceptions;
 using Net.payOS;
-using Net.payOS.Types;
 
 namespace JCertPreApplication.Persistence.Services;
 

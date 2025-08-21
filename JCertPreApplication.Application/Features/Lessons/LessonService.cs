@@ -3,7 +3,6 @@ using JCertPreApplication.Application.Dtos.Lesson;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
-using System.Linq.Expressions;
 
 namespace JCertPreApplication.Application.Features.Lessons
 {
@@ -18,8 +17,8 @@ namespace JCertPreApplication.Application.Features.Lessons
 
         public LessonService(ILessonRepository lessonRepository, ICourseRepository courseRepository)
         {
-            _lessonRepository = lessonRepository;
-            _courseRepository = courseRepository;
+            _lessonRepository = lessonRepository ?? throw new ArgumentNullException(nameof(lessonRepository));
+            _courseRepository = courseRepository ?? throw new ArgumentNullException(nameof(courseRepository));
         }
 
         /// <summary>

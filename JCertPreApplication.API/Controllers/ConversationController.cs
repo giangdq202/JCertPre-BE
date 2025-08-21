@@ -1,9 +1,6 @@
-﻿using JCertPreApplication.API.Common;
-using JCertPreApplication.Application.Dtos.Conversation;
-using JCertPreApplication.Application.Dtos.Message;
+﻿using JCertPreApplication.Application.Dtos.Message;
 using JCertPreApplication.Application.Features.Conversation;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {

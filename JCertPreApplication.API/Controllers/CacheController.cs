@@ -16,7 +16,7 @@ namespace JCertPreApplication.API.Controllers
 
         public CacheController(ICacheService cacheService)
         {
-            _cacheService = cacheService;
+            _cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
         /// <summary>

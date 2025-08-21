@@ -1,7 +1,7 @@
 using JCertPreApplication.Application.Dtos.Test;
 using JCertPreApplication.Application.Features.Tests;
-using Microsoft.AspNetCore.Mvc;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -18,7 +18,7 @@ namespace JCertPreApplication.API.Controllers
 
         public TestsController(ITestService testService)
         {
-            _testService = testService;
+            _testService = testService ?? throw new ArgumentNullException(nameof(testService));
         }
 
         /// <summary>

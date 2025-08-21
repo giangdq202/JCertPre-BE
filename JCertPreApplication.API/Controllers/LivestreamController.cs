@@ -2,7 +2,6 @@ using JCertPreApplication.Application.Dtos.Livestream;
 using JCertPreApplication.Application.Features.Livestreams;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -19,7 +18,7 @@ namespace JCertPreApplication.API.Controllers
 
         public LivestreamController(ILivestreamService livestreamService)
         {
-            _livestreamService = livestreamService;
+            _livestreamService = livestreamService ?? throw new ArgumentNullException(nameof(livestreamService));
         }
 
         /// <summary>

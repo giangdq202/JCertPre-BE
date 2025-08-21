@@ -1,6 +1,6 @@
-using JCertPreApplication.Application.Utilities;
-using JCertPreApplication.Domain.Enums;
+using JCertPreApplication.Application.Dtos.TestTemplate;
 
+namespace JCertPreApplication.Application.Features.TestTemplates;
 public interface ITestTemplateService
 {
     Task<List<TestTemplateDto>> GetAllByTypeIdAsync(Guid testTemplateTypeId);

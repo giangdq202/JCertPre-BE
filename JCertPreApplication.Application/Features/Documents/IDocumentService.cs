@@ -1,5 +1,4 @@
 using JCertPreApplication.Application.Dtos.Document;
-using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Features.Documents
 {

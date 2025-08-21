@@ -3,7 +3,6 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Document;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
-using Microsoft.AspNetCore.Http;
 
 namespace JCertPreApplication.Application.Features.Documents
 {
@@ -46,10 +45,10 @@ namespace JCertPreApplication.Application.Features.Documents
             IFileService fileService,
             IMapper mapper)
         {
-            _documentRepository = documentRepository;
-            _lessonRepository = lessonRepository;
-            _fileService = fileService;
-            _mapper = mapper;
+            _documentRepository = documentRepository ?? throw new ArgumentNullException(nameof(documentRepository));
+            _lessonRepository = lessonRepository ?? throw new ArgumentNullException(nameof(lessonRepository));
+            _fileService = fileService ?? throw new ArgumentNullException(nameof(fileService));
+            _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
         }
 
         public async Task<DocumentDto> UploadImageDocumentAsync(CreateDocumentDto createDocumentDto)

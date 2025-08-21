@@ -19,10 +19,10 @@ namespace JCertPreApplication.Application.Features.AttemptAnswers
             IChoiceRepository choiceRepo,
             IQuestionRepository questionRepo)
         {
-            _repo = repo;
-            _testAttemptRepo = testAttemptRepo;
-            _choiceRepo = choiceRepo;
-            _questionRepo = questionRepo;
+            _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+            _testAttemptRepo = testAttemptRepo ?? throw new ArgumentNullException(nameof(testAttemptRepo));
+            _choiceRepo = choiceRepo ?? throw new ArgumentNullException(nameof(choiceRepo));
+            _questionRepo = questionRepo ?? throw new ArgumentNullException(nameof(questionRepo));
         }
 
         /// <summary>

@@ -3,13 +3,11 @@ using JCertPreApplication.Application.Features.TestAttempts;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using JCertPreApplication.Domain.Entities;
-using System;
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Timers;
-using System.Threading;
-using System.Threading.Tasks;
+using JCertPreApplication.Domain.Enums;
+using JCertPreApplication.Application.Dtos.TestAttempt;
+
+namespace JCertPreApplication.Persistence.Services.BackgroudServices;
 
 public class TestAttemptAutoSubmitService : BackgroundService, ITestAttemptAutoSubmitController
 {

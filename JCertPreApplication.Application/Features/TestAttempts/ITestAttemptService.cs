@@ -1,5 +1,6 @@
+using JCertPreApplication.Application.Dtos.TestAttempt;
 using JCertPreApplication.Domain.Entities;
-using System.Collections.Generic;
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Features.TestAttempts
 {

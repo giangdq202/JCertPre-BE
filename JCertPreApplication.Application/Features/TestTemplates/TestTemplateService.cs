@@ -1,7 +1,8 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.TestTemplate;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
-
+namespace JCertPreApplication.Application.Features.TestTemplates;
 public class TestTemplateService : ITestTemplateService
 {
     private readonly ITestTemplateRepository _repo;
@@ -9,8 +10,8 @@ public class TestTemplateService : ITestTemplateService
 
     public TestTemplateService(ITestTemplateRepository repo, ITestTemplateTypeRepository typeRepo)
     {
-        _repo = repo;
-        _typeRepo = typeRepo;
+        _repo = repo ?? throw new ArgumentNullException(nameof(repo));
+        _typeRepo = typeRepo ?? throw new ArgumentNullException(nameof(typeRepo));
     }
 
     /// <summary>

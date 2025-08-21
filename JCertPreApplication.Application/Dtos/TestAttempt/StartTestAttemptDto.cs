@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using JCertPreApplication.Application.Dtos;
+
+namespace JCertPreApplication.Application.Dtos.TestAttempt;
 
 public class StartTestAttemptDto
 {

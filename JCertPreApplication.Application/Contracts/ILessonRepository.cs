@@ -1,4 +1,3 @@
-using JCertPreApplication.Application.Dtos.Lesson;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using System.Linq.Expressions;

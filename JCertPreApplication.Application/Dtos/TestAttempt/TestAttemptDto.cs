@@ -1,5 +1,5 @@
 using JCertPreApplication.Domain.Enums;
-
+namespace JCertPreApplication.Application.Dtos.TestAttempt;
 public class TestAttemptDto
 {
     public Guid AttemptId { get; set; }

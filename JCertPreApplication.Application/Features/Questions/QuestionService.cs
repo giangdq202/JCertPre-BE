@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Dtos.QuestionAttachment;
 using JCertPreApplication.Application.Exceptions;
@@ -8,7 +9,6 @@ using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using System.Linq.Expressions;
 using System.Text.Json;
-using System.IO;
 
 namespace JCertPreApplication.Application.Features.Questions
 {

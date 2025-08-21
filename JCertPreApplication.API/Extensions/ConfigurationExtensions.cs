@@ -1,5 +1,4 @@
 using System.Reflection;
-using JCertPreApplication.Domain.Configuration;
 
 namespace JCertPreApplication.API.Extensions;
 

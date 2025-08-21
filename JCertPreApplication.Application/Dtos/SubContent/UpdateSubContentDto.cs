@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using JCertPreApplication.Domain.Enums;
-
+namespace JCertPreApplication.Application.Dtos.SubContent;
 public class UpdateSubContentDto
 {
     [Required(ErrorMessage = "SubContentName is required.")]

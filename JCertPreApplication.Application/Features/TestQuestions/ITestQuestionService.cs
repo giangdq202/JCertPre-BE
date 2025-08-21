@@ -1,6 +1,6 @@
-using System;
-using System.Threading.Tasks;
+using JCertPreApplication.Application.Dtos.TestQuestion;
 
+namespace JCertPreApplication.Application.Features.TestQuestions;
 public interface ITestQuestionService
 {
     Task AddQuestionsCustomManualAsync(List<(Guid testId, Guid questionId)> testQuestionPairs);

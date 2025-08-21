@@ -1,8 +1,6 @@
 using JCertPreApplication.Application.Dtos.Feedback;
 using JCertPreApplication.Application.Features.Feedbacks;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -19,7 +17,7 @@ namespace JCertPreApplication.API.Controllers
 
         public FeedbackController(IFeedbackService feedbackService)
         {
-            _feedbackService = feedbackService;
+            _feedbackService = feedbackService ?? throw new ArgumentNullException(nameof(feedbackService));
         }
 
         /// <summary>

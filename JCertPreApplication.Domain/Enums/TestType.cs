@@ -1,3 +1,4 @@
+namespace JCertPreApplication.Domain.Enums;
 public enum TestType
 {
     JLPTAuto,

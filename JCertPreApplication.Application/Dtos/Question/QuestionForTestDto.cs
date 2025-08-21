@@ -1,5 +1,5 @@
 using JCertPreApplication.Application.Dtos.QuestionAttachment;
-
+namespace JCertPreApplication.Application.Dtos.Question;
 public class QuestionForTestDto
 {
     public Guid Id { get; set; }

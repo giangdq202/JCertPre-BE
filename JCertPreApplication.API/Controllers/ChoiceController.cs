@@ -17,7 +17,7 @@ namespace JCertPreApplication.API.Controllers
 
         public ChoiceController(IChoiceService choiceService)
         {
-            _choiceService = choiceService;
+            _choiceService = choiceService ?? throw new ArgumentNullException(nameof(choiceService));
         }
 
         /// <summary>

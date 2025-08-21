@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-
+namespace JCertPreApplication.Application.Dtos.TestTemplate;
 public class UpdateTestTemplateDto
 {
     [MinLength(3, ErrorMessage = "Template name must be at least 3 characters.")]

@@ -1,5 +1,4 @@
-using System;
-
+namespace JCertPreApplication.Application.Dtos.TestQuestion;
 public class TestQuestionDto
 {
     public Guid TestQuestionId { get; set; }

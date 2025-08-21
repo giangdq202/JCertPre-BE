@@ -1,6 +1,5 @@
-using System;
 using System.Linq.Expressions;
-
+namespace JCertPreApplication.Application.Utilities;
 public static class PredicateBuilder
 {
     public static Expression<Func<T, bool>> True<T>() => x => true;

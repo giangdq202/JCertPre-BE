@@ -2,7 +2,6 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Application.Dtos.Course;
 using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Domain.Enums;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 

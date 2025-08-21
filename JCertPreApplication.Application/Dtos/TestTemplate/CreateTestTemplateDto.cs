@@ -1,6 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-using JCertPreApplication.Application.Dtos;
-
+namespace JCertPreApplication.Application.Dtos.TestTemplate;
 public class CreateTestTemplateDto
 {
     [Required(ErrorMessage = "TestTemplateTypeId is required.")]

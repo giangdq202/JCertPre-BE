@@ -1,5 +1,4 @@
-﻿using System;
-
+﻿
 namespace JCertPreApplication.Domain.Entities
 {
     public class TestQuestion

@@ -10,7 +10,6 @@ using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text;
 
 namespace JCertPreApplication.Persistence.Services.File
 {

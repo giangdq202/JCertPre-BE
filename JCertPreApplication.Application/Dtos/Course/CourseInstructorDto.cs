@@ -1,4 +1,3 @@
-using System;
 
 namespace JCertPreApplication.Application.Dtos.Course
 {

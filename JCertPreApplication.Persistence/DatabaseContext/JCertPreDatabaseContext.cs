@@ -1,7 +1,6 @@
 ﻿using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Persistence.Configurations;
 using Microsoft.EntityFrameworkCore;
-using Npgsql.NameTranslation;
 
 namespace JCertPreApplication.Persistence.DatabaseContext
 {

@@ -1,6 +1,4 @@
 using JCertPreApplication.Application.Features.AdminDashboard;
-using JCertPreApplication.Application.Exceptions;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers

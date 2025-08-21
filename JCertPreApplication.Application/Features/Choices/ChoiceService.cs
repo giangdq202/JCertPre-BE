@@ -2,10 +2,6 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Application.Dtos.Choice;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace JCertPreApplication.Application.Features.Choices
 {

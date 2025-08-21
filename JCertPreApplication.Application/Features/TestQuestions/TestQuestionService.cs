@@ -1,12 +1,9 @@
 using JCertPreApplication.Application.Contracts;
+using JCertPreApplication.Application.Dtos.TestQuestion;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
+namespace JCertPreApplication.Application.Features.TestQuestions;
 public class TestQuestionService : ITestQuestionService
 {
     private readonly ITestQuestionRepository _testQuestionRepo;
@@ -26,13 +23,13 @@ public class TestQuestionService : ITestQuestionService
         ITestTemplateRepository testTemplateRepo,
         ITestTemplateConfigRepository testTemplateConfigRepo)
     {
-        _testQuestionRepo = testQuestionRepo;
-        _testRepo = testRepo;
-        _testAttemptRepo = testAttemptRepo;
-        _questionRepository = questionRepository;
-        _testTemplateTypeRepository = testTemplateTypeRepo;
-        _testTemplateRepository = testTemplateRepo;
-        _testTemplateConfigRepository = testTemplateConfigRepo;
+        _testQuestionRepo = testQuestionRepo ?? throw new ArgumentNullException(nameof(testQuestionRepo));
+        _testRepo = testRepo ?? throw new ArgumentNullException(nameof(testRepo));
+        _testAttemptRepo = testAttemptRepo ?? throw new ArgumentNullException(nameof(testAttemptRepo));
+        _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
+        _testTemplateTypeRepository = testTemplateTypeRepo ?? throw new ArgumentNullException(nameof(testTemplateTypeRepo));
+        _testTemplateRepository = testTemplateRepo ?? throw new ArgumentNullException(nameof(testTemplateRepo));
+        _testTemplateConfigRepository = testTemplateConfigRepo ?? throw new ArgumentNullException(nameof(testTemplateConfigRepo));
     }
 
     public async Task AddQuestionsCustomManualAsync(List<(Guid testId, Guid questionId)> testQuestionPairs)

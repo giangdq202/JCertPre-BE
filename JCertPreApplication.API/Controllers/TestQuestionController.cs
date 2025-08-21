@@ -1,3 +1,5 @@
+using JCertPreApplication.Application.Dtos.TestQuestion;
+using JCertPreApplication.Application.Features.TestQuestions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -15,7 +17,7 @@ namespace JCertPreApplication.API.Controllers
 
         public TestQuestionController(ITestQuestionService service)
         {
-            _service = service;
+            _service = service ?? throw new ArgumentNullException(nameof(service));
         }
 
         /// <summary>
