@@ -642,5 +642,47 @@ namespace JCertPreApplication.Application.Features.Questions
                 throw ApiException.InternalServerError("AI_QUESTION_SERVICE_ERROR", $"An error occurred while generating question with AI: {ex.Message}");
             }
         }
+
+        /// <summary>
+        /// Generates an explanation for a question using AI based on the question text and choices
+        /// </summary>
+        public async Task<ExplanationResponseDto> GenerateExplanationAsync(ExplanationRequestDto requestDto)
+        {
+            try
+            {
+                // Validate input
+                if (string.IsNullOrEmpty(requestDto.QuestionText))
+                    throw ApiException.BadRequest("INVALID_INPUT", "Question text cannot be empty");
+
+                if (requestDto.Choices == null || !requestDto.Choices.Any())
+                    throw ApiException.BadRequest("INVALID_INPUT", "Choices cannot be empty");
+
+                var correctChoicesCount = requestDto.Choices.Count(c => c.IsCorrect);
+                if (correctChoicesCount != 1)
+                    throw ApiException.BadRequest("INVALID_INPUT", $"Question must have exactly 1 correct answer, but got {correctChoicesCount}");
+
+                // Convert GeneratedChoiceDto to AIGeneratedChoice for the AI service
+                var aiChoices = requestDto.Choices.Select(c => new Application.Contracts.AIGeneratedChoice
+                {
+                    Content = c.ChoiceText,
+                    IsCorrect = c.IsCorrect
+                }).ToList();
+
+                // Generate explanation using AI
+                var explanation = await _aiIntegration.GenerateExplanationAsync(
+                    requestDto.QuestionText, 
+                    aiChoices);
+
+                return new ExplanationResponseDto
+                {
+                    Explanation = explanation
+                };
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("AI_EXPLANATION_SERVICE_ERROR", $"An error occurred while generating explanation with AI: {ex.Message}");
+            }
+        }
     }
 }

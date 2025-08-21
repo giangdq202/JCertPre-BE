@@ -13,6 +13,14 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="description">Question type description (e.g., "Đọc chữ Hán", "Chọn từ phù hợp với câu")</param>
         /// <returns>Generated question data with choices</returns>
         Task<AIGeneratedQuestionResult> GenerateQuestionAsync(string level, string contentName, string description);
+
+        /// <summary>
+        /// Generates an explanation for a question using AI
+        /// </summary>
+        /// <param name="questionText">The question text</param>
+        /// <param name="choices">List of choices with correct answer marked</param>
+        /// <returns>Generated explanation in Vietnamese</returns>
+        Task<string> GenerateExplanationAsync(string questionText, List<AIGeneratedChoice> choices);
     }
 
     /// <summary>
