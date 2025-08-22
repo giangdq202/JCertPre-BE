@@ -24,7 +24,6 @@ namespace JCertPreApplication.Domain.Entities
         public virtual TestTemplateType? TestTemplateType { get; set; } = null!;
         public virtual ICollection<TestQuestion> TestQuestions { get; set; } = new List<TestQuestion>();
         public virtual ICollection<TestAttempt> TestAttempts { get; set; } = new List<TestAttempt>();
-        public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();
         public virtual ICollection<TestScoreSummary> TestScoreSummaries { get; set; } = new List<TestScoreSummary>();
     }
 }

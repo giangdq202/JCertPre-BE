@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
+using JCertPreApplication.Application.Dtos.Utilities;
 using JCertPreApplication.Domain.Enums;
-using JCertPreApplication.Application.Dtos;
 namespace JCertPreApplication.Application.Dtos.TestTemplateType;
 public class CreateTestTemplateTypeDto
 {

@@ -20,7 +20,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(qa => qa.Question)
                    .WithMany(q => q.QuestionAttachments)
-                   .HasForeignKey(qa => qa.questionId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(qa => qa.questionId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

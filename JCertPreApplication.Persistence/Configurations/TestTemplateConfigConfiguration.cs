@@ -37,7 +37,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasOne(tc => tc.SubContent)
                 .WithMany(sc => sc.TestTemplateConfigs)
                 .HasForeignKey(tc => tc.subContentId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

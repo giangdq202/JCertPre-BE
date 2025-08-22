@@ -26,7 +26,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasOne(c => c.Question)
                    .WithMany(q => q.Choices)
                    .HasForeignKey(c => c.questionId)
-                   .OnDelete(DeleteBehavior.NoAction);
+                   .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(c => c.AttemptAnswers)
                    .WithOne(aa => aa.Choice)

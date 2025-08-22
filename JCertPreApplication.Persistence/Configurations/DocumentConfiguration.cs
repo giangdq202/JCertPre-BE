@@ -21,7 +21,7 @@ namespace JCertPreApplication.Persistence.Configurations
             // Configure foreign key relationship
             builder.HasOne(d => d.Lesson)
                    .WithMany(l => l.Documents)
-                   .HasForeignKey(d => d.lessonId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(d => d.lessonId).OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

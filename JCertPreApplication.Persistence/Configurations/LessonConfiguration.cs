@@ -22,15 +22,15 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasForeignKey(l => l.courseId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasOne(l => l.Test)
+                .WithOne(t => t.Lesson)
+                .HasForeignKey<Test>(t => t.lessonId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             builder.HasMany(l => l.Documents)
                 .WithOne(d => d.Lesson)
                 .HasForeignKey(d => d.lessonId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            builder.HasMany(l => l.Tests)
-                .WithOne(t => t.Lesson)
-                .HasForeignKey(t => t.lessonId)
-                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(l => l.LessonProgresses)
                 .WithOne(lp => lp.Lesson)

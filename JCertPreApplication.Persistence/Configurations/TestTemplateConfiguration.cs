@@ -34,7 +34,7 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasOne(tt => tt.TestTemplateType)
                 .WithMany(ttt => ttt.TestTemplates)
                 .HasForeignKey(tt => tt.TestTemplateTypeId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(tt => tt.TestTemplateConfigs)
                 .WithOne(tc => tc.TestTemplate)

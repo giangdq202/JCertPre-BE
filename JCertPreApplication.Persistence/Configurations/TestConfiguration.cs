@@ -57,9 +57,8 @@ namespace JCertPreApplication.Persistence.Configurations
                 .HasConversion<string>();
 
             builder.HasOne(t => t.Lesson)
-                .WithMany(l => l.Tests)
-                .HasForeignKey(t => t.lessonId)
-                .IsRequired(false)
+                .WithOne(l => l.Test)
+                .HasForeignKey<Test>(t => t.lessonId)
                 .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasOne(t => t.CreatedByUser)
@@ -76,18 +75,13 @@ namespace JCertPreApplication.Persistence.Configurations
 
             builder.HasMany(t => t.TestQuestions)
                 .WithOne(tq => tq.Test)
-                .HasForeignKey(tq => tq.testId);
+                .HasForeignKey(tq => tq.testId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(t => t.TestAttempts)
                 .WithOne(ta => ta.Test)
                 .HasForeignKey(ta => ta.testId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            builder.HasMany(t => t.StudyPlanItems)
-                .WithOne(spi => spi.Test)
-                .HasForeignKey(spi => spi.testId)
-                .IsRequired(false)
-                .OnDelete(DeleteBehavior.NoAction);
+                .OnDelete(DeleteBehavior.SetNull);
 
             builder.HasMany(t => t.TestScoreSummaries)
                 .WithOne(tss => tss.Test)

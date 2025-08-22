@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250822080810_DeleteBehavior&StudyPlanItem")]
+    partial class DeleteBehaviorStudyPlanItem
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -825,8 +828,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("createdByUserId");
 
-                    b.HasIndex("lessonId")
-                        .IsUnique();
+                    b.HasIndex("lessonId");
 
                     b.HasIndex("status");
 
@@ -1472,8 +1474,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
-                        .WithOne("Test")
-                        .HasForeignKey("JCertPreApplication.Domain.Entities.Test", "lessonId")
+                        .WithMany("Tests")
+                        .HasForeignKey("lessonId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedByUser");
@@ -1628,7 +1630,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Navigation("LessonProgresses");
 
-                    b.Navigation("Test");
+                    b.Navigation("Tests");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>

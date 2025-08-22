@@ -1,4 +1,4 @@
-namespace JCertPreApplication.Application.Dtos;
+namespace JCertPreApplication.Application.Dtos.Utilities;
 public class EnumValueDto
 {
     public string Name { get; set; } = default!;

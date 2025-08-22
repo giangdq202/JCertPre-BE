@@ -26,7 +26,7 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Include(sp => sp.StudyPlanItems)
                     .ThenInclude(spi => spi.Course)
                 .Include(sp => sp.StudyPlanItems)
-                    .ThenInclude(spi => spi.Test)
+                    .ThenInclude(spi => spi.TestTemplateType)
                 .FirstOrDefaultAsync(sp => sp.planId == planId);
         }
 

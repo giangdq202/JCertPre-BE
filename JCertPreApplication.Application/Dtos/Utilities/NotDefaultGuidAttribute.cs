@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace JCertPreApplication.Application.Dtos
+namespace JCertPreApplication.Application.Dtos.Utilities
 {
     // Custom validation attribute for non-default GUIDs
     public class NotDefaultGuidAttribute : ValidationAttribute

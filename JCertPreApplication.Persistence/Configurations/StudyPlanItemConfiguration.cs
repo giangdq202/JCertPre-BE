@@ -8,30 +8,33 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<StudyPlanItem> builder)
         {
-            // Configure primary key
             builder.ToTable("study_plan_item");
             builder.HasKey(spi => spi.itemId);
 
-            // Configure required properties and constraints
             builder.Property(spi => spi.planId).IsRequired();
             builder.Property(spi => spi.sequence).IsRequired();
             builder.Property(spi => spi.itemType).IsRequired().HasMaxLength(50);
-            builder.Property(spi => spi.courseId);
-            builder.Property(spi => spi.testId);
+            builder.Property(spi => spi.courseId).IsRequired(false);
+            builder.Property(spi => spi.TestTemplateTypeId).IsRequired(false);
+            builder.Property(spi => spi.description).HasMaxLength(1000).IsRequired(false);
             builder.Property(spi => spi.status).IsRequired().HasConversion<string>();
 
-            // Configure foreign key relationship
             builder.HasOne(spi => spi.StudyPlan)
                    .WithMany(sp => sp.StudyPlanItems)
-                   .HasForeignKey(spi => spi.planId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(spi => spi.planId)
+                   .OnDelete(DeleteBehavior.NoAction);
+
             builder.HasOne(spi => spi.Course)
                    .WithMany(sp => sp.StudyPlanItems)
-                   .IsRequired(false) // Nullable foreign key
-                   .HasForeignKey(spi => spi.courseId).OnDelete(DeleteBehavior.NoAction);
-            builder.HasOne(spi => spi.Test)
-                   .WithMany(sp => sp.StudyPlanItems)
-                   .IsRequired(false) // Nullable foreign key
-                   .HasForeignKey(spi => spi.testId).OnDelete(DeleteBehavior.NoAction);
+                   .HasForeignKey(spi => spi.courseId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.NoAction);
+
+            builder.HasOne(spi => spi.TestTemplateType)
+                   .WithMany()
+                   .HasForeignKey(spi => spi.TestTemplateTypeId)
+                   .IsRequired(false)
+                   .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace JCertPreApplication.Persistence.Migrations
 {
     [DbContext(typeof(JCertPreDatabaseContext))]
-    partial class JCertPreDatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250822073528_TestTaken")]
+    partial class TestTaken
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -700,15 +703,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("TestTemplateTypeId")
-                        .HasColumnType("uuid");
-
                     b.Property<Guid?>("courseId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("description")
-                        .HasMaxLength(1000)
-                        .HasColumnType("character varying(1000)");
 
                     b.Property<string>("itemType")
                         .IsRequired()
@@ -725,13 +721,16 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("itemId");
+                    b.Property<Guid?>("testId")
+                        .HasColumnType("uuid");
 
-                    b.HasIndex("TestTemplateTypeId");
+                    b.HasKey("itemId");
 
                     b.HasIndex("courseId");
 
                     b.HasIndex("planId");
+
+                    b.HasIndex("testId");
 
                     b.ToTable("study_plan_item", (string)null);
                 });
@@ -825,8 +824,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.HasIndex("createdByUserId");
 
-                    b.HasIndex("lessonId")
-                        .IsUnique();
+                    b.HasIndex("lessonId");
 
                     b.HasIndex("status");
 
@@ -859,7 +857,7 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("testId")
+                    b.Property<Guid>("testId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("userId")
@@ -1199,7 +1197,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("AttemptAnswers")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .IsRequired();
 
                     b.Navigation("Choice");
@@ -1397,7 +1395,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("QuestionAttachments")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Question");
@@ -1435,11 +1433,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.StudyPlanItem", b =>
                 {
-                    b.HasOne("JCertPreApplication.Domain.Entities.TestTemplateType", "TestTemplateType")
-                        .WithMany("StudyPlanItems")
-                        .HasForeignKey("TestTemplateTypeId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("JCertPreApplication.Domain.Entities.Course", "Course")
                         .WithMany("StudyPlanItems")
                         .HasForeignKey("courseId")
@@ -1451,11 +1444,16 @@ namespace JCertPreApplication.Persistence.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("JCertPreApplication.Domain.Entities.Test", "Test")
+                        .WithMany("StudyPlanItems")
+                        .HasForeignKey("testId")
+                        .OnDelete(DeleteBehavior.NoAction);
+
                     b.Navigation("Course");
 
                     b.Navigation("StudyPlan");
 
-                    b.Navigation("TestTemplateType");
+                    b.Navigation("Test");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
@@ -1472,8 +1470,8 @@ namespace JCertPreApplication.Persistence.Migrations
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.Lesson", "Lesson")
-                        .WithOne("Test")
-                        .HasForeignKey("JCertPreApplication.Domain.Entities.Test", "lessonId")
+                        .WithMany("Tests")
+                        .HasForeignKey("lessonId")
                         .OnDelete(DeleteBehavior.NoAction);
 
                     b.Navigation("CreatedByUser");
@@ -1488,7 +1486,8 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Test", "Test")
                         .WithMany("TestAttempts")
                         .HasForeignKey("testId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.User", "User")
                         .WithMany("TestAttempts")
@@ -1506,7 +1505,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.Question", "Question")
                         .WithMany("TestQuestions")
                         .HasForeignKey("questionId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("JCertPreApplication.Domain.Entities.Test", "Test")
@@ -1543,7 +1542,7 @@ namespace JCertPreApplication.Persistence.Migrations
                     b.HasOne("JCertPreApplication.Domain.Entities.TestTemplateType", "TestTemplateType")
                         .WithMany("TestTemplates")
                         .HasForeignKey("TestTemplateTypeId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("TestTemplateType");
@@ -1628,7 +1627,7 @@ namespace JCertPreApplication.Persistence.Migrations
 
                     b.Navigation("LessonProgresses");
 
-                    b.Navigation("Test");
+                    b.Navigation("Tests");
                 });
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Question", b =>
@@ -1661,6 +1660,8 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.Test", b =>
                 {
+                    b.Navigation("StudyPlanItems");
+
                     b.Navigation("TestAttempts");
 
                     b.Navigation("TestQuestions");
@@ -1682,8 +1683,6 @@ namespace JCertPreApplication.Persistence.Migrations
 
             modelBuilder.Entity("JCertPreApplication.Domain.Entities.TestTemplateType", b =>
                 {
-                    b.Navigation("StudyPlanItems");
-
                     b.Navigation("TestTemplates");
 
                     b.Navigation("Tests");

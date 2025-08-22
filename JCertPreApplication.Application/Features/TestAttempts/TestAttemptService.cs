@@ -262,10 +262,6 @@ public class TestAttemptService : ITestAttemptService
                     }
                 }
             }
-            else if (test.testType == TestType.CustomAuto)
-            {
-                isPass = null;
-            }
 
             attempt.isPass = isPass;
             await _testAttemptRepository.UpdateAsync(attempt);
@@ -344,14 +340,17 @@ public class TestAttemptService : ITestAttemptService
         }
     }
 
-    // Helper: Map entity to DTO
+    // Fix for CS0266 and CS8629 in MapToDto: safely handle nullable Guid (testId)
     private static TestAttemptDto MapToDto(TestAttempt attempt)
     {
+        if (attempt.testId == null)
+            throw ApiException.InternalServerError("NULL_TEST_ID", "TestAttempt.testId is null when mapping to TestAttemptDto.");
+
         return new TestAttemptDto
         {
             AttemptId = attempt.attemptId,
             UserId = attempt.userId,
-            TestId = attempt.testId,
+            TestId = attempt.testId.Value,
             AttemptNumber = attempt.attemptNumber,
             Status = attempt.status,
             StartTime = attempt.startTime,

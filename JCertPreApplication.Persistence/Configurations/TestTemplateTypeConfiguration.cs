@@ -64,6 +64,11 @@ namespace JCertPreApplication.Persistence.Configurations
                 .WithOne(test => test.TestTemplateType)
                 .HasForeignKey(test => test.TestTemplateTypeId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasMany(t => t.StudyPlanItems)
+                .WithOne(spi => spi.TestTemplateType)
+                .HasForeignKey(spi => spi.TestTemplateTypeId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

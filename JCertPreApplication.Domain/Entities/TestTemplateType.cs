@@ -21,5 +21,6 @@ namespace JCertPreApplication.Domain.Entities
         public virtual User? VerifiedByUser { get; set; } // NEW NAVIGATION
         public virtual ICollection<TestTemplate> TestTemplates { get; set; } = new List<TestTemplate>();
         public virtual ICollection<Test> Tests { get; set; } = new List<Test>();
+        public virtual ICollection<StudyPlanItem> StudyPlanItems { get; set; } = new List<StudyPlanItem>();
     }
 }
