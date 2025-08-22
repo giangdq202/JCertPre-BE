@@ -326,22 +326,28 @@ namespace JCertPreApplication.Application.Features.Tests
                 if (!await _enrollmentRepository.IsUserEnrolledInAnyCourseAsync(userId))
                     throw ApiException.BadRequest("USER_NOT_ENROLLED", "User must be enrolled in at least one course to take an auto test.");
 
-                // 2. Check student profile and last reset test time
+                // 2. Check student profile and per-day test limit
                 var studentProfile = await _studentProfileRepository.GetFirstOrDefaultAsync(sp => sp.userId == userId);
                 if (studentProfile == null)
                     throw ApiException.BadRequest("NO_STUDENT_PROFILE", "Student profile not found.");
 
                 var now = DateTime.UtcNow;
-                if (studentProfile.lastResetTestTime != null && studentProfile.lastResetTestTime.Value.Date == now.Date)
+
+                // If lastResetTestTime is not today, reset the counter
+                if (studentProfile.lastResetTestTime == null || studentProfile.lastResetTestTime.Value.Date < now.Date)
                 {
-                    throw ApiException.BadRequest("TEST_NOT_AVAILABLE", "You can only take the test once per day.");
+                    studentProfile.numberOfTestsTaken = 0;
                 }
 
-                // 3. Update lastResetTestTime and increment numberOfTestsTaken
-                studentProfile.lastResetTestTime = now;
+                if (studentProfile.numberOfTestsTaken >= 10)
+                    throw ApiException.BadRequest("TEST_LIMIT_REACHED", "You can only take the auto test 10 times per day.");
+
+                // Increment the counter and update the last reset time
                 studentProfile.numberOfTestsTaken += 1;
+                studentProfile.lastResetTestTime = now;
                 await _studentProfileRepository.UpdateAsync(studentProfile);
                 await _studentProfileRepository.SaveChangesAsync();
+
 
                 // 4. Continue with the original logic
                 var templateType = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
