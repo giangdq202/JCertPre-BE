@@ -39,15 +39,16 @@ namespace JCertPreApplication.Persistence.Configurations
 
         builder.HasOne(q => q.SubContent)
             .WithMany(sc => sc.Questions)
-            .HasForeignKey(q => q.SubContentId)
+            .HasForeignKey(q => q.SubContentId).OnDelete(DeleteBehavior.NoAction)
             .IsRequired();
 
         // Add new one-to-many for TestQuestion
         builder.HasMany(q => q.TestQuestions)
             .WithOne(tq => tq.Question)
-            .HasForeignKey(tq => tq.questionId);
+            .HasForeignKey(tq => tq.questionId)
+            .OnDelete(DeleteBehavior.NoAction);
 
-        builder.HasMany(q => q.Choices)
+            builder.HasMany(q => q.Choices)
             .WithOne(c => c.Question)
             .HasForeignKey(c => c.questionId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -60,7 +61,7 @@ namespace JCertPreApplication.Persistence.Configurations
         builder.HasMany(q => q.AttemptAnswers)
             .WithOne(aa => aa.Question)
             .HasForeignKey(aa => aa.questionId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.NoAction);
 
 
         builder.HasIndex(q => q.SubContentId);

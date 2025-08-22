@@ -23,7 +23,7 @@ namespace JCertPreApplication.Persistence.Repositories
             return await _context.StudyPlanItems
                 .Include(spi => spi.StudyPlan)
                 .Include(spi => spi.Course)
-                .Include(spi => spi.Test)
+                .Include(spi => spi.TestTemplateType)
                 .FirstOrDefaultAsync(spi => spi.itemId == itemId);
         }
 
@@ -33,7 +33,7 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Where(spi => spi.planId == planId)
                 .Include(spi => spi.StudyPlan)
                 .Include(spi => spi.Course)
-                .Include(spi => spi.Test)
+                .Include(spi => spi.TestTemplateType)
                 .OrderBy(spi => spi.sequence) // Order by sequence for logical retrieval
                 .ToListAsync();
         }

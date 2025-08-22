@@ -1,4 +1,4 @@
-using JCertPreApplication.Application.Dtos;
+using JCertPreApplication.Application.Dtos.Utilities;
 using System.ComponentModel;
 namespace JCertPreApplication.Application.Utilities;
 public static class EnumHelper

@@ -15,8 +15,8 @@ namespace JCertPreApplication.Persistence.Configurations
                 .IsRequired();
 
             builder.Property(ta => ta.testId)
-                .IsRequired();
-
+                .IsRequired(false);
+            
             builder.Property(ta => ta.startTime)
                 .IsRequired();
 

@@ -18,6 +18,8 @@ namespace JCertPreApplication.Application.Features.Tests
         private readonly ITestAttemptRepository _testAttemptRepository;
         private readonly ITestTemplateTypeRepository _testTemplateTypeRepository;
         private readonly ITestQuestionService _testQuestionService;
+        private readonly IEnrollmentRepository _enrollmentRepository;
+        private readonly IStudentProfileRepository _studentProfileRepository;
 
         public TestService(
             ITestRepository testRepository,
@@ -26,7 +28,9 @@ namespace JCertPreApplication.Application.Features.Tests
             ITestQuestionRepository testQuestionRepository,
             ITestAttemptRepository testAttemptRepository,
             ITestTemplateTypeRepository testTemplateTypeRepository,
-            ITestQuestionService testQuestionService)
+            ITestQuestionService testQuestionService,
+            IEnrollmentRepository enrollmentRepository,
+            IStudentProfileRepository studentProfileRepository)
         {
             _testRepository = testRepository ?? throw new ArgumentNullException(nameof(testRepository));
             _lessonRepository = lessonRepository ?? throw new ArgumentNullException(nameof(lessonRepository));
@@ -35,6 +39,8 @@ namespace JCertPreApplication.Application.Features.Tests
             _testAttemptRepository = testAttemptRepository ?? throw new ArgumentNullException(nameof(testAttemptRepository));
             _testTemplateTypeRepository = testTemplateTypeRepository ?? throw new ArgumentNullException(nameof(testTemplateTypeRepository));
             _testQuestionService = testQuestionService ?? throw new ArgumentNullException(nameof(testQuestionService));
+            _enrollmentRepository = enrollmentRepository ?? throw new ArgumentNullException(nameof(enrollmentRepository));
+            _studentProfileRepository = studentProfileRepository ?? throw new ArgumentNullException(nameof(studentProfileRepository));
         }
 
         /// <summary>
@@ -133,65 +139,28 @@ namespace JCertPreApplication.Application.Features.Tests
                 if (existingTest != null)
                     throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
 
-                int durationMinutes = 0;
-                Guid? testTemplateTypeId = null;
-                List<TestTemplate>? templates = null;
-
-                switch (dto.TestType)
-                {
-                    case TestType.JLPTAuto:
-                        var jlptType = await FindActiveTemplateType(dto.CourseLevel, TestType.JLPTAuto);
-                        testTemplateTypeId = jlptType.TestTemplateTypeId;
-                        templates = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == testTemplateTypeId);
-                        if (templates == null || templates.Count == 0)
-                            throw ApiException.BadRequest("NO_TEMPLATES_FOUND", "No active test templates found for the provided TestTemplateTypeId.");
-                        durationMinutes = templates.Sum(t => t.durationMinutes);
-                        break;
-
-                    case TestType.CustomManual:
-                        durationMinutes = dto.DurationMinutes;
-                        break;
-
-                    case TestType.CustomAuto:
-                        var customAutoType = await FindActiveTemplateType(dto.CourseLevel, TestType.JLPTAuto);
-                        testTemplateTypeId = customAutoType.TestTemplateTypeId;
-                        durationMinutes = 0;
-                        break;
-
-                    case TestType.EntryAuto:
-                        break;
-                }
-
-                decimal passingPercentage = (dto.TestType == TestType.JLPTAuto ||
-                                             dto.TestType == TestType.EntryAuto ||
-                                             dto.TestType == TestType.CustomAuto)
-                    ? 0m
-                    : dto.PassingPercentage;
-
                 var test = new Test
                 {
                     testId = Guid.NewGuid(),
                     title = dto.Title,
                     description = dto.Description,
-                    testType = dto.TestType,
+                    testType = TestType.CustomManual,
                     courseLevel = dto.CourseLevel,
-                    durationMinutes = durationMinutes,
+                    durationMinutes = dto.DurationMinutes,
                     lessonId = lessonId,
                     createdByUserId = userId,
                     availableFrom = dto.AvailableFrom,
                     availableTo = dto.AvailableTo,
                     maxAttempts = dto.MaxAttempts,
-                    passing_percentage = passingPercentage,
+                    passing_percentage = dto.PassingPercentage,
                     status = TestStatus.Close,
-                    TestTemplateTypeId = testTemplateTypeId
+                    TestTemplateTypeId = null
                 };
 
                 await _testRepository.InsertAsync(test);
                 await _testRepository.SaveChangesAsync();
 
                 var createdTest = await _testRepository.GetByIdAsync(test.testId);
-                if (createdTest != null && createdTest.TestTemplateTypeId.HasValue && templates != null)
-                    createdTest.TestTemplateType = templates.FirstOrDefault()?.TestTemplateType;
 
                 return MapToTestDto(createdTest ?? test);
             }
@@ -212,60 +181,22 @@ namespace JCertPreApplication.Application.Features.Tests
                 var test = await _testRepository.GetByIdAsync(testId)
                     ?? throw ApiException.NotFound("Test", testId);
 
-                var hasQuestions = await _testQuestionRepository.AnyAsync(q => q.testId == testId);
-
-                if (dto.TestType.HasValue)
-                {
-                    if (hasQuestions)
-                        throw ApiException.BadRequest("UPDATE_TEST_TYPE_NOT_ALLOWED", "Cannot update test type if there are questions.");
-                    test.testType = dto.TestType.Value;
-                }
-
                 if (!string.IsNullOrWhiteSpace(dto.Title))
                     test.title = dto.Title;
                 if (!string.IsNullOrWhiteSpace(dto.Description))
                     test.description = dto.Description;
                 if (dto.DurationMinutes.HasValue)
-                {
-                    if (test.testType != TestType.CustomManual)
-                        throw ApiException.BadRequest("UPDATE_DURATION_NOT_ALLOWED", "Can only update duration minutes for CustomManual test type.");
                     test.durationMinutes = dto.DurationMinutes.Value;
-                }
                 if (dto.AvailableFrom.HasValue)
                     test.availableFrom = dto.AvailableFrom.Value;
                 if (dto.AvailableTo.HasValue)
                     test.availableTo = dto.AvailableTo.Value;
                 if (dto.MaxAttempts.HasValue)
                     test.maxAttempts = dto.MaxAttempts.Value;
-
-                var newType = dto.TestType ?? test.testType;
-
                 if (dto.CourseLevel.HasValue)
-                {
-                    if (newType == TestType.CustomManual)
-                    {
-                        test.courseLevel = dto.CourseLevel.Value;
-                    }
-                    else if (newType == TestType.JLPTAuto || newType == TestType.CustomAuto)
-                    {
-                        if (hasQuestions)
-                            throw ApiException.BadRequest("UPDATE_COURSE_LEVEL_NOT_ALLOWED", "Cannot update course level if there are questions for JLPTAuto or CustomAuto test type.");
-
-                        test.courseLevel = dto.CourseLevel.Value;
-
-                        var jlptType = await FindActiveTemplateType(dto.CourseLevel.Value, TestType.JLPTAuto);
-                        test.TestTemplateTypeId = jlptType.TestTemplateTypeId;
-                        var templates = await _testTemplateRepository.GetAllAsync(t => t.TestTemplateTypeId == test.TestTemplateTypeId);
-                        if (templates == null || templates.Count == 0)
-                            throw ApiException.BadRequest("NO_TEMPLATES_FOUND", "No active test templates found for the provided TestTemplateTypeId.");
-                        test.durationMinutes = templates.Sum(t => t.durationMinutes);
-                    }
-                }
-
+                   test.courseLevel = dto.CourseLevel.Value;
                 if (dto.PassingPercentage.HasValue)
                 {
-                    if (newType == TestType.JLPTAuto || newType == TestType.EntryAuto || newType == TestType.CustomAuto)
-                        throw ApiException.BadRequest("UPDATE_PASSING_PERCENTAGE_NOT_ALLOWED", "Cannot update PassingPercentage for JLPTAuto, EntryAuto, or CustomAuto test types.");
                     if (test.status != TestStatus.Close)
                         throw ApiException.BadRequest("UPDATE_PASSING_PERCENTAGE_NOT_ALLOWED", "Can only update PassingPercentage if the test is closed.");
                     test.passing_percentage = dto.PassingPercentage.Value;
@@ -273,7 +204,7 @@ namespace JCertPreApplication.Application.Features.Tests
                 await _testRepository.UpdateAsync(test);
                 await _testRepository.SaveChangesAsync();
 
-                var updatedTest = await _testRepository.GetFirstOrDefaultAsync(t => t.testId == testId, "TestTemplateType");
+                var updatedTest = await _testRepository.GetFirstOrDefaultAsync(t => t.testId == testId);
                 return MapToTestDto(updatedTest ?? test);
             }
             catch (ApiException) { throw; }
@@ -387,31 +318,32 @@ namespace JCertPreApplication.Application.Features.Tests
             }
         }
 
-        // Helper method for finding active TestTemplateType
-        private async Task<TestTemplateType> FindActiveTemplateType(CourseLevel courseLevel, TestType testType)
-        {
-            try
-            {
-                var type = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
-                    t => t.courseLevel == courseLevel
-                        && t.isActive
-                        && t.testType == testType
-                );
-                if (type == null)
-                    throw ApiException.BadRequest("NO_TEMPLATE_TYPE_FOUND", $"No active test template type found for the provided course level and {testType} type.");
-                return type;
-            }
-            catch (ApiException) { throw; }
-            catch (Exception ex)
-            {
-                throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while finding active template type: {ex.Message}");
-            }
-        }
-
         public async Task<CreateAutoTestResult> CreateAutoTestAndAddQuestionsAsync(CreateAutoTestInput input, Guid userId)
         {
             try
             {
+                // 1. Check enrollment
+                if (!await _enrollmentRepository.IsUserEnrolledInAnyCourseAsync(userId))
+                    throw ApiException.BadRequest("USER_NOT_ENROLLED", "User must be enrolled in at least one course to take an auto test.");
+
+                // 2. Check student profile and last reset test time
+                var studentProfile = await _studentProfileRepository.GetFirstOrDefaultAsync(sp => sp.userId == userId);
+                if (studentProfile == null)
+                    throw ApiException.BadRequest("NO_STUDENT_PROFILE", "Student profile not found.");
+
+                var now = DateTime.UtcNow;
+                if (studentProfile.lastResetTestTime != null && studentProfile.lastResetTestTime.Value.Date == now.Date)
+                {
+                    throw ApiException.BadRequest("TEST_NOT_AVAILABLE", "You can only take the test once per day.");
+                }
+
+                // 3. Update lastResetTestTime and increment numberOfTestsTaken
+                studentProfile.lastResetTestTime = now;
+                studentProfile.numberOfTestsTaken += 1;
+                await _studentProfileRepository.UpdateAsync(studentProfile);
+                await _studentProfileRepository.SaveChangesAsync();
+
+                // 4. Continue with the original logic
                 var templateType = await _testTemplateTypeRepository.GetFirstOrDefaultAsync(
                     t => t.courseLevel == input.CourseLevel
                         && t.isActive
@@ -426,7 +358,6 @@ namespace JCertPreApplication.Application.Features.Tests
 
                 int durationMinutes = templates.Sum(t => t.durationMinutes);
 
-                var now = DateTime.UtcNow;
                 var test = new Test
                 {
                     testId = Guid.NewGuid(),

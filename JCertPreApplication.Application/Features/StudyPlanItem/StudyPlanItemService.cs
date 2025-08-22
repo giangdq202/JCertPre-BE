@@ -29,7 +29,7 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
                 sequence = sequence,
                 itemType = itemType,
                 courseId = courseId,
-                testId = testId,
+                TestTemplateTypeId = testId,
                 status = status
             };
             await _studyPlanItemRepository.CreateStudyPlanItemAsync(studyPlanItem);
@@ -67,8 +67,8 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
                 existingItem.itemType = updateDto.ItemType;
             if (updateDto.CourseId.HasValue)
                 existingItem.courseId = updateDto.CourseId;
-            if (updateDto.TestId.HasValue)
-                existingItem.testId = updateDto.TestId;
+            if (updateDto.TestTemplateTypeId.HasValue)
+                existingItem.TestTemplateTypeId = updateDto.TestTemplateTypeId;
             if (updateDto.Status.HasValue)
                 existingItem.status = updateDto.Status.Value;
 
@@ -94,7 +94,7 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
                 Sequence = studyPlanItem.sequence,
                 ItemType = studyPlanItem.itemType,
                 CourseId = studyPlanItem.courseId,
-                TestId = studyPlanItem.testId,
+                TestTemplateTypeId = studyPlanItem.TestTemplateTypeId,
                 Status = studyPlanItem.status
             };
         }

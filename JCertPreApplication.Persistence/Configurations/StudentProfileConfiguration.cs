@@ -8,18 +8,31 @@ namespace JCertPreApplication.Persistence.Configurations
     {
         public void Configure(EntityTypeBuilder<StudentProfile> builder)
         {
-            // Configure primary key
+            // Table and primary key
             builder.ToTable("student_profile");
             builder.HasKey(sp => sp.userId);
 
-            // Configure required properties and constraints
-            builder.Property(sp => sp.currentLevel).IsRequired().HasMaxLength(50);
-            builder.Property(sp => sp.learningGoals).IsRequired();
+            // Required properties and constraints
+            builder.Property(sp => sp.currentLevel)
+                .IsRequired()
+                .HasMaxLength(50);
 
-            // Configure foreign key relationship
+            builder.Property(sp => sp.learningGoals)
+                .IsRequired();
+
+            // New properties
+            builder.Property(sp => sp.numberOfTestsTaken)
+                .IsRequired()
+                .HasDefaultValue(0);
+
+            builder.Property(sp => sp.lastResetTestTime)
+                .IsRequired(false);
+
+            // Foreign key relationship
             builder.HasOne(sp => sp.User)
-                   .WithOne()
-                   .HasForeignKey<StudentProfile>(sp => sp.userId).OnDelete(DeleteBehavior.NoAction);
+                   .WithOne(u => u.StudentProfile)
+                   .HasForeignKey<StudentProfile>(sp => sp.userId)
+                   .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

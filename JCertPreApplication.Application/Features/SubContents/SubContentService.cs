@@ -1,6 +1,6 @@
 using JCertPreApplication.Application.Contracts;
-using JCertPreApplication.Application.Dtos;
 using JCertPreApplication.Application.Dtos.SubContent;
+using JCertPreApplication.Application.Dtos.Utilities;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;

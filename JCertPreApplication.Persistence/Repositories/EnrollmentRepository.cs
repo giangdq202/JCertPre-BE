@@ -49,6 +49,11 @@ namespace JCertPreApplication.Persistence.Repositories
                 .AnyAsync(e => e.userId == userId && e.courseId == courseId);
         }
 
+        public async Task<bool> IsUserEnrolledInAnyCourseAsync(Guid userId)
+        {
+            return await _context.Enrollments.AnyAsync(e => e.userId == userId);
+        }
+
         public async Task<long> GetTotalEnrollmentsCountAsync()
         {
             return await _context.Enrollments.LongCountAsync();
@@ -70,4 +75,4 @@ namespace JCertPreApplication.Persistence.Repositories
                 .LongCountAsync();
         }
     }
-} 
+}
