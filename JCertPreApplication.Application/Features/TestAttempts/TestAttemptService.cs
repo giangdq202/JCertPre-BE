@@ -344,7 +344,7 @@ public class TestAttemptService : ITestAttemptService
     private static TestAttemptDto MapToDto(TestAttempt attempt)
     {
         if (attempt.testId == null)
-            throw new InvalidOperationException("TestAttempt.testId is null when mapping to TestAttemptDto.");
+            throw ApiException.InternalServerError("NULL_TEST_ID", "TestAttempt.testId is null when mapping to TestAttemptDto.");
 
         return new TestAttemptDto
         {
