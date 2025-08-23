@@ -693,19 +693,19 @@ open coverage/index.html
 > **Ghi chú**: Đã xóa `ChangePasswordAsync` tests vì method này không tồn tại trong IAuthService interface.
 
 #### 🎓 **2. CourseService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (13/13)
-- [x] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto` ✅ (Đã có)
-- [x] `CreateCourseAsync_WithDuplicateTitle_ShouldThrowBadRequestException` ✅ (Đã có)
-- [x] `CreateCourseAsync_WithInvalidData_ShouldThrowValidationException` ✅ (Đã có)
-- [x] `GetCourseByIdAsync_WithExistingId_ShouldReturnCourse` ✅ (Đã có)
-- [x] `GetCourseByIdAsync_WithNonExistentId_ShouldThrowNotFoundException` ✅ (Đã có)
-- [x] `UpdateCourseAsync_WithValidData_ShouldUpdateCourse` ✅ (Đã có)
-- [x] `UpdateCourseAsync_WithNonExistentId_ShouldThrowNotFoundException` ✅ (Đã có)
-- [x] `DeleteCourseAsync_WithExistingId_ShouldMarkAsDeleted` ✅ (Đã có)
-- [x] `DeleteCourseAsync_WithNonExistentId_ShouldThrowNotFoundException` ✅ (Đã có)
-- [x] `AddInstructorToCourseAsync_WithValidIds_ShouldAddInstructor` ✅ (Đã có)
-- [x] `AddInstructorToCourseAsync_WithInvalidInstructorRole_ShouldThrowException` ✅ (Đã có)
-- [x] `RemoveInstructorFromCourseAsync_WithValidIds_ShouldRemoveInstructor` ✅ (Đã có)
-- [x] `GetCoursesWithPaginationAsync_WithValidParams_ShouldReturnPaginatedResults` ✅ (Đã có)
+- [x] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto`
+- [x] `CreateCourseAsync_WithDuplicateTitle_ShouldThrowBadRequestException`
+- [x] `CreateCourseAsync_WithInvalidData_ShouldThrowValidationException`
+- [x] `GetCourseByIdAsync_WithExistingId_ShouldReturnCourse`
+- [x] `GetCourseByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `UpdateCourseAsync_WithValidData_ShouldUpdateCourse`
+- [x] `UpdateCourseAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `DeleteCourseAsync_WithExistingId_ShouldMarkAsDeleted`
+- [x] `DeleteCourseAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `AddInstructorToCourseAsync_WithValidIds_ShouldAddInstructor`
+- [x] `AddInstructorToCourseAsync_WithInvalidInstructorRole_ShouldThrowException`
+- [x] `RemoveInstructorFromCourseAsync_WithValidIds_ShouldRemoveInstructor`
+- [x] `GetCoursesWithPaginationAsync_WithValidParams_ShouldReturnPaginatedResults`
 
 > **Ghi chú**: CourseService tests đã được implement đầy đủ với coverage 100% cho tất cả các methods trong ICourseService interface.
 

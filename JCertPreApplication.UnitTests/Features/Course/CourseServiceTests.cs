@@ -175,7 +175,7 @@ public class CourseServiceTests
             () => _courseService.GetCourseByIdAsync(courseId));
 
         exception.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-        exception.ErrorCode.Should().Be("NOT_FOUND");
+        exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
 
         _mockCourseRepository.Verify(x => x.GetCourseWithDetailsAsync(courseId), Times.Once);
     }
@@ -249,7 +249,7 @@ public class CourseServiceTests
             () => _courseService.UpdateCourseAsync(courseId, updateCourseDto));
 
         exception.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-        exception.ErrorCode.Should().Be("NOT_FOUND");
+        exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
 
         _mockCourseRepository.Verify(x => x.GetByIdAsync(courseId), Times.Once);
         _mockCourseRepository.Verify(x => x.UpdateAsync(It.IsAny<Domain.Entities.Course>()), Times.Never);
@@ -306,7 +306,7 @@ public class CourseServiceTests
             () => _courseService.DeleteCourseAsync(courseId));
 
         exception.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-        exception.ErrorCode.Should().Be("NOT_FOUND");
+        exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
 
         _mockCourseRepository.Verify(x => x.GetByIdAsync(courseId), Times.Once);
         _mockCourseRepository.Verify(x => x.DeleteAsync(It.IsAny<Domain.Entities.Course>()), Times.Never);
@@ -377,7 +377,7 @@ public class CourseServiceTests
             () => _courseService.AddInstructorToCourseAsync(courseId, instructorId));
 
         exception.StatusCode.Should().Be(System.Net.HttpStatusCode.NotFound);
-        exception.ErrorCode.Should().Be("NOT_FOUND");
+        exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
 
         _mockCourseRepository.Verify(x => x.GetByIdAsync(courseId), Times.Once);
         _mockUserRepository.Verify(x => x.GetByIdAsync(instructorId), Times.Once);
