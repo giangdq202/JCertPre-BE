@@ -676,21 +676,21 @@ open coverage/index.html
 
 ### 📋 Checklist Unit Tests cho Application Layer - 27 Services
 
-#### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao)
-- [ ] `LoginAsync_WithValidCredentials_ShouldReturnTokens` ✅ (Đã có)
-- [ ] `LoginAsync_WithInvalidEmail_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [ ] `LoginAsync_WithInvalidPassword_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [ ] `LoginAsync_WithInactiveUser_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [ ] `RegisterAsync_WithValidData_ShouldReturnTokens`
-- [ ] `RegisterAsync_WithExistingEmail_ShouldThrowBadRequestException`
-- [ ] `RegisterAsync_WithInvalidData_ShouldThrowValidationException`
-- [ ] `RefreshTokenAsync_WithValidToken_ShouldReturnNewTokens`
-- [ ] `RefreshTokenAsync_WithExpiredToken_ShouldThrowUnauthorizedException`
-- [ ] `LogoutAsync_WithValidToken_ShouldRevokeToken`
-- [ ] `ChangePasswordAsync_WithValidData_ShouldUpdatePassword`
-- [ ] `ChangePasswordAsync_WithWrongCurrentPassword_ShouldThrowException`
-- [ ] `ResetPasswordAsync_WithValidToken_ShouldUpdatePassword`
-- [ ] `ForgotPasswordAsync_WithValidEmail_ShouldSendResetEmail`
+#### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
+- [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens` ✅ (Đã có)
+- [x] `LoginAsync_WithInvalidEmail_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [x] `LoginAsync_WithInvalidPassword_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [x] `LoginAsync_WithInactiveUser_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [x] `RegisterAsync_WithValidData_ShouldReturnTokens` ✅ (Đã có)
+- [x] `RegisterAsync_WithExistingEmail_ShouldThrowBadRequestException` ✅ (Đã có)
+- [x] `RegisterAsync_WithInvalidData_ShouldThrowValidationException` ✅ (Đã có)
+- [x] `RefreshTokenAsync_WithValidToken_ShouldReturnNewTokens` ✅ (Đã có)
+- [x] `RefreshTokenAsync_WithExpiredToken_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [x] `LogoutAsync_WithValidToken_ShouldRevokeToken` ✅ (Đã có)
+- [x] `ResetPasswordAsync_WithValidToken_ShouldUpdatePassword` ✅ (Đã có)
+- [x] `ForgotPasswordAsync_WithValidEmail_ShouldSendResetEmail` ✅ (Đã có)
+
+> **Ghi chú**: Đã xóa `ChangePasswordAsync` tests vì method này không tồn tại trong IAuthService interface.
 
 #### 🎓 **2. CourseService Tests** (Độ ưu tiên: Cao)
 - [ ] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto`

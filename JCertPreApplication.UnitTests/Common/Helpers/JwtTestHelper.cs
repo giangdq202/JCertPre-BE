@@ -93,6 +93,14 @@ public static class JwtTestHelper
     }
 
     /// <summary>
+    /// Creates an expired refresh token for testing purposes
+    /// </summary>
+    public static string CreateExpiredRefreshToken(Guid userId, string email = "test@example.com")
+    {
+        return CreateRefreshToken(userId, email, expiryTime: DateTime.UtcNow.AddMinutes(-30));
+    }
+
+    /// <summary>
     /// Extracts JTI from a JWT token
     /// </summary>
     public static string ExtractJti(string token)
