@@ -672,6 +672,139 @@ open coverage/index.html
    var result = await service.MethodAsync();
    ```
 
+## Danh Sách Unit Tests Cần Thiết
+
+### 📋 Checklist Unit Tests cho Application Layer
+
+#### 🔐 **AuthService Tests** (Độ ưu tiên: Cao)
+- [ ] `LoginAsync_WithValidCredentials_ShouldReturnTokens` ✅ (Đã có)
+- [ ] `LoginAsync_WithInvalidEmail_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [ ] `LoginAsync_WithInvalidPassword_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [ ] `LoginAsync_WithInactiveUser_ShouldThrowUnauthorizedException` ✅ (Đã có)
+- [ ] `RegisterAsync_WithValidData_ShouldReturnTokens`
+- [ ] `RegisterAsync_WithExistingEmail_ShouldThrowBadRequestException`
+- [ ] `RegisterAsync_WithInvalidData_ShouldThrowValidationException`
+- [ ] `RefreshTokenAsync_WithValidToken_ShouldReturnNewTokens`
+- [ ] `RefreshTokenAsync_WithExpiredToken_ShouldThrowUnauthorizedException`
+- [ ] `LogoutAsync_WithValidToken_ShouldRevokeToken`
+- [ ] `ChangePasswordAsync_WithValidData_ShouldUpdatePassword`
+- [ ] `ChangePasswordAsync_WithWrongCurrentPassword_ShouldThrowException`
+- [ ] `ResetPasswordAsync_WithValidToken_ShouldUpdatePassword`
+- [ ] `ForgotPasswordAsync_WithValidEmail_ShouldSendResetEmail`
+
+#### 🎓 **CourseService Tests** (Độ ưu tiên: Cao)
+- [ ] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto`
+- [ ] `CreateCourseAsync_WithDuplicateTitle_ShouldThrowBadRequestException`
+- [ ] `CreateCourseAsync_WithInvalidData_ShouldThrowValidationException`
+- [ ] `GetCourseByIdAsync_WithExistingId_ShouldReturnCourse`
+- [ ] `GetCourseByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `UpdateCourseAsync_WithValidData_ShouldUpdateCourse`
+- [ ] `UpdateCourseAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `DeleteCourseAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `DeleteCourseAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `AddInstructorToCourseAsync_WithValidIds_ShouldAddInstructor`
+- [ ] `AddInstructorToCourseAsync_WithInvalidInstructorRole_ShouldThrowException`
+- [ ] `RemoveInstructorFromCourseAsync_WithValidIds_ShouldRemoveInstructor`
+- [ ] `GetCoursesWithPaginationAsync_WithValidParams_ShouldReturnPaginatedResults`
+
+#### 💳 **PaymentService Tests** (Độ ưu tiên: Cao)
+- [ ] `ProcessCreditPaymentAsync_WithSufficientCredit_ShouldProcessPayment`
+- [ ] `ProcessCreditPaymentAsync_WithInsufficientCredit_ShouldThrowException`
+- [ ] `ProcessCreditPaymentAsync_WithInvalidUser_ShouldThrowNotFoundException`
+- [ ] `HasSufficientCreditAsync_WithSufficientCredit_ShouldReturnTrue`
+- [ ] `HasSufficientCreditAsync_WithInsufficientCredit_ShouldReturnFalse`
+- [ ] `GetUserPaymentHistoryAsync_WithValidUserId_ShouldReturnHistory`
+- [ ] `CreatePaymentLinkAsync_WithValidData_ShouldReturnPaymentLink`
+- [ ] `ProcessPaymentCallbackAsync_WithValidCallback_ShouldUpdatePaymentStatus`
+
+#### 👥 **UserService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `GetAllUsersAsync_WithValidParams_ShouldReturnPaginatedUsers`
+- [ ] `GetUserByIdAsync_WithExistingId_ShouldReturnUser`
+- [ ] `GetUserByIdAsync_WithNonExistentId_ShouldReturnNull`
+- [ ] `CreateUserAsync_WithValidData_ShouldCreateUser`
+- [ ] `CreateUserAsync_WithExistingEmail_ShouldThrowBadRequestException`
+- [ ] `UpdateUserAsync_WithValidData_ShouldUpdateUser`
+- [ ] `UpdateUserAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `DeleteUserAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `UserExistsAsync_WithExistingId_ShouldReturnTrue`
+- [ ] `GetAvailableRolesAsync_ShouldReturnAllRoles`
+
+#### ❓ **QuestionService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateAsync_WithValidData_ShouldCreateQuestion`
+- [ ] `CreateAsync_WithInvalidData_ShouldThrowValidationException`
+- [ ] `GetByIdAsync_WithExistingId_ShouldReturnQuestion`
+- [ ] `GetByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `UpdateAsync_WithValidData_ShouldUpdateQuestion`
+- [ ] `UpdateAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `DeleteAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetPaginatedWithDetailsAsync_WithValidParams_ShouldReturnPaginatedResults`
+- [ ] `GetPaginatedActiveWithDetailsAsync_WithFilters_ShouldReturnFilteredResults`
+
+#### 📝 **TestService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `GetByTestIdAsync_WithExistingId_ShouldReturnTest`
+- [ ] `GetByTestIdAsync_WithNonExistentId_ShouldReturnNull`
+- [ ] `GetAllByUserIdAsync_WithValidParams_ShouldReturnPaginatedTests`
+- [ ] `GetByLessonIdAsync_WithExistingLessonId_ShouldReturnTest`
+- [ ] `CreateAutoTestAsync_WithValidTemplate_ShouldCreateTest`
+- [ ] `CreateAutoTestAsync_WithInvalidTemplate_ShouldThrowException`
+- [ ] `CreateManualTestAsync_WithValidData_ShouldCreateTest`
+- [ ] `UpdateTestAsync_WithValidData_ShouldUpdateTest`
+- [ ] `DeleteTestAsync_WithExistingId_ShouldMarkAsDeleted`
+
+#### 📊 **AdminDashboardService Tests** (Độ ưu tiên: Thấp)
+- [ ] `GetTotalRevenueAsync_ShouldReturnCorrectRevenue`
+- [ ] `GetCurrentMonthRevenueAsync_ShouldReturnCurrentMonthData`
+- [ ] `GetRevenueByMonthAsync_WithValidYear_ShouldReturnMonthlyData`
+- [ ] `GetCurrentMonthEnrollmentsAsync_ShouldReturnCurrentMonthEnrollments`
+- [ ] `GetEnrollmentsByMonthAsync_WithValidYear_ShouldReturnMonthlyEnrollments`
+
+#### 📚 **EnrollmentService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `EnrollStudentAsync_WithValidData_ShouldCreateEnrollment`
+- [ ] `EnrollStudentAsync_WithExistingEnrollment_ShouldThrowException`
+- [ ] `EnrollStudentAsync_WithInactiveCourse_ShouldThrowException`
+- [ ] `GetStudentEnrollmentsAsync_WithValidStudentId_ShouldReturnEnrollments`
+- [ ] `GetCourseEnrollmentsAsync_WithValidCourseId_ShouldReturnEnrollments`
+
+#### 🎥 **LivestreamService Tests** (Độ ưu tiên: Thấp)
+- [ ] `CreateLivestreamAsync_WithValidData_ShouldCreateLivestream`
+- [ ] `JoinLivestreamAsync_WithValidData_ShouldReturnJoinInfo`
+- [ ] `UpdateLivestreamStatusAsync_WithValidStatus_ShouldUpdateStatus`
+- [ ] `GetLivestreamsByInstructorAsync_WithValidInstructorId_ShouldReturnLivestreams`
+
+#### 🗨️ **ConversationService Tests** (Độ ưu tiên: Thấp)
+- [ ] `CreateConversationAsync_WithValidStudentId_ShouldCreateConversation`
+- [ ] `SendMessageAsync_WithValidData_ShouldSendMessage`
+- [ ] `AssignInstructorAsync_WithValidIds_ShouldAssignInstructor`
+- [ ] `GetConversationDetailsAsync_WithValidId_ShouldReturnDetails`
+
+#### 🎯 **TestAttemptService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `StartTestAttemptAsync_WithValidData_ShouldStartAttempt`
+- [ ] `SubmitTestAttemptAsync_WithValidAnswers_ShouldCalculateScore`
+- [ ] `GetTestAttemptAsync_WithValidId_ShouldReturnAttempt`
+- [ ] `GetUserTestAttemptsAsync_WithValidUserId_ShouldReturnAttempts`
+
+### 📊 Tiến Độ Thực Hiện
+
+**Tổng quan:**
+- ✅ **Hoàn thành**: 4/80+ tests (AuthService cơ bản)
+- 🔄 **Đang thực hiện**: AuthService (còn lại)
+- ⏳ **Chưa bắt đầu**: Các services khác
+
+**Ưu tiên thực hiện:**
+1. **Cao** (Auth, Course, Payment): Core business logic
+2. **Trung bình** (User, Question, Test): Important features
+3. **Thấp** (Admin, Livestream, Conversation): Supporting features
+
+### 🎯 Mục Tiêu Coverage
+
+- **AuthService**: 95% (Critical security component)
+- **CourseService**: 90% (Core business logic)
+- **PaymentService**: 95% (Financial transactions)
+- **UserService**: 85% (User management)
+- **QuestionService**: 80% (Content management)
+- **TestService**: 80% (Assessment logic)
+- **Các services khác**: 70%
+
 ## Kết Luận
 
 Việc implement unit testing theo hướng dẫn này sẽ giúp:
@@ -684,12 +817,13 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### Next Steps
 
-1. Tạo branch `feature/unit-testing`
-2. Setup test projects theo cấu trúc đề xuất
-3. Bắt đầu với critical business logic (Auth, Payment)
-4. Thêm dần các tests khác
-5. Setup CI/CD pipeline
-6. Monitor coverage và quality metrics
+1. ✅ Tạo branch `feature/unit-testing`
+2. ✅ Setup test projects theo cấu trúc đề xuất
+3. 🔄 Hoàn thành AuthService tests
+4. ⏳ Implement CourseService tests
+5. ⏳ Implement PaymentService tests
+6. ⏳ Setup CI/CD pipeline
+7. ⏳ Monitor coverage và quality metrics
 
 ---
 
