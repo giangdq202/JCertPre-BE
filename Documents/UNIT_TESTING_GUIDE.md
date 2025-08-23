@@ -966,11 +966,30 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 1. ✅ Tạo branch `feature/unit-testing`
 2. ✅ Setup test projects theo cấu trúc đề xuất
-3. 🔄 Hoàn thành AuthService tests
+3. 🔄 **AuthService tests** - **77% hoàn thành (20/26 tests passing)**
 4. ⏳ Implement CourseService tests
 5. ⏳ Implement PaymentService tests
 6. ⏳ Setup CI/CD pipeline
 7. ⏳ Monitor coverage và quality metrics
+
+## 📈 Implementation Status
+
+### ✅ **AuthService - 77% Complete (20/26 tests)**
+
+**Passing Tests:**
+- ✅ Login validation (email/password formats) 
+- ✅ Registration (valid data, existing email, missing role)
+- ✅ Password reset initiation (valid/non-existent emails)
+- ✅ Token refresh (valid/invalid scenarios)
+- ✅ Basic authentication flows
+
+**Remaining Issues (6 tests):**
+- 🔧 JWT token validation tests (need real JWT tokens)
+- 🔧 Cache data mocking for password reset
+- 🔧 Mock verification alignment
+- 🔧 Logout flow with token parsing
+
+**Next Priority:** Fix JWT token generation for validation tests, then move to CourseService.
 
 ---
 
