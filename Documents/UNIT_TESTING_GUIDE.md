@@ -674,9 +674,9 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer
+### 📋 Checklist Unit Tests cho Application Layer - 27 Services
 
-#### 🔐 **AuthService Tests** (Độ ưu tiên: Cao)
+#### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao)
 - [ ] `LoginAsync_WithValidCredentials_ShouldReturnTokens` ✅ (Đã có)
 - [ ] `LoginAsync_WithInvalidEmail_ShouldThrowUnauthorizedException` ✅ (Đã có)
 - [ ] `LoginAsync_WithInvalidPassword_ShouldThrowUnauthorizedException` ✅ (Đã có)
@@ -692,7 +692,7 @@ open coverage/index.html
 - [ ] `ResetPasswordAsync_WithValidToken_ShouldUpdatePassword`
 - [ ] `ForgotPasswordAsync_WithValidEmail_ShouldSendResetEmail`
 
-#### 🎓 **CourseService Tests** (Độ ưu tiên: Cao)
+#### 🎓 **2. CourseService Tests** (Độ ưu tiên: Cao)
 - [ ] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto`
 - [ ] `CreateCourseAsync_WithDuplicateTitle_ShouldThrowBadRequestException`
 - [ ] `CreateCourseAsync_WithInvalidData_ShouldThrowValidationException`
@@ -707,7 +707,7 @@ open coverage/index.html
 - [ ] `RemoveInstructorFromCourseAsync_WithValidIds_ShouldRemoveInstructor`
 - [ ] `GetCoursesWithPaginationAsync_WithValidParams_ShouldReturnPaginatedResults`
 
-#### 💳 **PaymentService Tests** (Độ ưu tiên: Cao)
+#### 💳 **3. PaymentService Tests** (Độ ưu tiên: Cao)
 - [ ] `ProcessCreditPaymentAsync_WithSufficientCredit_ShouldProcessPayment`
 - [ ] `ProcessCreditPaymentAsync_WithInsufficientCredit_ShouldThrowException`
 - [ ] `ProcessCreditPaymentAsync_WithInvalidUser_ShouldThrowNotFoundException`
@@ -717,7 +717,7 @@ open coverage/index.html
 - [ ] `CreatePaymentLinkAsync_WithValidData_ShouldReturnPaymentLink`
 - [ ] `ProcessPaymentCallbackAsync_WithValidCallback_ShouldUpdatePaymentStatus`
 
-#### 👥 **UserService Tests** (Độ ưu tiên: Trung bình)
+#### 👥 **4. UserService Tests** (Độ ưu tiên: Cao)
 - [ ] `GetAllUsersAsync_WithValidParams_ShouldReturnPaginatedUsers`
 - [ ] `GetUserByIdAsync_WithExistingId_ShouldReturnUser`
 - [ ] `GetUserByIdAsync_WithNonExistentId_ShouldReturnNull`
@@ -729,7 +729,7 @@ open coverage/index.html
 - [ ] `UserExistsAsync_WithExistingId_ShouldReturnTrue`
 - [ ] `GetAvailableRolesAsync_ShouldReturnAllRoles`
 
-#### ❓ **QuestionService Tests** (Độ ưu tiên: Trung bình)
+#### ❓ **5. QuestionService Tests** (Độ ưu tiên: Cao)
 - [ ] `CreateAsync_WithValidData_ShouldCreateQuestion`
 - [ ] `CreateAsync_WithInvalidData_ShouldThrowValidationException`
 - [ ] `GetByIdAsync_WithExistingId_ShouldReturnQuestion`
@@ -740,7 +740,7 @@ open coverage/index.html
 - [ ] `GetPaginatedWithDetailsAsync_WithValidParams_ShouldReturnPaginatedResults`
 - [ ] `GetPaginatedActiveWithDetailsAsync_WithFilters_ShouldReturnFilteredResults`
 
-#### 📝 **TestService Tests** (Độ ưu tiên: Trung bình)
+#### 📝 **6. TestService Tests** (Độ ưu tiên: Cao)
 - [ ] `GetByTestIdAsync_WithExistingId_ShouldReturnTest`
 - [ ] `GetByTestIdAsync_WithNonExistentId_ShouldReturnNull`
 - [ ] `GetAllByUserIdAsync_WithValidParams_ShouldReturnPaginatedTests`
@@ -751,48 +751,195 @@ open coverage/index.html
 - [ ] `UpdateTestAsync_WithValidData_ShouldUpdateTest`
 - [ ] `DeleteTestAsync_WithExistingId_ShouldMarkAsDeleted`
 
-#### 📊 **AdminDashboardService Tests** (Độ ưu tiên: Thấp)
-- [ ] `GetTotalRevenueAsync_ShouldReturnCorrectRevenue`
-- [ ] `GetCurrentMonthRevenueAsync_ShouldReturnCurrentMonthData`
-- [ ] `GetRevenueByMonthAsync_WithValidYear_ShouldReturnMonthlyData`
-- [ ] `GetCurrentMonthEnrollmentsAsync_ShouldReturnCurrentMonthEnrollments`
-- [ ] `GetEnrollmentsByMonthAsync_WithValidYear_ShouldReturnMonthlyEnrollments`
-
-#### 📚 **EnrollmentService Tests** (Độ ưu tiên: Trung bình)
+#### 📚 **7. EnrollmentService Tests** (Độ ưu tiên: Cao)
 - [ ] `EnrollStudentAsync_WithValidData_ShouldCreateEnrollment`
 - [ ] `EnrollStudentAsync_WithExistingEnrollment_ShouldThrowException`
 - [ ] `EnrollStudentAsync_WithInactiveCourse_ShouldThrowException`
 - [ ] `GetStudentEnrollmentsAsync_WithValidStudentId_ShouldReturnEnrollments`
 - [ ] `GetCourseEnrollmentsAsync_WithValidCourseId_ShouldReturnEnrollments`
+- [ ] `UnenrollStudentAsync_WithValidData_ShouldRemoveEnrollment`
+- [ ] `GetEnrollmentByIdAsync_WithExistingId_ShouldReturnEnrollment`
 
-#### 🎥 **LivestreamService Tests** (Độ ưu tiên: Thấp)
-- [ ] `CreateLivestreamAsync_WithValidData_ShouldCreateLivestream`
-- [ ] `JoinLivestreamAsync_WithValidData_ShouldReturnJoinInfo`
-- [ ] `UpdateLivestreamStatusAsync_WithValidStatus_ShouldUpdateStatus`
-- [ ] `GetLivestreamsByInstructorAsync_WithValidInstructorId_ShouldReturnLivestreams`
-
-#### 🗨️ **ConversationService Tests** (Độ ưu tiên: Thấp)
-- [ ] `CreateConversationAsync_WithValidStudentId_ShouldCreateConversation`
-- [ ] `SendMessageAsync_WithValidData_ShouldSendMessage`
-- [ ] `AssignInstructorAsync_WithValidIds_ShouldAssignInstructor`
-- [ ] `GetConversationDetailsAsync_WithValidId_ShouldReturnDetails`
-
-#### 🎯 **TestAttemptService Tests** (Độ ưu tiên: Trung bình)
+#### 🎯 **8. TestAttemptService Tests** (Độ ưu tiên: Cao)
 - [ ] `StartTestAttemptAsync_WithValidData_ShouldStartAttempt`
 - [ ] `SubmitTestAttemptAsync_WithValidAnswers_ShouldCalculateScore`
 - [ ] `GetTestAttemptAsync_WithValidId_ShouldReturnAttempt`
 - [ ] `GetUserTestAttemptsAsync_WithValidUserId_ShouldReturnAttempts`
+- [ ] `AutoSubmitExpiredAttemptsAsync_ShouldSubmitExpiredAttempts`
+- [ ] `GetTestAttemptResultAsync_WithValidId_ShouldReturnResult`
+
+#### 📖 **9. LessonService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateLessonAsync_WithValidData_ShouldCreateLesson`
+- [ ] `CreateLessonAsync_WithInvalidCourseId_ShouldThrowNotFoundException`
+- [ ] `GetLessonByIdAsync_WithExistingId_ShouldReturnLesson`
+- [ ] `GetLessonByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `UpdateLessonAsync_WithValidData_ShouldUpdateLesson`
+- [ ] `DeleteLessonAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetLessonsByCourseIdAsync_WithValidCourseId_ShouldReturnLessons`
+- [ ] `ReorderLessonsAsync_WithValidOrder_ShouldUpdateOrder`
+
+#### 📄 **10. DocumentService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateDocumentAsync_WithValidData_ShouldCreateDocument`
+- [ ] `GetDocumentByIdAsync_WithExistingId_ShouldReturnDocument`
+- [ ] `GetDocumentByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `UpdateDocumentAsync_WithValidData_ShouldUpdateDocument`
+- [ ] `DeleteDocumentAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetDocumentsByLessonIdAsync_WithValidLessonId_ShouldReturnDocuments`
+- [ ] `UploadDocumentFileAsync_WithValidFile_ShouldUploadAndReturnUrl`
+
+#### 📊 **11. AdminDashboardService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `GetTotalRevenueAsync_ShouldReturnCorrectRevenue`
+- [ ] `GetCurrentMonthRevenueAsync_ShouldReturnCurrentMonthData`
+- [ ] `GetRevenueByMonthAsync_WithValidYear_ShouldReturnMonthlyData`
+- [ ] `GetCurrentMonthEnrollmentsAsync_ShouldReturnCurrentMonthEnrollments`
+- [ ] `GetEnrollmentsByMonthAsync_WithValidYear_ShouldReturnMonthlyEnrollments`
+- [ ] `GetDashboardStatsAsync_ShouldReturnComprehensiveStats`
+
+#### � **12. ChoiceService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateChoiceAsync_WithValidData_ShouldCreateChoice`
+- [ ] `GetChoiceByIdAsync_WithExistingId_ShouldReturnChoice`
+- [ ] `GetChoiceByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `UpdateChoiceAsync_WithValidData_ShouldUpdateChoice`
+- [ ] `DeleteChoiceAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetChoicesByQuestionIdAsync_WithValidQuestionId_ShouldReturnChoices`
+- [ ] `ValidateChoiceAnswerAsync_WithCorrectChoice_ShouldReturnTrue`
+
+#### 📋 **13. TestQuestionService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateTestQuestionAsync_WithValidData_ShouldCreateTestQuestion`
+- [ ] `GetTestQuestionByIdAsync_WithExistingId_ShouldReturnTestQuestion`
+- [ ] `UpdateTestQuestionAsync_WithValidData_ShouldUpdateTestQuestion`
+- [ ] `DeleteTestQuestionAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetTestQuestionsByTestIdAsync_WithValidTestId_ShouldReturnQuestions`
+- [ ] `AddQuestionToTestAsync_WithValidIds_ShouldAddQuestion`
+- [ ] `RemoveQuestionFromTestAsync_WithValidIds_ShouldRemoveQuestion`
+
+#### 📝 **14. TestTemplateService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateTemplateAsync_WithValidData_ShouldCreateTemplate`
+- [ ] `GetTemplateByIdAsync_WithExistingId_ShouldReturnTemplate`
+- [ ] `GetTemplateByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [ ] `UpdateTemplateAsync_WithValidData_ShouldUpdateTemplate`
+- [ ] `DeleteTemplateAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetAllTemplatesAsync_ShouldReturnAllTemplates`
+- [ ] `GenerateTestFromTemplateAsync_WithValidTemplate_ShouldGenerateTest`
+
+#### ⚙️ **15. TestTemplateConfigService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateConfigAsync_WithValidData_ShouldCreateConfig`
+- [ ] `GetConfigByIdAsync_WithExistingId_ShouldReturnConfig`
+- [ ] `UpdateConfigAsync_WithValidData_ShouldUpdateConfig`
+- [ ] `DeleteConfigAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetConfigsByTemplateIdAsync_WithValidTemplateId_ShouldReturnConfigs`
+- [ ] `ValidateConfigAsync_WithValidConfig_ShouldReturnTrue`
+
+#### 🏷️ **16. TestTemplateTypeService Tests** (Độ ưu tiên: Thấp)
+- [ ] `CreateTypeAsync_WithValidData_ShouldCreateType`
+- [ ] `GetTypeByIdAsync_WithExistingId_ShouldReturnType`
+- [ ] `GetAllTypesAsync_ShouldReturnAllTypes`
+- [ ] `UpdateTypeAsync_WithValidData_ShouldUpdateType`
+- [ ] `DeleteTypeAsync_WithExistingId_ShouldMarkAsDeleted`
+
+#### 💾 **17. CacheService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `SetAsync_WithValidData_ShouldStoreInCache`
+- [ ] `GetAsync_WithExistingKey_ShouldReturnCachedData`
+- [ ] `GetAsync_WithNonExistentKey_ShouldReturnDefault`
+- [ ] `RemoveAsync_WithExistingKey_ShouldRemoveFromCache`
+- [ ] `ExistsAsync_WithExistingKey_ShouldReturnTrue`
+- [ ] `SetMultipleAsync_WithValidData_ShouldStoreMultipleItems`
+
+#### 🎥 **18. LivestreamService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateLivestreamAsync_WithValidData_ShouldCreateLivestream`
+- [ ] `JoinLivestreamAsync_WithValidData_ShouldReturnJoinInfo`
+- [ ] `UpdateLivestreamStatusAsync_WithValidStatus_ShouldUpdateStatus`
+- [ ] `GetLivestreamsByInstructorAsync_WithValidInstructorId_ShouldReturnLivestreams`
+- [ ] `EndLivestreamAsync_WithValidId_ShouldEndLivestream`
+- [ ] `GetActiveLivestreamsAsync_ShouldReturnActiveLivestreams`
+
+#### 📝 **19. FeedbackService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateFeedbackAsync_WithValidData_ShouldCreateFeedback`
+- [ ] `GetFeedbackByIdAsync_WithExistingId_ShouldReturnFeedback`
+- [ ] `GetFeedbacksByCourseIdAsync_WithValidCourseId_ShouldReturnFeedbacks`
+- [ ] `UpdateFeedbackAsync_WithValidData_ShouldUpdateFeedback`
+- [ ] `DeleteFeedbackAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetAverageRatingAsync_WithValidCourseId_ShouldReturnAverageRating`
+
+#### 🗨️ **20. ConversationService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateConversationAsync_WithValidStudentId_ShouldCreateConversation`
+- [ ] `SendMessageAsync_WithValidData_ShouldSendMessage`
+- [ ] `AssignInstructorAsync_WithValidIds_ShouldAssignInstructor`
+- [ ] `GetConversationDetailsAsync_WithValidId_ShouldReturnDetails`
+- [ ] `GetUserConversationsAsync_WithValidUserId_ShouldReturnConversations`
+- [ ] `MarkMessageAsReadAsync_WithValidId_ShouldMarkAsRead`
+
+#### 📝 **21. AttemptAnswerService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateAttemptAnswerAsync_WithValidData_ShouldCreateAnswer`
+- [ ] `GetAttemptAnswerByIdAsync_WithExistingId_ShouldReturnAnswer`
+- [ ] `UpdateAttemptAnswerAsync_WithValidData_ShouldUpdateAnswer`
+- [ ] `GetAnswersByAttemptIdAsync_WithValidAttemptId_ShouldReturnAnswers`
+- [ ] `ValidateAnswerAsync_WithCorrectAnswer_ShouldReturnTrue`
+- [ ] `CalculateScoreAsync_WithValidAnswers_ShouldReturnCorrectScore`
+
+#### 📊 **22. LessonProgressService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateProgressAsync_WithValidData_ShouldCreateProgress`
+- [ ] `UpdateProgressAsync_WithValidData_ShouldUpdateProgress`
+- [ ] `GetProgressByUserAndLessonAsync_WithValidIds_ShouldReturnProgress`
+- [ ] `GetUserProgressByCourseAsync_WithValidIds_ShouldReturnProgress`
+- [ ] `MarkLessonAsCompletedAsync_WithValidIds_ShouldMarkComplete`
+- [ ] `GetCompletionPercentageAsync_WithValidIds_ShouldReturnPercentage`
+
+#### 📋 **23. StudyPlanService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `GetStudyPlanByIdAsync_WithExistingId_ShouldReturnStudyPlan`
+- [ ] `GetAllStudyPlansAsync_ShouldReturnAllPlans`
+- [ ] `CreateStudyPlanAsync_WithValidData_ShouldCreatePlan`
+- [ ] `UpdateStudyPlanAsync_WithValidData_ShouldUpdatePlan`
+- [ ] `DeleteStudyPlanAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetUserStudyPlansAsync_WithValidUserId_ShouldReturnPlans`
+
+#### 📌 **24. StudyPlanItemService Tests** (Độ ưu tiên: Trung bình)
+- [ ] `CreateStudyPlanItemAsync_WithValidData_ShouldCreateItem`
+- [ ] `GetStudyPlanItemByIdAsync_WithExistingId_ShouldReturnItem`
+- [ ] `UpdateStudyPlanItemAsync_WithValidData_ShouldUpdateItem`
+- [ ] `DeleteStudyPlanItemAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetItemsByStudyPlanIdAsync_WithValidPlanId_ShouldReturnItems`
+- [ ] `ReorderStudyPlanItemsAsync_WithValidOrder_ShouldUpdateOrder`
+
+#### 📄 **25. SubContentService Tests** (Độ ưu tiên: Thấp)
+- [ ] `CreateSubContentAsync_WithValidData_ShouldCreateSubContent`
+- [ ] `GetSubContentByIdAsync_WithExistingId_ShouldReturnSubContent`
+- [ ] `UpdateSubContentAsync_WithValidData_ShouldUpdateSubContent`
+- [ ] `DeleteSubContentAsync_WithExistingId_ShouldMarkAsDeleted`
+- [ ] `GetSubContentsByParentIdAsync_WithValidParentId_ShouldReturnSubContents`
+
+#### 👨‍🏫 **26. InstructorProfileService Tests** (Độ ưu tiên: Thấp)
+- [ ] `CreateProfileAsync_WithValidData_ShouldCreateProfile`
+- [ ] `GetProfileByIdAsync_WithExistingId_ShouldReturnProfile`
+- [ ] `UpdateProfileAsync_WithValidData_ShouldUpdateProfile`
+- [ ] `GetProfileByUserIdAsync_WithValidUserId_ShouldReturnProfile`
+- [ ] `GetAllInstructorProfilesAsync_ShouldReturnAllProfiles`
+
+#### 👨‍🎓 **27. StudentProfileService Tests** (Độ ưu tiên: Thấp)
+- [ ] `CreateProfileAsync_WithValidData_ShouldCreateProfile`
+- [ ] `GetProfileByIdAsync_WithExistingId_ShouldReturnProfile`
+- [ ] `UpdateProfileAsync_WithValidData_ShouldUpdateProfile`
+- [ ] `GetProfileByUserIdAsync_WithValidUserId_ShouldReturnProfile`
+- [ ] `UpdateStudyPreferencesAsync_WithValidData_ShouldUpdatePreferences`
 
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 4/80+ tests (AuthService cơ bản)
+- ✅ **Hoàn thành**: 4/270+ tests (AuthService cơ bản)
 - 🔄 **Đang thực hiện**: AuthService (còn lại)
-- ⏳ **Chưa bắt đầu**: Các services khác
+- ⏳ **Chưa bắt đầu**: 26 services khác
+
+**Ước tính tổng số tests cần thiết:** ~270 unit tests
+
+**Phân bổ tests theo độ ưu tiên:**
+- **Cao** (8 services): Auth, Course, Payment, User, Question, Test, Enrollment, TestAttempt → ~120 tests
+- **Trung bình** (13 services): Lesson, Document, AdminDashboard, Choice, TestQuestion, TestTemplate, TestTemplateConfig, Cache, Livestream, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~130 tests  
+- **Thấp** (6 services): TestTemplateType, SubContent, InstructorProfile, StudentProfile → ~20 tests
 
 **Ưu tiên thực hiện:**
-1. **Cao** (Auth, Course, Payment): Core business logic
-2. **Trung bình** (User, Question, Test): Important features
+1. **Cao** (Core business logic): Authentication, Course Management, Payment, User Management
+2. **Trung bình** (Important features): Testing System, Content Management, Progress Tracking
+3. **Thấp** (Supporting features): Profile Management, Configuration Services
 3. **Thấp** (Admin, Livestream, Conversation): Supporting features
 
 ### 🎯 Mục Tiêu Coverage
