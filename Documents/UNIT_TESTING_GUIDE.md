@@ -709,15 +709,20 @@ open coverage/index.html
 
 > **Ghi chú**: CourseService tests đã được implement đầy đủ với coverage 100% cho tất cả các methods trong ICourseService interface.
 
-#### 💳 **3. PaymentService Tests** (Độ ưu tiên: Cao)
-- [ ] `ProcessCreditPaymentAsync_WithSufficientCredit_ShouldProcessPayment`
-- [ ] `ProcessCreditPaymentAsync_WithInsufficientCredit_ShouldThrowException`
-- [ ] `ProcessCreditPaymentAsync_WithInvalidUser_ShouldThrowNotFoundException`
-- [ ] `HasSufficientCreditAsync_WithSufficientCredit_ShouldReturnTrue`
-- [ ] `HasSufficientCreditAsync_WithInsufficientCredit_ShouldReturnFalse`
-- [ ] `GetUserPaymentHistoryAsync_WithValidUserId_ShouldReturnHistory`
-- [ ] `CreatePaymentLinkAsync_WithValidData_ShouldReturnPaymentLink`
-- [ ] `ProcessPaymentCallbackAsync_WithValidCallback_ShouldUpdatePaymentStatus`
+#### 💳 **3. PaymentService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (11/8)
+- [x] `ProcessCreditPaymentAsync_WithSufficientCredit_ShouldProcessPayment`
+- [x] `ProcessCreditPaymentAsync_WithInsufficientCredit_ShouldThrowException`
+- [x] `ProcessCreditPaymentAsync_WithInvalidUser_ShouldThrowNotFoundException`
+- [x] `HasSufficientCreditAsync_WithSufficientCredit_ShouldReturnTrue`
+- [x] `HasSufficientCreditAsync_WithInsufficientCredit_ShouldReturnFalse`
+- [x] `HasSufficientCreditAsync_WithNonExistentUser_ShouldReturnFalse`
+- [x] `GetUserPaymentHistoryAsync_WithValidUserId_ShouldReturnHistory`
+- [x] `GetUserPaymentHistoryAsync_WithNoPayments_ShouldReturnEmptyList`
+- [x] `CreateCreditPurchaseAsync_WithValidData_ShouldReturnPaymentLink`
+- [x] `ProcessPayOSWebhookAsync_WithValidCallback_ShouldUpdatePaymentStatus`
+- [x] `ProcessPayOSWebhookAsync_WithAlreadyProcessedPayment_ShouldSkipProcessing`
+
+> **Ghi chú**: PaymentService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm credit payment processing, payment history, payment gateway integration với PayOS, và webhook handling với idempotency protection.
 
 #### 👥 **4. UserService Tests** (Độ ưu tiên: Cao)
 - [ ] `GetAllUsersAsync_WithValidParams_ShouldReturnPaginatedUsers`
