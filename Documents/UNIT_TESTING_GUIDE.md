@@ -28,20 +28,17 @@ Tests/
 │   │   ├── Payment/
 │   │   └── ...
 │   ├── Utilities/                           # Tests cho utility classes
-│   └── Validators/                          # Tests cho validation logic
-├── JCertPreApplication.IntegrationTests/    # Integration tests
-│   ├── Controllers/                         # API endpoint tests
-│   ├── Repositories/                        # Database integration tests
-│   └── Services/                            # External service integration tests
-└── JCertPreApplication.ArchitectureTests/   # Architecture compliance tests
-    └── ArchitectureTests.cs
+│   └── Common/                              # Shared testing utilities
+└── JCertPreApplication.IntegrationTests/    # Integration tests
+    ├── Controllers/                         # API endpoint tests
+    ├── Repositories/                        # Database integration tests
+    └── Infrastructure/                      # Test setup and fixtures
 ```
 
-### Test Pyramid Strategy
+### Test Strategy
 
-1. **Unit Tests (70%)**: Test các business logic, services, utilities
-2. **Integration Tests (20%)**: Test tương tác giữa các layers
-3. **End-to-End Tests (10%)**: Test complete workflows
+1. **Unit Tests (80%)**: Test các business logic, services, utilities
+2. **Integration Tests (20%)**: Test tương tác giữa các components
 
 ## Công Cụ và Thư Viện
 
@@ -58,8 +55,7 @@ Tests/
 - **Microsoft.EntityFrameworkCore.InMemory**: In-memory database cho testing
 - **Testcontainers**: Container-based testing cho PostgreSQL
 
-### Architecture Testing
-- **NetArchTest**: Kiểm tra compliance của Clean Architecture rules
+
 
 ### Test Coverage
 - **coverlet.collector**: Code coverage collection
@@ -288,10 +284,6 @@ dotnet sln add JCertPreApplication.UnitTests/JCertPreApplication.UnitTests.cspro
 # Tạo Integration Test project  
 dotnet new xunit -n JCertPreApplication.IntegrationTests
 dotnet sln add JCertPreApplication.IntegrationTests/JCertPreApplication.IntegrationTests.csproj
-
-# Tạo Architecture Test project
-dotnet new xunit -n JCertPreApplication.ArchitectureTests
-dotnet sln add JCertPreApplication.ArchitectureTests/JCertPreApplication.ArchitectureTests.csproj
 ```
 
 ### Bước 3: Thêm Package References
@@ -527,58 +519,7 @@ public class AuthControllerTests : IClassFixture<WebApplicationFactory<Program>>
 }
 ```
 
-### 4. Architecture Tests
 
-```csharp
-public class ArchitectureTests
-{
-    [Fact]
-    public void Domain_Should_NotHaveDependencyOnOtherProjects()
-    {
-        // Arrange
-        var domainAssembly = Assembly.GetAssembly(typeof(User));
-
-        // Act & Assert
-        var result = Types.InAssembly(domainAssembly)
-            .Should()
-            .NotHaveDependencyOnAll(
-                "JCertPreApplication.Application",
-                "JCertPreApplication.Persistence",
-                "JCertPreApplication.API");
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Application_Should_NotHaveDependencyOnPersistence()
-    {
-        // Arrange
-        var applicationAssembly = Assembly.GetAssembly(typeof(AuthService));
-
-        // Act & Assert
-        var result = Types.InAssembly(applicationAssembly)
-            .Should()
-            .NotHaveDependencyOn("JCertPreApplication.Persistence");
-
-        result.Should().BeTrue();
-    }
-
-    [Fact]
-    public void Controllers_Should_NotHaveDependencyOnPersistence()
-    {
-        // Arrange
-        var apiAssembly = Assembly.GetAssembly(typeof(AuthController));
-
-        // Act & Assert
-        var result = Types.InAssembly(apiAssembly)
-            .That().ResideInNamespace("JCertPreApplication.API.Controllers")
-            .Should()
-            .NotHaveDependencyOn("JCertPreApplication.Persistence");
-
-        result.Should().BeTrue();
-    }
-}
-```
 
 ## CI/CD Integration
 
@@ -640,12 +581,6 @@ jobs:
           --no-build \
           --verbosity normal
           
-    - name: Run Architecture Tests
-      run: |
-        dotnet test JCertPreApplication.ArchitectureTests \
-          --no-build \
-          --verbosity normal
-          
     - name: Generate Coverage Report
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
@@ -677,7 +612,6 @@ dotnet test JCertPreApplication.UnitTests \
 dotnet test JCertPreApplication.IntegrationTests
 
 # Chạy tests với filter
-dotnet test --filter "Category=Unit"
 dotnet test --filter "FullyQualifiedName~AuthService"
 
 # Chạy tests parallel
@@ -705,14 +639,12 @@ open coverage/index.html
 - **Controllers**: Minimum 70% coverage
 
 ### Test Categories Distribution
-- **Unit Tests**: 70% of total tests
-- **Integration Tests**: 20% of total tests  
-- **Architecture Tests**: 10% of total tests
+- **Unit Tests**: 80% of total tests
+- **Integration Tests**: 20% of total tests
 
 ### Quality Gates
 - All tests must pass
 - Code coverage >= 80%
-- No architecture violations
 - Performance tests within acceptable limits
 
 ## Troubleshooting

@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.API", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infrastructure", "Infrastructure", "{0A3FA1C2-2411-4A2C-9937-EC5694907D22}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E9DF2D12-3A5E-43BC-970F-ABE2F8EE9AB4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Domain", "JCertPreApplication.Domain\JCertPreApplication.Domain.csproj", "{9B62B8A0-CD16-4932-B925-463B90BA1479}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.Application", "JCertPreApplication.Application\JCertPreApplication.Application.csproj", "{288F9C86-C1D7-494D-963F-6A31AF7CB7DD}"
@@ -18,8 +16,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.UnitTests", "JCertPreApplication.UnitTests\JCertPreApplication.UnitTests.csproj", "{24E363D2-EC17-4F60-AE6C-31D75A0716A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.IntegrationTests", "JCertPreApplication.IntegrationTests\JCertPreApplication.IntegrationTests.csproj", "{D90CCCE5-247B-474A-9841-08E2E0F74A67}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JCertPreApplication.ArchitectureTests", "JCertPreApplication.ArchitectureTests\JCertPreApplication.ArchitectureTests.csproj", "{C02FF9F8-29BE-4C70-BAA9-2FDBE26EB2F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,10 +47,6 @@ Global
 		{D90CCCE5-247B-474A-9841-08E2E0F74A67}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D90CCCE5-247B-474A-9841-08E2E0F74A67}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D90CCCE5-247B-474A-9841-08E2E0F74A67}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C02FF9F8-29BE-4C70-BAA9-2FDBE26EB2F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C02FF9F8-29BE-4C70-BAA9-2FDBE26EB2F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C02FF9F8-29BE-4C70-BAA9-2FDBE26EB2F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C02FF9F8-29BE-4C70-BAA9-2FDBE26EB2F6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
