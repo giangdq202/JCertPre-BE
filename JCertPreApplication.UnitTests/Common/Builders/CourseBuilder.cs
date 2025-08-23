@@ -20,7 +20,10 @@ public class CourseBuilder
             createdAt = DateTime.UtcNow,
             startDate = DateTime.UtcNow,
             endDate = DateTime.UtcNow.AddMonths(3),
-            courseType = CourseType.Public
+            courseType = CourseType.Public,
+            Lessons = new List<Lesson>(),
+            Enrollments = new List<Enrollment>(),
+            CourseInstructors = new List<CourseInstructor>()
         };
     }
 
@@ -71,6 +74,48 @@ public class CourseBuilder
     public CourseBuilder WithCreatedAt(DateTime createdAt)
     {
         _course.createdAt = createdAt;
+        return this;
+    }
+
+    public CourseBuilder WithCourseType(CourseType courseType)
+    {
+        _course.courseType = courseType;
+        return this;
+    }
+
+    public CourseBuilder WithStatus(CourseStatus status)
+    {
+        _course.status = status;
+        return this;
+    }
+
+    public CourseBuilder WithStartDate(DateTime startDate)
+    {
+        _course.startDate = startDate;
+        return this;
+    }
+
+    public CourseBuilder WithEndDate(DateTime endDate)
+    {
+        _course.endDate = endDate;
+        return this;
+    }
+
+    public CourseBuilder WithEnrollments(List<Enrollment> enrollments)
+    {
+        _course.Enrollments = enrollments;
+        return this;
+    }
+
+    public CourseBuilder WithNoEnrollments()
+    {
+        _course.Enrollments = new List<Enrollment>();
+        return this;
+    }
+
+    public CourseBuilder WithCourseInstructors(List<CourseInstructor> courseInstructors)
+    {
+        _course.CourseInstructors = courseInstructors;
         return this;
     }
 

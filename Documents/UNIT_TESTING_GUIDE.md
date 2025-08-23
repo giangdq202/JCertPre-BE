@@ -677,35 +677,37 @@ open coverage/index.html
 ### 📋 Checklist Unit Tests cho Application Layer - 27 Services
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
-- [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens` ✅ (Đã có)
-- [x] `LoginAsync_WithInvalidEmail_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [x] `LoginAsync_WithInvalidPassword_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [x] `LoginAsync_WithInactiveUser_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [x] `RegisterAsync_WithValidData_ShouldReturnTokens` ✅ (Đã có)
-- [x] `RegisterAsync_WithExistingEmail_ShouldThrowBadRequestException` ✅ (Đã có)
-- [x] `RegisterAsync_WithInvalidData_ShouldThrowValidationException` ✅ (Đã có)
-- [x] `RefreshTokenAsync_WithValidToken_ShouldReturnNewTokens` ✅ (Đã có)
-- [x] `RefreshTokenAsync_WithExpiredToken_ShouldThrowUnauthorizedException` ✅ (Đã có)
-- [x] `LogoutAsync_WithValidToken_ShouldRevokeToken` ✅ (Đã có)
-- [x] `ResetPasswordAsync_WithValidToken_ShouldUpdatePassword` ✅ (Đã có)
-- [x] `ForgotPasswordAsync_WithValidEmail_ShouldSendResetEmail` ✅ (Đã có)
+- [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
+- [x] `LoginAsync_WithInvalidEmail_ShouldThrowUnauthorizedException`
+- [x] `LoginAsync_WithInvalidPassword_ShouldThrowUnauthorizedException`
+- [x] `LoginAsync_WithInactiveUser_ShouldThrowUnauthorizedException`
+- [x] `RegisterAsync_WithValidData_ShouldReturnTokens`
+- [x] `RegisterAsync_WithExistingEmail_ShouldThrowBadRequestException`
+- [x] `RegisterAsync_WithInvalidData_ShouldThrowValidationException`
+- [x] `RefreshTokenAsync_WithValidToken_ShouldReturnNewTokens`
+- [x] `RefreshTokenAsync_WithExpiredToken_ShouldThrowUnauthorizedException`
+- [x] `LogoutAsync_WithValidToken_ShouldRevokeToken`
+- [x] `ResetPasswordAsync_WithValidToken_ShouldUpdatePassword`
+- [x] `ForgotPasswordAsync_WithValidEmail_ShouldSendResetEmail`
 
 > **Ghi chú**: Đã xóa `ChangePasswordAsync` tests vì method này không tồn tại trong IAuthService interface.
 
-#### 🎓 **2. CourseService Tests** (Độ ưu tiên: Cao)
-- [ ] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto`
-- [ ] `CreateCourseAsync_WithDuplicateTitle_ShouldThrowBadRequestException`
-- [ ] `CreateCourseAsync_WithInvalidData_ShouldThrowValidationException`
-- [ ] `GetCourseByIdAsync_WithExistingId_ShouldReturnCourse`
-- [ ] `GetCourseByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `UpdateCourseAsync_WithValidData_ShouldUpdateCourse`
-- [ ] `UpdateCourseAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `DeleteCourseAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `DeleteCourseAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `AddInstructorToCourseAsync_WithValidIds_ShouldAddInstructor`
-- [ ] `AddInstructorToCourseAsync_WithInvalidInstructorRole_ShouldThrowException`
-- [ ] `RemoveInstructorFromCourseAsync_WithValidIds_ShouldRemoveInstructor`
-- [ ] `GetCoursesWithPaginationAsync_WithValidParams_ShouldReturnPaginatedResults`
+#### 🎓 **2. CourseService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (13/13)
+- [x] `CreateCourseAsync_WithValidData_ShouldReturnCourseDto` ✅ (Đã có)
+- [x] `CreateCourseAsync_WithDuplicateTitle_ShouldThrowBadRequestException` ✅ (Đã có)
+- [x] `CreateCourseAsync_WithInvalidData_ShouldThrowValidationException` ✅ (Đã có)
+- [x] `GetCourseByIdAsync_WithExistingId_ShouldReturnCourse` ✅ (Đã có)
+- [x] `GetCourseByIdAsync_WithNonExistentId_ShouldThrowNotFoundException` ✅ (Đã có)
+- [x] `UpdateCourseAsync_WithValidData_ShouldUpdateCourse` ✅ (Đã có)
+- [x] `UpdateCourseAsync_WithNonExistentId_ShouldThrowNotFoundException` ✅ (Đã có)
+- [x] `DeleteCourseAsync_WithExistingId_ShouldMarkAsDeleted` ✅ (Đã có)
+- [x] `DeleteCourseAsync_WithNonExistentId_ShouldThrowNotFoundException` ✅ (Đã có)
+- [x] `AddInstructorToCourseAsync_WithValidIds_ShouldAddInstructor` ✅ (Đã có)
+- [x] `AddInstructorToCourseAsync_WithInvalidInstructorRole_ShouldThrowException` ✅ (Đã có)
+- [x] `RemoveInstructorFromCourseAsync_WithValidIds_ShouldRemoveInstructor` ✅ (Đã có)
+- [x] `GetCoursesWithPaginationAsync_WithValidParams_ShouldReturnPaginatedResults` ✅ (Đã có)
+
+> **Ghi chú**: CourseService tests đã được implement đầy đủ với coverage 100% cho tất cả các methods trong ICourseService interface.
 
 #### 💳 **3. PaymentService Tests** (Độ ưu tiên: Cao)
 - [ ] `ProcessCreditPaymentAsync_WithSufficientCredit_ShouldProcessPayment`
