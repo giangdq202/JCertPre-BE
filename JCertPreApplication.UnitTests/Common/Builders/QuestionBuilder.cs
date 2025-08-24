@@ -64,6 +64,12 @@ namespace JCertPreApplication.UnitTests.Common.Builders
             return this;
         }
 
+        public QuestionBuilder WithIsActive(bool isActive)
+        {
+            _question.isActive = isActive;
+            return this;
+        }
+
         public QuestionBuilder AsInactive()
         {
             _question.isActive = false;
