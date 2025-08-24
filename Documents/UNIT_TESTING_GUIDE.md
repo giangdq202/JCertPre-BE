@@ -826,14 +826,30 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: LessonService tests đã được implement với coverage đầy đủ cho các business scenarios cốt lõi. Bao gồm lesson management (pagination, create, update, delete), lesson ordering logic, course validation, và error handling với proper mock setups. Infrastructure bao gồm LessonBuilder và LessonServiceFixture theo AAA testing pattern.
 
-#### 📄 **10. DocumentService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateDocumentAsync_WithValidData_ShouldCreateDocument`
-- [ ] `GetDocumentByIdAsync_WithExistingId_ShouldReturnDocument`
-- [ ] `GetDocumentByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `UpdateDocumentAsync_WithValidData_ShouldUpdateDocument`
-- [ ] `DeleteDocumentAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `GetDocumentsByLessonIdAsync_WithValidLessonId_ShouldReturnDocuments`
-- [ ] `UploadDocumentFileAsync_WithValidFile_ShouldUploadAndReturnUrl`
+#### 📄 **10. DocumentService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (21/21)
+- [x] `UploadImageDocumentAsync_WithValidImageFile_ShouldUploadAndReturnDto`
+- [x] `UploadImageDocumentAsync_WithNonExistentLesson_ShouldThrowNotFoundException`
+- [x] `UploadImageDocumentAsync_WithNullFile_ShouldThrowBadRequestException`
+- [x] `UploadImageDocumentAsync_WithInvalidFileType_ShouldThrowBadRequestException`
+- [x] `UploadImageDocumentAsync_WithFileTooLarge_ShouldThrowBadRequestException`
+- [x] `UploadImageDocumentAsync_WhenUploadFails_ShouldThrowInternalServerError`
+- [x] `UploadImageDocumentAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `UploadVideoDocumentAsync_WithValidVideoFile_ShouldUploadAndReturnDto`
+- [x] `UploadVideoDocumentAsync_WithInvalidFileType_ShouldThrowBadRequestException`
+- [x] `UploadVideoDocumentAsync_WithFileTooLarge_ShouldThrowBadRequestException`
+- [x] `UploadRawDocumentAsync_WithValidDocumentFile_ShouldUploadAndReturnDto`
+- [x] `UploadRawDocumentAsync_WithInvalidFileType_ShouldThrowBadRequestException`
+- [x] `UploadRawDocumentAsync_WithFileTooLarge_ShouldThrowBadRequestException`
+- [x] `GetDocumentByIdAsync_WithExistingId_ShouldReturnDocument`
+- [x] `GetDocumentByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `GetDocumentsByLessonIdAsync_WithValidLessonId_ShouldReturnDocuments`
+- [x] `GetDocumentsByLessonIdAsync_WithNoDocuments_ShouldReturnEmptyCollection`
+- [x] `DeleteDocumentAsync_WithExistingDocument_ShouldDeleteFromStorageAndDatabase`
+- [x] `DeleteDocumentAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `DeleteDocumentAsync_WhenFileServiceFails_ShouldStillDeleteFromDatabase`
+- [x] `DeleteDocumentAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+
+> **Ghi chú hoàn thành**: DocumentService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive file upload management (3 loại files: image, video, document), file validation (type, size limits), lesson validation, file storage integration, complex deletion logic với fallback strategies, và complete error handling. Infrastructure bao gồm DocumentBuilder, DocumentServiceFixture, FormFileHelper (mock IFormFile), và comprehensive AAA testing pattern implementation.
 
 #### 📊 **11. AdminDashboardService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `GetTotalRevenueAsync_ShouldReturnCorrectRevenue`
