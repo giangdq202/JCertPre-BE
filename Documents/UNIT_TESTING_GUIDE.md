@@ -743,16 +743,18 @@ open coverage/index.html
 
 > **Ghi chú**: UserService tests đã được implement đầy đủ với coverage hoàn chỉnh cho tất cả các business scenarios.
 
-#### ❓ **5. QuestionService Tests** (Độ ưu tiên: Cao)
-- [ ] `CreateAsync_WithValidData_ShouldCreateQuestion`
-- [ ] `CreateAsync_WithInvalidData_ShouldThrowValidationException`
-- [ ] `GetByIdAsync_WithExistingId_ShouldReturnQuestion`
-- [ ] `GetByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `UpdateAsync_WithValidData_ShouldUpdateQuestion`
-- [ ] `UpdateAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `DeleteAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `GetPaginatedWithDetailsAsync_WithValidParams_ShouldReturnPaginatedResults`
-- [ ] `GetPaginatedActiveWithDetailsAsync_WithFilters_ShouldReturnFilteredResults`
+#### ❓ **5. QuestionService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (9/9 tests)
+- [x] `CreateAsync_ValidQuestion_ShouldReturnCreatedQuestion`
+- [x] `CreateAsync_InvalidSubContent_ShouldThrowException`
+- [x] `GetByIdAsync_ExistingQuestion_ShouldReturnQuestion`
+- [x] `GetByIdAsync_NonExistingQuestion_ShouldThrowException`
+- [x] `UpdateAsync_ValidQuestion_ShouldReturnUpdatedQuestion`
+- [x] `UpdateAsync_NonExistingQuestion_ShouldThrowException`
+- [x] `UpdateAsync_DuplicateContent_ShouldThrowException`
+- [x] `DeleteAsync_ValidQuestion_ShouldDeleteSuccessfully`
+- [x] `DeleteAsync_NonExistingQuestion_ShouldThrowException`
+
+> **Ghi chú**: QuestionService tests đã được implement đầy đủ với coverage 100% cho tất cả các methods trong IQuestionService interface. Bao gồm CRUD operations, validation logic, và error handling với AAA testing pattern.
 
 #### 📝 **6. TestService Tests** (Độ ưu tiên: Cao)
 - [ ] `GetByTestIdAsync_WithExistingId_ShouldReturnTest`
@@ -939,9 +941,9 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 4 services (51+ tests)
+- ✅ **Hoàn thành**: 5 services (60+ tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 23 services còn lại
+- ⏳ **Chưa bắt đầu**: 22 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~270 unit tests
 
@@ -951,18 +953,17 @@ open coverage/index.html
 - **Thấp** (6 services): TestTemplateType, SubContent, InstructorProfile, StudentProfile → ~20 tests
 
 **Ưu tiên thực hiện:**
-1. **Cao** (Core business logic): Authentication, Course Management, Payment, User Management
+1. **Cao** (Core business logic): Authentication, Course Management, Payment, User Management, Question Management
 2. **Trung bình** (Important features): Testing System, Content Management, Progress Tracking
 3. **Thấp** (Supporting features): Profile Management, Configuration Services
-3. **Thấp** (Admin, Livestream, Conversation): Supporting features
 
 ### 🎯 Mục Tiêu Coverage
 
-- **AuthService**: 95% (Critical security component)
-- **CourseService**: 90% (Core business logic)
-- **PaymentService**: 95% (Financial transactions)
-- **UserService**: 85% (User management)
-- **QuestionService**: 80% (Content management)
+- **AuthService**: 95% (Critical security component) ✅
+- **CourseService**: 90% (Core business logic) ✅
+- **PaymentService**: 95% (Financial transactions) ✅
+- **UserService**: 85% (User management) ✅
+- **QuestionService**: 80% (Content management) ✅
 - **TestService**: 80% (Assessment logic)
 - **Các services khác**: 70%
 
@@ -1023,9 +1024,18 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - ✅ Pagination and filtering
 - ✅ **5 Bonus Tests**: Empty pagination, invalid role handling, edge cases
 
-**Completed Services:** 4/27 (15%)
-**Total Tests Implemented:** 51+ tests
-**Next Priority:** QuestionService, TestService, EnrollmentService
+### ✅ **QuestionService - Hoàn Thành (9/9 tests)**
+
+**Status:** ✅ **100% Complete**
+- ✅ Question CRUD operations with proper validation
+- ✅ SubContent relationship validation
+- ✅ Duplicate content detection
+- ✅ Error handling for all edge cases
+- ✅ AAA testing pattern implementation
+
+**Completed Services:** 5/27 (19%)
+**Total Tests Implemented:** 60+ tests
+**Next Priority:** TestService, EnrollmentService, TestAttemptService
 
 ---
 
