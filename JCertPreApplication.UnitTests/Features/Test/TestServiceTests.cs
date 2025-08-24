@@ -465,7 +465,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
             .ReturnsAsync(existingTest);
 
         _fixture.MockTestAttemptRepository
-            .Setup(x => x.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<TestAttempt, bool>>>()))
+            .Setup(x => x.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Domain.Entities.TestAttempt, bool>>>()))
             .ReturnsAsync(false); // No active attempts
 
         _fixture.MockTestQuestionRepository
@@ -544,7 +544,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
             .ReturnsAsync(existingTest);
 
         _fixture.MockTestAttemptRepository
-            .Setup(x => x.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<TestAttempt, bool>>>()))
+            .Setup(x => x.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Domain.Entities.TestAttempt, bool>>>()))
             .ReturnsAsync(true); // Has active attempts
 
         // Act & Assert
@@ -570,7 +570,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
             .ReturnsAsync(existingTest);
 
         _fixture.MockTestAttemptRepository
-            .Setup(x => x.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<TestAttempt, bool>>>()))
+            .Setup(x => x.AnyAsync(It.IsAny<System.Linq.Expressions.Expression<Func<Domain.Entities.TestAttempt, bool>>>()))
             .ReturnsAsync(false); // No active attempts
 
         _fixture.MockTestQuestionRepository
