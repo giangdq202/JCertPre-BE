@@ -17,7 +17,7 @@ public class TestTemplateTypeBuilder
             courseLevel = CourseLevel.N5,
             testType = TestType.JLPTAuto,
             description = "Sample description",
-            isActive = true,
+            isActive = false,
             createdAt = DateTime.UtcNow,
             totalTestScore = 100,
             totalPassPercentage = 70
@@ -71,6 +71,56 @@ public class TestTemplateTypeBuilder
     public TestTemplateTypeBuilder WithTotalPassPercentage(decimal percentage)
     {
         _testTemplateType.totalPassPercentage = percentage;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder WithUserId(Guid userId)
+    {
+        _testTemplateType.userId = userId;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder WithVerifiedUser(Guid verifiedUserId)
+    {
+        _testTemplateType.verifiedUserId = verifiedUserId;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder AsVerified()
+    {
+        _testTemplateType.verifiedUserId = Guid.NewGuid();
+        return this;
+    }
+
+    public TestTemplateTypeBuilder AsUnverified()
+    {
+        _testTemplateType.verifiedUserId = null;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder WithCreatedByUser(User user)
+    {
+        _testTemplateType.CreatedByUser = user;
+        _testTemplateType.userId = user.userId;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder WithVerifiedByUser(User user)
+    {
+        _testTemplateType.VerifiedByUser = user;
+        _testTemplateType.verifiedUserId = user.userId;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder WithDescription(string description)
+    {
+        _testTemplateType.description = description;
+        return this;
+    }
+
+    public TestTemplateTypeBuilder WithCreatedAt(DateTime createdAt)
+    {
+        _testTemplateType.createdAt = createdAt;
         return this;
     }
 
