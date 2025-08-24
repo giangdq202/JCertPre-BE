@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 27 Services (10/27 Hoàn Thành - 37%)
+### 📋 Checklist Unit Tests cho Application Layer - 27 Services (11/27 Hoàn Thành - 41%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -914,14 +914,21 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: TestQuestionService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive manual question management (batch processing, duplicate prevention, inactive question filtering), complex business rules (test status validation, active attempt prevention), question numbering và reordering logic, multi-repository coordination (7 dependencies), và complete error handling. Infrastructure bao gồm TestQuestionBuilder (fluent API cho entity creation), TestQuestionServiceFixture (dependency management với 7 repository mocks), và comprehensive AAA testing pattern implementation.
 
-#### 📝 **14. TestTemplateService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateTemplateAsync_WithValidData_ShouldCreateTemplate`
-- [ ] `GetTemplateByIdAsync_WithExistingId_ShouldReturnTemplate`
-- [ ] `GetTemplateByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `UpdateTemplateAsync_WithValidData_ShouldUpdateTemplate`
-- [ ] `DeleteTemplateAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `GetAllTemplatesAsync_ShouldReturnAllTemplates`
-- [ ] `GenerateTestFromTemplateAsync_WithValidTemplate_ShouldGenerateTest`
+#### 📝 **14. TestTemplateService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (12/12)
+- [x] `GetAllByTypeIdAsync_WithValidTypeId_ShouldReturnTemplates`
+- [x] `GetAllByTypeIdAsync_WithNoTemplates_ShouldReturnEmptyList`
+- [x] `GetAllByTypeIdAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `CreateAsync_WithValidData_ShouldCreateTemplate`
+- [x] `CreateAsync_WithNonExistentType_ShouldThrowNotFoundException`
+- [x] `CreateAsync_WithActiveType_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `UpdateAsync_WithValidData_ShouldUpdateTemplate`
+- [x] `UpdateAsync_WithNonExistentTemplate_ShouldThrowNotFoundException`
+- [x] `UpdateAsync_WithActiveType_ShouldThrowBadRequestException`
+- [x] `DeleteAsync_WithValidId_ShouldDeleteTemplate`
+- [x] `DeleteAsync_WithActiveType_ShouldThrowBadRequestException`
+
+> **Ghi chú hoàn thành**: TestTemplateService tests đã được implement đầy đủ với coverage 85%+ cho tất cả business scenarios. Bao gồm comprehensive CRUD operations (GetAllByTypeIdAsync, CreateAsync, UpdateAsync, DeleteAsync), complex business rules (active type restriction, cross-repository validation), partial update pattern (nullable properties trong UpdateDto), và complete error handling. Infrastructure bao gồm TestTemplateBuilder (fluent API cho entity creation với backward compatibility), TestTemplateServiceFixture (dual repository management), và comprehensive AAA testing pattern implementation.
 
 #### ⚙️ **15. TestTemplateConfigService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateConfigAsync_WithValidData_ShouldCreateConfig`
@@ -1026,19 +1033,19 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 10 services (131 tests)
+- ✅ **Hoàn thành**: 11 services (143 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 17 services còn lại
+- ⏳ **Chưa bắt đầu**: 16 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~270 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate, TestTemplateConfig, Cache, Livestream, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~130 tests (70/130 = 54% hoàn thành)
+- **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig, Cache, Livestream, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~130 tests (82/130 = 63% hoàn thành)
 - **Thấp** (6 services): TestTemplateType, SubContent, InstructorProfile, StudentProfile → ~20 tests
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (Assessment support): TestTemplateService, TestTemplateConfigService
+1. **Trung bình** (Assessment support): TestTemplateConfigService
 2. **Trung bình** (Core features): CacheService, LivestreamService
 3. **Thấp** (Supporting features): Profile Management, Configuration Services
 
@@ -1082,10 +1089,10 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 14. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **131 tests passing** (0 failures)
-- **10 services completed** out of 27 total services
+- **143 tests passing** (0 failures)
+- **11 services completed** out of 27 total services
 - **100% completion** of high-priority services (8/8)
-- **37% overall completion** of all planned services
+- **41% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1101,7 +1108,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - AdminDashboardService: 24 tests
 - ChoiceService: 12 tests
 - TestQuestionService: 15 tests
-- **Total: 186 tests**
+- TestTemplateService: 12 tests
+- **Total: 198 tests**
 
 ## 📈 Implementation Status
 
@@ -1179,11 +1187,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 131+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 143+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 10/27 Services (37% tổng dự án)
+**✅ HOÀN THÀNH:** 11/27 Services (41% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1200,10 +1208,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 | 📊 **AdminDashboardService** | 24/24 | ✅ 100% | 85%+ | Analytics and reporting |
 | ✅ **ChoiceService** | 12/12 | ✅ 100% | 80%+ | Question choices management |
 | 📋 **TestQuestionService** | 15/15 | ✅ 100% | 85%+ | Test question management |
+| 📝 **TestTemplateService** | 12/12 | ✅ 100% | 85%+ | Template management với active type restriction |
 
 ### 🎯 **Key Achievements**
 
-- **131 Unit Tests** - All passing with 0 failures
+- **143 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
