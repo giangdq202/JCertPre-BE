@@ -1,4 +1,5 @@
 using JCertPreApplication.Domain.Entities;
+using System;
 
 namespace JCertPreApplication.UnitTests.Common.Builders;
 
@@ -14,7 +15,7 @@ public class EnrollmentBuilder
             userId = Guid.NewGuid(),
             courseId = Guid.NewGuid(),
             enrollDate = DateTime.UtcNow,
-            price = 100.00m
+            price = 1000000m
         };
     }
 
@@ -38,29 +39,21 @@ public class EnrollmentBuilder
         return this;
     }
 
-    public EnrollmentBuilder WithPrice(decimal price)
-    {
-        _enrollment.price = price;
-        return this;
-    }
-
     public EnrollmentBuilder WithEnrollDate(DateTime enrollDate)
     {
         _enrollment.enrollDate = enrollDate;
         return this;
     }
 
-    public EnrollmentBuilder WithUser(User user)
+    public EnrollmentBuilder WithPrice(decimal price)
     {
-        _enrollment.User = user;
-        _enrollment.userId = user.userId;
+        _enrollment.price = price;
         return this;
     }
 
     public EnrollmentBuilder WithCourse(Course course)
     {
         _enrollment.Course = course;
-        _enrollment.courseId = course.courseId;
         return this;
     }
 

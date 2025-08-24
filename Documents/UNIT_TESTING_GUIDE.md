@@ -851,13 +851,33 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: DocumentService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive file upload management (3 loại files: image, video, document), file validation (type, size limits), lesson validation, file storage integration, complex deletion logic với fallback strategies, và complete error handling. Infrastructure bao gồm DocumentBuilder, DocumentServiceFixture, FormFileHelper (mock IFormFile), và comprehensive AAA testing pattern implementation.
 
-#### 📊 **11. AdminDashboardService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `GetTotalRevenueAsync_ShouldReturnCorrectRevenue`
-- [ ] `GetCurrentMonthRevenueAsync_ShouldReturnCurrentMonthData`
-- [ ] `GetRevenueByMonthAsync_WithValidYear_ShouldReturnMonthlyData`
-- [ ] `GetCurrentMonthEnrollmentsAsync_ShouldReturnCurrentMonthEnrollments`
-- [ ] `GetEnrollmentsByMonthAsync_WithValidYear_ShouldReturnMonthlyEnrollments`
-- [ ] `GetDashboardStatsAsync_ShouldReturnComprehensiveStats`
+#### 📊 **11. AdminDashboardService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (24/24)
+- [x] `GetTotalRevenueAsync_WithCompletedMoneyPayments_ShouldReturnCorrectTotalRevenue`
+- [x] `GetTotalRevenueAsync_WithNoCompletedPayments_ShouldReturnZeroRevenue`
+- [x] `GetTotalRevenueAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetCurrentMonthRevenueAsync_WithCurrentMonthData_ShouldReturnCorrectAmount`
+- [x] `GetCurrentMonthRevenueAsync_WithNoCurrentMonthData_ShouldReturnZeroAmount`
+- [x] `GetCurrentMonthRevenueAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetRevenueByMonthAsync_WithLast12MonthsData_ShouldReturnCompleteMonthlyData`
+- [x] `GetRevenueByMonthAsync_WithPartialData_ShouldFillMissingMonthsWithZero`
+- [x] `GetRevenueByMonthAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetTotalEnrollmentsAsync_WithExistingEnrollments_ShouldReturnCorrectCount`
+- [x] `GetTotalEnrollmentsAsync_WithNoEnrollments_ShouldReturnZeroCount`
+- [x] `GetTotalEnrollmentsAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetCurrentMonthEnrollmentsAsync_WithCurrentMonthData_ShouldReturnCorrectCount`
+- [x] `GetCurrentMonthEnrollmentsAsync_WithNoCurrentMonthData_ShouldReturnZeroCount`
+- [x] `GetCurrentMonthEnrollmentsAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetEnrollmentsByMonthAsync_WithLast12MonthsData_ShouldReturnCompleteMonthlyData`
+- [x] `GetEnrollmentsByMonthAsync_WithPartialData_ShouldFillMissingMonthsWithZero`
+- [x] `GetEnrollmentsByMonthAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetCurrentMonthRevenueAsync_AtMonthBoundary_ShouldCalculateCorrectDateRange`
+- [x] `GetCurrentMonthEnrollmentsAsync_AtMonthBoundary_ShouldCalculateCorrectDateRange`
+- [x] `GetRevenueByMonthAsync_CrossingYearBoundary_ShouldHandleCorrectly`
+- [x] `GetEnrollmentsByMonthAsync_CrossingYearBoundary_ShouldHandleCorrectly`
+- [x] `GetRevenueByMonthAsync_WithFutureData_ShouldProcessAllRepositoryData`
+- [x] `GetEnrollmentsByMonthAsync_WithFutureData_ShouldProcessAllRepositoryData`
+
+> **Ghi chú hoàn thành**: AdminDashboardService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive analytics và reporting (revenue, enrollments), complex date calculations (current month, 12 months range, year boundary crossing), data aggregation logic (payment filtering, monthly statistics), parameter normalization, và complete error handling. Infrastructure bao gồm EnrollmentBuilder, DateTimeHelper (date utilities), AdminDashboardServiceFixture (test data generation), và comprehensive AAA testing pattern implementation.
 
 #### � **12. ChoiceService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateChoiceAsync_WithValidData_ShouldCreateChoice`
