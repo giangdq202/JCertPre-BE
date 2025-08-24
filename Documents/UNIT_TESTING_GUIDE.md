@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 27 Services (13/27 Hoàn Thành - 48%)
+### 📋 Checklist Unit Tests cho Application Layer - 26 Services (13/26 Hoàn Thành - 50%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -974,15 +974,7 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: TestTemplateTypeService tests đã được implement đầy đủ với coverage 90%+ cho tất cả business scenarios. Bao gồm comprehensive multi-repository coordination (4 dependencies: Type, Test, Template, Config), complex business rules (duplicate prevention với composite key, complex activation logic, self-verification prevention, deletion protection), advanced search & pagination (multi-field filtering với navigation properties), partial update pattern (nullable properties trong UpdateDto), complex summary generation (data aggregation across multiple entities), và complete error handling. Infrastructure bao gồm enhanced TestTemplateTypeBuilder (verification và user management methods), TestTemplateTypeServiceFixture (4 repository management với comprehensive helper methods), và comprehensive AAA testing pattern implementation.
 
-#### 💾 **17. CacheService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `SetAsync_WithValidData_ShouldStoreInCache`
-- [ ] `GetAsync_WithExistingKey_ShouldReturnCachedData`
-- [ ] `GetAsync_WithNonExistentKey_ShouldReturnDefault`
-- [ ] `RemoveAsync_WithExistingKey_ShouldRemoveFromCache`
-- [ ] `ExistsAsync_WithExistingKey_ShouldReturnTrue`
-- [ ] `SetMultipleAsync_WithValidData_ShouldStoreMultipleItems`
-
-#### 🎥 **18. LivestreamService Tests** (Độ ưu tiên: Trung bình)
+#### 🎥 **17. LivestreamService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateLivestreamAsync_WithValidData_ShouldCreateLivestream`
 - [ ] `JoinLivestreamAsync_WithValidData_ShouldReturnJoinInfo`
 - [ ] `UpdateLivestreamStatusAsync_WithValidStatus_ShouldUpdateStatus`
@@ -990,7 +982,7 @@ open coverage/index.html
 - [ ] `EndLivestreamAsync_WithValidId_ShouldEndLivestream`
 - [ ] `GetActiveLivestreamsAsync_ShouldReturnActiveLivestreams`
 
-#### 📝 **19. FeedbackService Tests** (Độ ưu tiên: Trung bình)
+#### 📝 **18. FeedbackService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateFeedbackAsync_WithValidData_ShouldCreateFeedback`
 - [ ] `GetFeedbackByIdAsync_WithExistingId_ShouldReturnFeedback`
 - [ ] `GetFeedbacksByCourseIdAsync_WithValidCourseId_ShouldReturnFeedbacks`
@@ -998,7 +990,7 @@ open coverage/index.html
 - [ ] `DeleteFeedbackAsync_WithExistingId_ShouldMarkAsDeleted`
 - [ ] `GetAverageRatingAsync_WithValidCourseId_ShouldReturnAverageRating`
 
-#### 🗨️ **20. ConversationService Tests** (Độ ưu tiên: Trung bình)
+#### 🗨️ **19. ConversationService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateConversationAsync_WithValidStudentId_ShouldCreateConversation`
 - [ ] `SendMessageAsync_WithValidData_ShouldSendMessage`
 - [ ] `AssignInstructorAsync_WithValidIds_ShouldAssignInstructor`
@@ -1006,7 +998,7 @@ open coverage/index.html
 - [ ] `GetUserConversationsAsync_WithValidUserId_ShouldReturnConversations`
 - [ ] `MarkMessageAsReadAsync_WithValidId_ShouldMarkAsRead`
 
-#### 📝 **21. AttemptAnswerService Tests** (Độ ưu tiên: Trung bình)
+#### 📝 **20. AttemptAnswerService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateAttemptAnswerAsync_WithValidData_ShouldCreateAnswer`
 - [ ] `GetAttemptAnswerByIdAsync_WithExistingId_ShouldReturnAnswer`
 - [ ] `UpdateAttemptAnswerAsync_WithValidData_ShouldUpdateAnswer`
@@ -1014,7 +1006,7 @@ open coverage/index.html
 - [ ] `ValidateAnswerAsync_WithCorrectAnswer_ShouldReturnTrue`
 - [ ] `CalculateScoreAsync_WithValidAnswers_ShouldReturnCorrectScore`
 
-#### 📊 **22. LessonProgressService Tests** (Độ ưu tiên: Trung bình)
+#### 📊 **21. LessonProgressService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateProgressAsync_WithValidData_ShouldCreateProgress`
 - [ ] `UpdateProgressAsync_WithValidData_ShouldUpdateProgress`
 - [ ] `GetProgressByUserAndLessonAsync_WithValidIds_ShouldReturnProgress`
@@ -1022,7 +1014,7 @@ open coverage/index.html
 - [ ] `MarkLessonAsCompletedAsync_WithValidIds_ShouldMarkComplete`
 - [ ] `GetCompletionPercentageAsync_WithValidIds_ShouldReturnPercentage`
 
-#### 📋 **23. StudyPlanService Tests** (Độ ưu tiên: Trung bình)
+#### 📋 **22. StudyPlanService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `GetStudyPlanByIdAsync_WithExistingId_ShouldReturnStudyPlan`
 - [ ] `GetAllStudyPlansAsync_ShouldReturnAllPlans`
 - [ ] `CreateStudyPlanAsync_WithValidData_ShouldCreatePlan`
@@ -1030,7 +1022,7 @@ open coverage/index.html
 - [ ] `DeleteStudyPlanAsync_WithExistingId_ShouldMarkAsDeleted`
 - [ ] `GetUserStudyPlansAsync_WithValidUserId_ShouldReturnPlans`
 
-#### 📌 **24. StudyPlanItemService Tests** (Độ ưu tiên: Trung bình)
+#### 📌 **23. StudyPlanItemService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateStudyPlanItemAsync_WithValidData_ShouldCreateItem`
 - [ ] `GetStudyPlanItemByIdAsync_WithExistingId_ShouldReturnItem`
 - [ ] `UpdateStudyPlanItemAsync_WithValidData_ShouldUpdateItem`
@@ -1038,21 +1030,21 @@ open coverage/index.html
 - [ ] `GetItemsByStudyPlanIdAsync_WithValidPlanId_ShouldReturnItems`
 - [ ] `ReorderStudyPlanItemsAsync_WithValidOrder_ShouldUpdateOrder`
 
-#### 📄 **25. SubContentService Tests** (Độ ưu tiên: Thấp)
+#### 📄 **24. SubContentService Tests** (Độ ưu tiên: Thấp)
 - [ ] `CreateSubContentAsync_WithValidData_ShouldCreateSubContent`
 - [ ] `GetSubContentByIdAsync_WithExistingId_ShouldReturnSubContent`
 - [ ] `UpdateSubContentAsync_WithValidData_ShouldUpdateSubContent`
 - [ ] `DeleteSubContentAsync_WithExistingId_ShouldMarkAsDeleted`
 - [ ] `GetSubContentsByParentIdAsync_WithValidParentId_ShouldReturnSubContents`
 
-#### 👨‍🏫 **26. InstructorProfileService Tests** (Độ ưu tiên: Thấp)
+#### 👨‍🏫 **25. InstructorProfileService Tests** (Độ ưu tiên: Thấp)
 - [ ] `CreateProfileAsync_WithValidData_ShouldCreateProfile`
 - [ ] `GetProfileByIdAsync_WithExistingId_ShouldReturnProfile`
 - [ ] `UpdateProfileAsync_WithValidData_ShouldUpdateProfile`
 - [ ] `GetProfileByUserIdAsync_WithValidUserId_ShouldReturnProfile`
 - [ ] `GetAllInstructorProfilesAsync_ShouldReturnAllProfiles`
 
-#### 👨‍🎓 **27. StudentProfileService Tests** (Độ ưu tiên: Thấp)
+#### 👨‍🎓 **26. StudentProfileService Tests** (Độ ưu tiên: Thấp)
 - [ ] `CreateProfileAsync_WithValidData_ShouldCreateProfile`
 - [ ] `GetProfileByIdAsync_WithExistingId_ShouldReturnProfile`
 - [ ] `UpdateProfileAsync_WithValidData_ShouldUpdateProfile`
@@ -1064,18 +1056,18 @@ open coverage/index.html
 **Tổng quan:**
 - ✅ **Hoàn thành**: 13 services (179 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 14 services còn lại
+- ⏳ **Chưa bắt đầu**: 13 services còn lại
 
-**Ước tính tổng số tests cần thiết:** ~290 unit tests
+**Ước tính tổng số tests cần thiết:** ~280 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Cache, Livestream, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~130 tests (98/130 = 75% hoàn thành)
+- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~120 tests (98/120 = 82% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (Core features): CacheService, LivestreamService
-2. **Trung bình** (User interaction): FeedbackService, ConversationService
+1. **Trung bình** (Core features): LivestreamService, FeedbackService
+2. **Trung bình** (User interaction): ConversationService, AttemptAnswerService
 3. **Thấp** (Supporting features): SubContent, Profile Management
 
 ### 🎯 Mục Tiêu Coverage
@@ -1119,9 +1111,9 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 **🎯 Current Achievement:**
 - **179 tests passing** (0 failures)
-- **13 services completed** out of 27 total services
+- **13 services completed** out of 26 total services
 - **100% completion** of high-priority services (8/8)
-- **48% overall completion** of all planned services
+- **50% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1222,7 +1214,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 13/27 Services (48% tổng dự án)
+**✅ HOÀN THÀNH:** 13/26 Services (50% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
