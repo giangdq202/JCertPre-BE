@@ -812,15 +812,19 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: TestAttemptService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive test attempt management (start, submit, retrieve), auto-submission với expired attempts handling, score calculation với complex business logic (TestScoreSummary creation với multiple content types), enrollment và lesson validation, và complete error handling với proper mock setups cho 11 dependencies. Infrastructure bao gồm TestAttemptBuilder (fluent API cho entity creation), TestAttemptServiceFixture (dependency management), và comprehensive AAA testing pattern implementation.
 
-#### 📖 **9. LessonService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateLessonAsync_WithValidData_ShouldCreateLesson`
-- [ ] `CreateLessonAsync_WithInvalidCourseId_ShouldThrowNotFoundException`
-- [ ] `GetLessonByIdAsync_WithExistingId_ShouldReturnLesson`
-- [ ] `GetLessonByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
-- [ ] `UpdateLessonAsync_WithValidData_ShouldUpdateLesson`
-- [ ] `DeleteLessonAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `GetLessonsByCourseIdAsync_WithValidCourseId_ShouldReturnLessons`
-- [ ] `ReorderLessonsAsync_WithValidOrder_ShouldUpdateOrder`
+#### 📖 **9. LessonService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (10/10)
+- [x] `GetPaginatedAsync_WithValidCourseId_ShouldReturnPaginatedLessons`
+- [x] `GetPaginatedAsync_WithNonExistentCourseId_ShouldThrowNotFoundException`
+- [x] `CreateLessonAsync_WithValidData_ShouldCreateLessonWithCorrectOrder`
+- [x] `CreateLessonAsync_WithNonExistentCourseId_ShouldThrowNotFoundException`
+- [x] `UpdateLessonAsync_WithValidData_ShouldUpdateLessonProperties`
+- [x] `UpdateLessonAsync_WithNonExistentLessonId_ShouldThrowNotFoundException`
+- [x] `DeleteLessonByIdAsync_WithValidId_ShouldDeleteAndReorderLessons`
+- [x] `DeleteLessonByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `DeleteAllByCourseIdAsync_WithValidCourseId_ShouldDeleteAllLessons`
+- [x] `DeleteAllByCourseIdAsync_WithNonExistentCourseId_ShouldThrowNotFoundException`
+
+> **Ghi chú hoàn thành**: LessonService tests đã được implement với coverage đầy đủ cho các business scenarios cốt lõi. Bao gồm lesson management (pagination, create, update, delete), lesson ordering logic, course validation, và error handling với proper mock setups. Infrastructure bao gồm LessonBuilder và LessonServiceFixture theo AAA testing pattern.
 
 #### 📄 **10. DocumentService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateDocumentAsync_WithValidData_ShouldCreateDocument`

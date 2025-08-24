@@ -1,5 +1,4 @@
 using JCertPreApplication.Domain.Entities;
-using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.UnitTests.Common.Builders;
 
@@ -13,18 +12,18 @@ public class LessonBuilder
         {
             lessonId = Guid.NewGuid(),
             courseId = Guid.NewGuid(),
-            title = "Sample Lesson",
+            title = "Test Lesson",
+            content = "Test lesson content for unit testing",
             lessonOrder = 1,
-            content = "Sample lesson content",
-            comment = "Sample comment"
+            comment = null
         };
     }
 
     public static LessonBuilder Create() => new LessonBuilder();
 
-    public LessonBuilder WithId(Guid lessonId)
+    public LessonBuilder WithId(Guid id)
     {
-        _lesson.lessonId = lessonId;
+        _lesson.lessonId = id;
         return this;
     }
 
@@ -40,9 +39,28 @@ public class LessonBuilder
         return this;
     }
 
+    public LessonBuilder WithContent(string content)
+    {
+        _lesson.content = content;
+        return this;
+    }
+
     public LessonBuilder WithOrder(int order)
     {
         _lesson.lessonOrder = order;
+        return this;
+    }
+
+    public LessonBuilder WithComment(string? comment)
+    {
+        _lesson.comment = comment;
+        return this;
+    }
+
+    public LessonBuilder WithCourse(Course course)
+    {
+        _lesson.Course = course;
+        _lesson.courseId = course.courseId;
         return this;
     }
 
