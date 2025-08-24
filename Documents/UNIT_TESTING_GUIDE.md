@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 26 Services (14/26 Hoàn Thành - 54%)
+### 📋 Checklist Unit Tests cho Application Layer - 26 Services (17/26 Hoàn Thành - 65%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -1068,15 +1068,15 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 14 services (197 tests)
+- ✅ **Hoàn thành**: 17 services (252 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 12 services còn lại
+- ⏳ **Chưa bắt đầu**: 9 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (116/140 = 83% hoàn thành)
+- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (128/140 = 91% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
@@ -1124,10 +1124,10 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 14. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **197 tests passing** (0 failures)
-- **14 services completed** out of 26 total services
+- **252 tests passing** (0 failures)
+- **17 services completed** out of 26 total services  
 - **100% completion** of high-priority services (8/8)
-- **54% overall completion** of all planned services
+- **65% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1225,11 +1225,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 197+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 252+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 14/26 Services (54% tổng dự án)
+**✅ HOÀN THÀNH:** 17/26 Services (65% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1253,7 +1253,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 🎯 **Key Achievements**
 
-- **197 Unit Tests** - All passing with 0 failures
+- **252 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
@@ -1261,6 +1261,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - **Comprehensive Scenarios** - Happy path, edge cases, error handling
 - **All High-Priority Services Complete** - Core business functionality fully tested
 - **External Service Integration** - LiveKit service mocking và token generation
+- **Advanced Business Logic Testing** - Complex multi-repository coordination
 
 ### 🔥 **Notable Implementations**
 
