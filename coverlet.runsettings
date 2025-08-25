@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat code coverage">
+        <Configuration>
+          <Format>opencover</Format>
+          <Exclude>[*]JCertPreApplication.*.Migrations.*</Exclude>
+          <Exclude>[*]JCertPreApplication.API.Program</Exclude>
+          <Exclude>[*]JCertPreApplication.*.DependencyInjection</Exclude>
+          <Exclude>[*]JCertPreApplication.Domain.Configuration.*</Exclude>
+          <Exclude>[*]JCertPreApplication.Domain.Enums.*</Exclude>
+          <Exclude>[*]JCertPreApplication.Application.Dtos.*</Exclude>
+          <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
+          <IncludeTestAssembly>false</IncludeTestAssembly>
+          <SkipAutoProps>true</SkipAutoProps>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

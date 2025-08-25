@@ -1,8 +1,6 @@
-version: '3.8'
-
 services:
   jcertpre-be:
-    image: wakiwaki2922/jcertpre-be:v1.0
+    image: wakiwaki2922/jcertpre-be:latest
     container_name: jcertpre-be-container
     restart: unless-stopped
     ports:

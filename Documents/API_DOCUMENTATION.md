@@ -4,39 +4,41 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📋 Table of Contents
+## Table of Contents
 
-1. [🔐 Authentication APIs](#-authentication-apis)
-2. [👤 User Management APIs](#-user-management-apis)  
-3. [📚 Course Management APIs](#-course-management-apis)
-4. [📖 Lesson Management APIs](#-lesson-management-apis)
-5. [📊 Progress Tracking APIs](#-progress-tracking-apis)
-6. [📋 Study Plan Management APIs](#-study-plan-management-apis)
-7. [🎯 Study Plan Item APIs](#-study-plan-item-apis)
-8. [📄 Sub Content Management APIs](#-sub-content-management-apis)
-9. [📁 Document Management APIs](#-document-management-apis)
-10. [📂 File Management APIs](#-file-management-apis)
-11. [🎓 Enrollment Management APIs](#-enrollment-management-apis)
-12. [👨‍🏫 Instructor Profile APIs](#-instructor-profile-apis)
-13. [👨‍🎓 Student Profile APIs](#-student-profile-apis)
-14. [💬 Conversation Management APIs](#-conversation-management-apis)
-15. [📺 Livestream Management APIs](#-livestream-management-apis)
-16. [🎥 LiveKit Integration APIs](#-livekit-integration-apis)
-17. [📋 Test Management APIs](#-test-management-apis)
-18. [❓ Question Management APIs](#-question-management-apis)
-19. [⭐ Choice Management APIs](#-choice-management-apis)
-20. [🔧 Cache Management APIs](#-cache-management-apis)
-21. [📋 Test Template Configuration APIs](#-test-template-configuration-apis)
-22. [📝 Test Template Management APIs](#-test-template-management-apis)
-23. [🏷️ Test Template Type APIs](#️-test-template-type-apis)
-24. [📊 Test Attempt APIs](#-test-attempt-apis)
-25. [✅ Attempt Answer APIs](#-attempt-answer-apis)
-26. [🔍 Test Question Management APIs](#-test-question-management-apis)
-27. [💳 Payment Management APIs](#-payment-management-apis)
+1. [Authentication APIs](#authentication-apis)
+2. [Admin Dashboard APIs](#admin-dashboard-apis)
+3. [User Management APIs](#user-management-apis)  
+4. [Course Management APIs](#course-management-apis)
+5. [Lesson Management APIs](#lesson-management-apis)
+6. [Progress Tracking APIs](#progress-tracking-apis)
+7. [Study Plan Management APIs](#study-plan-management-apis)
+8. [Study Plan Item APIs](#study-plan-item-apis)
+9. [Sub Content Management APIs](#sub-content-management-apis)
+10. [Document Management APIs](#document-management-apis)
+11. [File Management APIs](#file-management-apis)
+12. [Enrollment Management APIs](#enrollment-management-apis)
+13. [Instructor Profile APIs](#instructor-profile-apis)
+14. [Student Profile APIs](#student-profile-apis)
+15. [Conversation Management APIs](#conversation-management-apis)
+16. [Livestream Management APIs](#livestream-management-apis)
+17. [LiveKit Integration APIs](#livekit-integration-apis)
+18. [Test Management APIs](#test-management-apis)
+19. [Question Management APIs](#question-management-apis)
+20. [Choice Management APIs](#choice-management-apis)
+21. [Cache Management APIs](#cache-management-apis)
+22. [Test Template Configuration APIs](#test-template-configuration-apis)
+23. [Test Template Management APIs](#test-template-management-apis)
+24. [Test Template Type APIs](#test-template-type-apis)
+25. [Test Attempt APIs](#test-attempt-apis)
+26. [Attempt Answer APIs](#attempt-answer-apis)
+27. [Test Question Management APIs](#test-question-management-apis)
+28. [Payment Management APIs](#payment-management-apis)
+29. [Feedback Management APIs](#feedback-management-apis)
 
 ---
 
-## 🔐 Authentication APIs
+## 🔐 Authentication APIs {#authentication-apis}
 
 **Base Route:** `/api/auth`
 
@@ -55,13 +57,30 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 👤 User Management APIs
+## 📊 Admin Dashboard APIs {#admin-dashboard-apis}
+
+**Base Route:** `/api/admin-dashboard`
+
+| Method | Endpoint | Description | Parameters |
+|--------|----------|-------------|------------|
+| `GET` | `/revenue/total` | Gets total revenue from money deposit transactions | - |
+| `GET` | `/enrollments/total` | Gets total number of course enrollments | - |
+| `GET` | `/enrollments/by-month` | Gets course enrollments statistics by month for last 12 months | - |
+| `GET` | `/enrollments/current-month` | Gets current month enrollments count | - |
+| `GET` | `/revenue/current-month` | Gets current month revenue amount | - |
+| `GET` | `/revenue/by-month` | Gets revenue statistics by month for last 12 months | - |
+
+---
+
+## 👤 User Management APIs {#user-management-apis}
 
 **Base Route:** `/api/users`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
 | `GET` | `/` | Gets all users with pagination and filtering | Query: `UserQueryParameters` |
+| `POST` | `/` | Creates a new user account with specified role | Body: `CreateUserDto` (multipart/form-data) |
+| `GET` | `/roles` | Gets all available roles for user creation | - |
 | `GET` | `/{userId:guid}` | Gets specific user by ID | Path: `userId` (Guid) |
 | `PUT` | `/{userId:guid}` | Updates user profile information | Path: `userId`, Body: `UpdateUserDto` (multipart/form-data) |
 | `DELETE` | `/{userId:guid}` | Deactivates user account | Path: `userId` (Guid) |
@@ -70,7 +89,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📚 Course Management APIs
+## 📚 Course Management APIs {#course-management-apis}
 
 **Base Route:** `/api/course`
 
@@ -97,7 +116,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📖 Lesson Management APIs
+## 📖 Lesson Management APIs {#lesson-management-apis}
 
 **Base Route:** `/api/lessons`
 
@@ -111,7 +130,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📊 Progress Tracking APIs
+## 📊 Progress Tracking APIs {#progress-tracking-apis}
 
 **Base Route:** `/api/lesson-progress`
 
@@ -126,13 +145,13 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📋 Study Plan Management APIs
+## 📋 Study Plan Management APIs {#study-plan-management-apis}
 
-**Base Route:** `/api/study-plan`
+**Base Route:** `/api/study-plans`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `POST` | `/create` | Creates a new study plan | Body: `CreateStudyPlanDto` |
+| `POST` | `/create` | Creates a new study plan | Body: `StudyPlanDto` |
 | `GET` | `/{planId}` | Gets study plan by ID | Path: `planId` (Guid) |
 | `GET` | `/get-all` | Gets all study plans | - |
 | `GET` | `/get-by-studentid/{studentId}` | Gets study plans by student ID | Path: `studentId` (Guid) |
@@ -140,13 +159,13 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 🎯 Study Plan Item Management APIs
+## 🎯 Study Plan Item Management APIs {#study-plan-item-apis}
 
-**Base Route:** `/api/study-plan-item`
+**Base Route:** `/api/study-plan-items`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `POST` | `/create` | Creates study plan item | Body: `CreateStudyPlanItemDto` |
+| `POST` | `/create` | Creates study plan item | Query: `planId`, `sequence`, `itemType`, `courseId?`, `testId?`, `status` |
 | `GET` | `/get-by-id/{itemId}` | Gets study plan item by ID | Path: `itemId` (Guid) |
 | `GET` | `/get-by-plan/{planId}` | Gets items by study plan ID | Path: `planId` (Guid) |
 | `PUT` | `/update/{itemId}` | Updates study plan item | Path: `itemId`, Body: `UpdateStudyPlanItemDto` |
@@ -154,7 +173,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📄 Sub Content Management APIs
+## 📄 Sub Content Management APIs {#sub-content-management-apis}
 
 **Base Route:** `/api/subcontents`
 
@@ -170,7 +189,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📁 Document Management APIs
+## 📁 Document Management APIs {#document-management-apis}
 
 **Base Route:** `/api/documents`
 
@@ -185,24 +204,24 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📂 File Management APIs
+## 📂 File Management APIs {#file-management-apis}
 
 **Base Route:** `/api/files`
 
 | Method | Endpoint | Description | Request Body |
 |--------|----------|-------------|--------------|
 | `POST` | `/upload/image` | Uploads an image file | `IFormFile` (multipart/form-data - JPEG, PNG, GIF, BMP, WebP, SVG) |
-| `POST` | `/upload/video` | Uploads a video file using chunked upload | `IFormFile` (multipart/form-data - MP4, AVI, MOV, WMV, FLV, WebM, MKV, 3GP) |
-| `POST` | `/upload/file` | Uploads a raw file (documents, archives, etc.) | `IFormFile` (multipart/form-data) |
-| `DELETE` | `/delete/image` | Deletes an image by public ID | `DeleteResourceDto` |
-| `DELETE` | `/delete/video` | Deletes a video by public ID | `DeleteResourceDto` |
-| `DELETE` | `/delete/file` | Deletes a raw file by public ID | `DeleteResourceDto` |
+| `POST` | `/upload/video` | Uploads a video or audio file using chunked upload | `IFormFile` (multipart/form-data - MP4, AVI, MOV, WMV, FLV, WebM, MKV, 3GP, MP3, WAV, AAC, OGG, FLAC, M4A, WMA, AMR) |
+| `POST` | `/upload/document` | Uploads a document file | `IFormFile` (multipart/form-data) |
+| `DELETE` | `/delete` | Deletes a file by public ID | `DeleteResourceDto` |
+| `DELETE` | `/delete/by-url` | Deletes a file by its URL | `DeleteResourceByUrlDto` |
+| `POST` | `/extract-public-id` | Extracts public ID from file URL | `ExtractPublicIdDto` |
 | `GET` | `/resources` | Gets paginated list of resources | Query: `maxResults`, `nextCursor`, `resourceType` |
 | `GET` | `/health` | Health check endpoint | - |
 
 ---
 
-## 🎓 Enrollment Management APIs
+## 🎓 Enrollment Management APIs {#enrollment-management-apis}
 
 **Base Route:** `/api/enrollments`
 
@@ -216,20 +235,20 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 👨‍🏫 Instructor Profile APIs
+## 👨‍🏫 Instructor Profile APIs {#instructor-profile-apis}
 
 **Base Route:** `/api/instructor-profile`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `POST` | `/create` | Creates instructor profile | Query: `userId`, `qualifications`, `experience` |
+| `POST` | `/create` | Creates instructor profile | Query: `userId`, `introduction`, `experience?`, `teachingStyle?` |
 | `GET` | `/{userId}` | Gets instructor's profile | Path: `userId` |
-| `PUT` | `/update/{userId}` | Updates instructor's profile | Path: `userId`, Query: `qualifications`, `experience` |
+| `PUT` | `/update/{userId}` | Updates instructor's profile | Path: `userId`, Query: `introduction`, `experience?`, `teachingStyle?` |
 | `DELETE` | `/delete/{userId}` | Deletes instructor's profile | Path: `userId` |
 
 ---
 
-## 👨‍🎓 Student Profile APIs
+## 👨‍🎓 Student Profile APIs {#student-profile-apis}
 
 **Base Route:** `/api/student-profile`
 
@@ -242,9 +261,9 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 💬 Conversation Management APIs
+## 💬 Conversation Management APIs {#conversation-management-apis}
 
-**Base Route:** `/api/conversation`
+**Base Route:** `/api/conversations`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
@@ -252,11 +271,11 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 | `POST` | `/send-messages/{conversationId}` | Sends message in conversation | Path: `conversationId`, Body: `MessageRequest` |
 | `POST` | `/assign-instructor/{conversationId}` | Assigns instructor to conversation | Path: `conversationId`, Query: `instructorId` |
 | `GET` | `/{id}` | Gets conversation details with messages | Path: `id` (Guid) |
-| `GET` | `/my-conversations` | Gets all conversations for user | - |
+| `GET` | `/my-conversations/{userId}` | Gets all conversations for user | Path: `userId` |
 
 ---
 
-## 📺 Livestream Management APIs
+## 📺 Livestream Management APIs {#livestream-management-apis}
 
 **Base Route:** `/api/livestreams`
 
@@ -266,75 +285,67 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 | `GET` | `/{id}` | Gets livestream by ID | Path: `id` (Guid) |
 | `PUT` | `/{id}` | Updates a livestream | Path: `id`, Body: `UpdateLivestreamDto` |
 | `DELETE` | `/{id}` | Deletes a livestream | Path: `id` (Guid) |
-| `GET` | `/` | Gets livestreams with comprehensive filtering | Query: `courseId`, `userId`, `startDate`, `endDate`, `timetableFormat`, `pageIndex`, `pageSize` |
+| `GET` | `/` | Gets livestreams with comprehensive filtering | Query: `courseId?`, `userId?`, `startDate?`, `endDate?`, `timetableFormat?`, `pageIndex`, `pageSize` |
 | `GET` | `/{id}/join-token` | Generates join token for livestream | Path: `id`, Query: `userId` |
 | `GET` | `/{id}/can-join` | Checks if user can join livestream | Path: `id`, Query: `userId` |
-| `POST` | `/{id}/participants/{participantId}/mute` | Mute or unmute a participant (Instructor only) | Path: `id`, `participantId`, Body: `MuteParticipantDto` |
-
-**Note:** The GET `/` endpoint supports multiple modes:
-- If `userId` and `timetableFormat=true`: Returns user's timetable format
-- If `userId` only: Returns user's livestreams  
-- If `courseId` only: Returns course livestreams
-- Default: Paginated list with date filtering support
 
 ---
 
-## 🎥 LiveKit Integration APIs
+## 🎥 LiveKit Integration APIs {#livekit-integration-apis}
 
 **Base Route:** `/api/livekit`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `GET` | `/token` | Generates access token for room | Query: `roomName`, `participantIdentity`, `participantName`, `role` |
-| `GET` | `/admin-token` | Generates admin token | Query: `roomName`, `participantIdentity`, `participantName` |
+| `GET` | `/token` | Generates access token for room | Query: `roomName`, `participantIdentity?`, `participantName?`, `role` |
 | `POST` | `/rooms` | Creates a new room | Body: `CreateRoomRequest` |
 | `GET` | `/rooms` | Gets all active rooms | - |
 | `GET` | `/rooms/{roomName}` | Gets room information | Path: `roomName` |
 | `DELETE` | `/rooms/{roomName}` | Deletes a room | Path: `roomName` |
 | `GET` | `/rooms/{roomName}/participants` | Gets room participants | Path: `roomName` |
 | `DELETE` | `/rooms/{roomName}/participants/{identity}` | Removes participant from room | Path: `roomName`, `identity` |
-| `POST` | `/rooms/{roomName}/participants/{identity}/promote` | Promotes participant to instructor | Path: `roomName`, `identity` |
-| `POST` | `/rooms/{roomName}/participants/{identity}/demote` | Demotes participant to student | Path: `roomName`, `identity` |
 | `POST` | `/rooms/{roomName}/participants/{identity}/mute` | Mutes participant's audio | Path: `roomName`, `identity` |
-| `POST` | `/rooms/{roomName}/broadcast` | Sends message to all participants | Path: `roomName`, Body: `BroadcastMessageRequest` |
-| `GET` | `/rooms/{roomName}/statistics` | Gets room statistics | Path: `roomName` |
-| `POST` | `/webhook` | Processes LiveKit webhooks | Body: webhook payload |
+| `POST` | `/rooms/{roomName}/participants/{identity}/unmute` | Unmutes participant's audio | Path: `roomName`, `identity` |
 
 ---
 
-## 📋 Test Management APIs
+## 📋 Test Management APIs {#test-management-apis}
 
 **Base Route:** `/api/tests`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `GET` | `/by-user/{userId}` | Gets all tests for a user with pagination | Path: `userId`, Query: `searchTerm`, `pageIndex`, `pageSize` |
+| `GET` | `/user/{userId}` | Gets all tests for a user with pagination | Path: `userId`, Query: `searchTerm?`, `pageIndex`, `pageSize`, `testType?`, `courseLevel?` |
 | `GET` | `/by-lesson/{lessonId}` | Gets test by lesson ID | Path: `lessonId` |
-| `POST` | `/by-lesson/{lessonId}` | Creates test for a lesson | Path: `lessonId`, Body: `CreateTestDto` |
+| `POST` | `/by-lesson/{lessonId}` | Creates test for a lesson | Path: `lessonId`, Query: `userId`, Body: `CreateTestDto` |
 | `PUT` | `/{testId}` | Updates a test | Path: `testId`, Body: `UpdateTestDto` |
 | `DELETE` | `/{testId}` | Deletes a test | Path: `testId` (Guid) |
 | `PATCH` | `/{testId}/status` | Updates test status | Path: `testId`, Body: `TestStatus` |
 | `GET` | `/{testId}` | Gets test by ID | Path: `testId` (Guid) |
+| `POST` | `/auto-create` | Creates auto test and adds questions automatically | Query: `userId`, Body: `CreateAutoTestInput` |
 
 ---
 
-## ❓ Question Management APIs
+## ❓ Question Management APIs {#question-management-apis}
 
 **Base Route:** `/api/questions`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
 | `GET` | `/{id:guid}` | Gets question by ID | Path: `id` (Guid) |
-| `POST` | `/` | Creates a new question | Body: `CreateQuestionDto` |
-| `PUT` | `/{id:guid}` | Updates a question | Path: `id`, Body: `UpdateQuestionDto` |
+| `POST` | `/` | Creates a new question | Body: `CreateQuestionDto` (multipart/form-data) |
+| `POST` | `/generate-ai` | Generates question using AI based on JLPT criteria | Body: `GenerateQuestionRequestDto` |
+| `POST` | `/generate-explanation` | Generates explanation for question using AI | Body: `ExplanationRequestDto` |
+| `PUT` | `/{id:guid}` | Updates a question | Path: `id`, Body: `UpdateQuestionDto` (multipart/form-data) |
 | `DELETE` | `/{id:guid}` | Deletes a question | Path: `id` (Guid) |
-| `GET` | `/paging-details` | Gets paginated questions with details | Query: `pageIndex`, `pageSize`, `search`, `contentName`, `level`, `subContentName` |
+| `GET` | `/paging-details` | Gets paginated questions with details | Query: `pageIndex`, `pageSize`, `search?`, `contentName?`, `level?`, `subContentName?` |
 | `GET` | `/test/{id:guid}` | Gets question by ID for test | Path: `id` (Guid) |
-| `GET` | `/paging-details/active` | Gets paginated active questions with details | Query: `pageIndex`, `pageSize`, `search`, `contentName`, `level`, `subContentName`, `difficulty` |
+| `GET` | `/paging-details/active` | Gets paginated active questions with details | Query: `pageIndex`, `pageSize`, `search?`, `contentName?`, `level?`, `subContentName?`, `difficulty?` |
+| `POST` | `/import` | Imports questions from file | Body: `ImportQuestionsRequestDto` (multipart/form-data) |
 
 ---
 
-## ⭐ Choice Management APIs
+## ⭐ Choice Management APIs {#choice-management-apis}
 
 **Base Route:** `/api/choices`
 
@@ -347,7 +358,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 🔧 Cache Management APIs
+## 🔧 Cache Management APIs {#cache-management-apis}
 
 **Base Route:** `/api/cache`
 
@@ -357,7 +368,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📋 Test Template Configuration APIs
+## 📋 Test Template Configuration APIs {#test-template-configuration-apis}
 
 **Base Route:** `/api/test-template-configs`
 
@@ -371,9 +382,9 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📝 Test Template Management APIs
+## 📝 Test Template Management APIs {#test-template-management-apis}
 
-**Base Route:** `/api/TestTemplate`
+**Base Route:** `/api/test-templates`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
@@ -384,21 +395,23 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 🏷️ Test Template Type APIs
+## 🏷️ Test Template Type APIs {#test-template-type-apis}
 
-**Base Route:** `/api/TestTemplateType`
+**Base Route:** `/api/test-template-types`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `GET` | `/` | Gets all template types with filtering | Query: `search`, `level`, `type`, `isActive`, `pageIndex`, `pageSize` |
+| `GET` | `/` | Gets all template types with filtering | Query: `search?`, `level?`, `type?`, `isActive?`, `pageIndex`, `pageSize` |
 | `POST` | `/` | Creates a new template type | Body: `CreateTestTemplateTypeDto` |
 | `PUT` | `/{testTemplateTypeId:guid}` | Updates a template type | Path: `testTemplateTypeId`, Body: `UpdateTestTemplateTypeDto` |
 | `DELETE` | `/{testTemplateTypeId:guid}` | Deletes a template type | Path: `testTemplateTypeId` |
 | `PATCH` | `/{testTemplateTypeId:guid}/is-active` | Updates template type active status | Path: `testTemplateTypeId`, Query: `isActive` |
+| `GET` | `/summary` | Gets summary info for template type and templates | Query: `courseLevel`, `testType` |
+| `POST` | `/{testTemplateTypeId:guid}/verify` | Verifies a test template type | Path: `testTemplateTypeId`, Query: `userId` |
 
 ---
 
-## 📊 Test Attempt APIs
+## 📊 Test Attempt APIs {#test-attempt-apis}
 
 **Base Route:** `/api/test-attempts`
 
@@ -412,7 +425,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## ✅ Attempt Answer APIs
+## ✅ Attempt Answer APIs {#attempt-answer-apis}
 
 **Base Route:** `/api/attempt-answers`
 
@@ -423,20 +436,21 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 🔍 Test Question Management APIs
+## 🔍 Test Question Management APIs {#test-question-management-apis}
 
 **Base Route:** `/api/test-questions`
 
 | Method | Endpoint | Description | Parameters |
 |--------|----------|-------------|------------|
-| `POST` | `/custom-manual/add` | Adds a question to a test manually | Body: `CreateTestQuestionDto` |
-| `GET` | `/{testId}/questions` | Gets paginated questions from test | Path: `testId`, Query: `pageIndex`, `pageSize` |
+| `POST` | `/custom-manual/add` | Adds questions to test manually | Body: `List<AddTestQuestionManualDto>` |
+| `GET` | `/{testId}/questions` | Gets all questions from a test | Path: `testId` |
 | `DELETE` | `/{testQuestionId}` | Removes a test question | Path: `testQuestionId` (Guid) |
-| `POST` | `/{testId}/calculate-max-score` | Calculates maximum score for test | Path: `testId` (Guid) |
+| `POST` | `/jlpt-auto/{testId}` | Adds JLPT auto-generated questions to test | Path: `testId` |
+| `DELETE` | `/all/{testId:guid}` | Deletes all questions from a test | Path: `testId` |
 
 ---
 
-## 💳 Payment Management APIs
+## 💳 Payment Management APIs {#payment-management-apis}
 
 **Base Route:** `/api/payment`
 
@@ -453,7 +467,21 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 📋 Response Formats
+## ⭐ Feedback Management APIs {#feedback-management-apis}
+
+**Base Route:** `/api/feedbacks`
+
+| Method | Endpoint | Description | Parameters |
+|--------|----------|-------------|------------|
+| `GET` | `/course/{courseId:guid}` | Gets paginated feedbacks for a course | Path: `courseId`, Query: `pageIndex`, `pageSize` |
+| `POST` | `/` | Creates a feedback for a user and course | Body: `CreateFeedbackDto` |
+| `PUT` | `/{userId:guid}/{courseId:guid}` | Updates a feedback by user and course | Path: `userId`, `courseId`, Body: `UpdateFeedbackDto` |
+| `DELETE` | `/{userId:guid}/{courseId:guid}` | Deletes a feedback by user and course | Path: `userId`, `courseId` |
+| `GET` | `/course/{courseId:guid}/average-rating` | Gets average rating for a course | Path: `courseId` |
+
+---
+
+## Response Formats
 
 ### Success Response
 ```json
@@ -489,7 +517,7 @@ This document provides a comprehensive list of all available APIs in the JCertPr
 
 ---
 
-## 🔒 Authentication
+## Authentication
 
 Most endpoints require authentication via JWT token in the Authorization header:
 ```
@@ -503,7 +531,7 @@ Public endpoints (no authentication required):
 
 ---
 
-## 📝 Notes
+## Notes
 
 - All `Guid` parameters should be valid UUID format
 - Pagination typically uses `pageIndex` (1-based) and `pageSize` parameters
@@ -513,8 +541,10 @@ Public endpoints (no authentication required):
 - **Payment Flow**: New PayOS integration for credit purchases with 1:1 VND to credit ratio
 - **File Management**: Supports multiple file types with optimized upload for videos using chunked upload
 - **Test System**: Complete test creation, attempt, and automatic grading system with score summaries
+- **AI Integration**: Question generation and explanation features using AI
+- **Admin Dashboard**: Comprehensive analytics and reporting system
 
-### 🏷️ Enum Values Reference
+### Enum Values Reference
 
 #### CourseType
 - `Personal = 0`: Personal course for individual learning
@@ -543,53 +573,60 @@ Public endpoints (no authentication required):
 - `CustomManual`: Manually created custom test
 - `CustomAuto`: Automatically generated custom test
 
+#### TestAttemptStatus
+- `InProgress`: Test attempt is currently being taken
+- `Completed`: Test attempt has been completed
+- `Abandoned`: Test attempt was abandoned
+
+#### ParticipantRole
+- `Student`: Student role in LiveKit rooms
+- `Instructor`: Instructor role in LiveKit rooms
+
 ---
 
-**Last Updated:** August 5, 2025  
-**API Version:** 1.0  
-**Base URL:** `https://your-api-domain.com`
+## API Summary
 
----
+This documentation covers **29 controllers** with a total of **150+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
 
-## 📊 API Summary
-
-This documentation covers **27 controllers** with a total of **124+ API endpoints** for the JCertPre Japanese Certification Learning Platform:
-
-### Recent Updates (August 5, 2025):
-- **CourseType Enum Updated**: Now supports `Personal (0)` and `Public (1)` values only
-- **Course Creation Enhanced**: Removed deprecated `ThumbnailUrl` field, now uses `ThumbnailFile` exclusively
-- **Swagger Integration**: CourseType enum now displays explicit values in API documentation
-- **Code Cleanup**: Removed unused `MediaType` enum to reduce technical debt
-- **Livestream Management Enhanced**: Added participant mute/unmute functionality for instructors
+### Recent Updates (January 15, 2025):
+- **Complete API Audit**: All controllers and endpoints have been verified against actual codebase
+- **New Admin Dashboard**: Added comprehensive analytics and reporting endpoints
+- **Enhanced File Management**: Updated file upload endpoints with better error handling and health checks
+- **AI Integration**: Added question generation and explanation features
+- **Feedback System**: Complete feedback management for courses
+- **LiveKit Integration**: Enhanced real-time communication features
+- **Test System**: Comprehensive test creation, attempt, and grading system
 
 ### Controllers Covered:
 1. **AuthController** - Authentication & authorization (10 endpoints)
-2. **UsersController** - User management (6 endpoints)
-3. **CoursesController** - Course management (12 endpoints)
-4. **LessonsController** - Lesson management (5 endpoints)
-5. **LessonProgressController** - Progress tracking (6 endpoints)
-6. **StudyPlansController** - Study plan management (5 endpoints)
-7. **StudyPlanItemsController** - Study plan items (5 endpoints)
-8. **SubContentsController** - Sub content management (7 endpoints)
-9. **DocumentsController** - Document management (6 endpoints)
-10. **FileController** - File upload services (8 endpoints)
-11. **EnrollmentController** - Course enrollment (5 endpoints)
-12. **InstructorProfileController** - Instructor profiles (4 endpoints)
-13. **StudentProfileController** - Student profiles (4 endpoints)
-14. **ConversationController** - Chat/messaging (5 endpoints)
-15. **LivestreamController** - Live streaming (8 endpoints)
-16. **LiveKitController** - Video conferencing (14 endpoints)
-17. **TestsController** - Test management (7 endpoints)
-18. **QuestionController** - Question management (7 endpoints)
-19. **ChoiceController** - Choice management (4 endpoints)
-20. **CacheController** - Cache management (1 endpoint)
-21. **TestTemplateConfigController** - Test template configuration (5 endpoints)
-22. **TestTemplateController** - Test template management (4 endpoints)
-23. **TestTemplateTypeController** - Test template types (5 endpoints)
-24. **TestAttemptController** - Test attempts (5 endpoints)
-25. **AttemptAnswerController** - Test answers (2 endpoints)
-26. **TestQuestionController** - Test question relationships (4 endpoints)
-27. **PaymentController** - Payment & credit management (8 endpoints)
+2. **AdminDashboardController** - Analytics & reporting (6 endpoints)
+3. **UsersController** - User management (8 endpoints)
+4. **CoursesController** - Course management (12 endpoints)
+5. **LessonsController** - Lesson management (5 endpoints)
+6. **LessonProgressController** - Progress tracking (6 endpoints)
+7. **StudyPlansController** - Study plan management (5 endpoints)
+8. **StudyPlanItemsController** - Study plan items (5 endpoints)
+9. **SubContentsController** - Sub content management (7 endpoints)
+10. **DocumentsController** - Document management (6 endpoints)
+11. **FileController** - File upload services (8 endpoints)
+12. **EnrollmentController** - Course enrollment (5 endpoints)
+13. **InstructorProfileController** - Instructor profiles (4 endpoints)
+14. **StudentProfileController** - Student profiles (4 endpoints)
+15. **ConversationController** - Chat/messaging (5 endpoints)
+16. **LivestreamController** - Live streaming (7 endpoints)
+17. **LiveKitController** - Video conferencing (9 endpoints)
+18. **TestsController** - Test management (8 endpoints)
+19. **QuestionController** - Question management (10 endpoints)
+20. **ChoiceController** - Choice management (4 endpoints)
+21. **CacheController** - Cache management (1 endpoint)
+22. **TestTemplateConfigController** - Test template configuration (5 endpoints)
+23. **TestTemplateController** - Test template management (4 endpoints)
+24. **TestTemplateTypeController** - Test template types (7 endpoints)
+25. **TestAttemptController** - Test attempts (5 endpoints)
+26. **AttemptAnswerController** - Test answers (2 endpoints)
+27. **TestQuestionController** - Test question relationships (5 endpoints)
+28. **PaymentController** - Payment & credit management (8 endpoints)
+29. **FeedbackController** - Course feedback management (5 endpoints)
 
 ### Key Features:
 - **RESTful Design**: All APIs follow REST conventions
@@ -603,14 +640,20 @@ This documentation covers **27 controllers** with a total of **124+ API endpoint
 - **Testing Platform**: Complete test creation, attempt, grading, and analytics system
 - **Progress Tracking**: Detailed lesson and course progress monitoring
 - **Content Management**: Hierarchical content structure with sub-contents
+- **AI Integration**: Question generation and explanation features
+- **Admin Analytics**: Comprehensive dashboard with revenue and enrollment analytics
+- **Feedback System**: Course rating and feedback management
 
 ### New Features in This Version:
-- **Password Reset System**: Complete forgot/reset password flow with email notifications and secure token validation
-- **Payment System**: Full PayOS integration with webhook handling
-- **Enhanced File Management**: Separate file controller with health checks
+- **Admin Dashboard**: Complete analytics system with revenue and enrollment tracking
+- **AI Question Generation**: Automatic question creation based on JLPT criteria
+- **AI Explanation Generation**: Automatic explanation generation for questions
+- **Enhanced File Management**: Better error handling and health checks
+- **Feedback System**: Course rating and feedback management
 - **Improved Test System**: Score summaries and enhanced attempt tracking
 - **Credit System**: User credit management with transaction history
+- **LiveKit Integration**: Enhanced real-time communication features
 
 ---
 
-*Documentation generated for JCertPre Backend API - All 27 controllers accurately documented*
+*Documentation generated for JCertPre Backend API - All 29 controllers accurately documented*
