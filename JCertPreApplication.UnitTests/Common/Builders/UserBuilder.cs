@@ -72,5 +72,11 @@ public class UserBuilder
         return this;
     }
 
+    public UserBuilder WithAvatarUrl(string? avatarUrl)
+    {
+        _user.avatarUrl = avatarUrl;
+        return this;
+    }
+
     public User Build() => _user;
 }

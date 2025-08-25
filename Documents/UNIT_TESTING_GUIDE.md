@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 26 Services (17/26 Hoàn Thành - 65%)
+### 📋 Checklist Unit Tests cho Application Layer - 26 Services (18/26 Hoàn Thành - 69%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -996,13 +996,27 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: LivestreamService tests đã được implement đầy đủ với coverage 88%+ cho tất cả business scenarios. Bao gồm comprehensive multi-repository coordination (6 dependencies: Livestream, Course, Enrollment, CourseInstructor, User, LiveKit), complex schedule management (time validation, conflict detection, course duration constraints), status-based operations (SCHEDULED → LIVE → COMPLETED state machine), role-based access control (Instructor/Student permissions), LiveKit integration (external service với token generation), advanced date/time logic (schedule validation, TTL calculation), và complete error handling. Infrastructure bao gồm LivestreamBuilder (fluent API cho entity creation), LivestreamServiceFixture (6 repository + 1 external service management với comprehensive helper methods), và comprehensive AAA testing pattern implementation.
 
-#### 📝 **18. FeedbackService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateFeedbackAsync_WithValidData_ShouldCreateFeedback`
-- [ ] `GetFeedbackByIdAsync_WithExistingId_ShouldReturnFeedback`
-- [ ] `GetFeedbacksByCourseIdAsync_WithValidCourseId_ShouldReturnFeedbacks`
-- [ ] `UpdateFeedbackAsync_WithValidData_ShouldUpdateFeedback`
-- [ ] `DeleteFeedbackAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `GetAverageRatingAsync_WithValidCourseId_ShouldReturnAverageRating`
+#### 📝 **18. FeedbackService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (18/18)
+- [x] `GetPagingByCourseIdAsync_WithValidCourseId_ShouldReturnPaginatedFeedbacks`
+- [x] `GetPagingByCourseIdAsync_WithNoFeedbacks_ShouldReturnEmptyPagination`
+- [x] `GetPagingByCourseIdAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `CreateAsync_WithValidEnrolledUser_ShouldCreateFeedback`
+- [x] `CreateAsync_WithNonEnrolledUser_ShouldThrowForbiddenException`
+- [x] `CreateAsync_WithExistingFeedback_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WhenEnrollmentCheckFails_ShouldThrowInternalServerError`
+- [x] `CreateAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `CreateAsync_WithApiExceptionFromRepository_ShouldRethrowApiException`
+- [x] `UpdateAsync_WithValidData_ShouldUpdateFeedback`
+- [x] `UpdateAsync_WithPartialData_ShouldUpdateOnlyProvidedFields`
+- [x] `UpdateAsync_WithNonExistentFeedback_ShouldThrowNotFoundException`
+- [x] `UpdateAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `DeleteAsync_WithExistingFeedback_ShouldDeleteFeedback`
+- [x] `DeleteAsync_WithNonExistentFeedback_ShouldThrowNotFoundException`
+- [x] `DeleteAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetCourseAverageRatingAsync_WithValidCourseId_ShouldReturnAverageRating`
+- [x] `GetCourseAverageRatingAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+
+> **Ghi chú hoàn thành**: FeedbackService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive feedback management (CRUD operations với enrollment validation), complex business rules (one feedback per user per course, rating range validation), partial update logic (nullable properties trong UpdateDto), pagination với user navigation property loading, enrollment verification với `IEnrollmentRepository`, average rating calculations, và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm FeedbackBuilder (fluent API cho entity creation), FeedbackServiceFixture (dual repository management với helper methods), và comprehensive AAA testing pattern implementation với 18 test cases covering all scenarios.
 
 #### 🗨️ **19. ConversationService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateConversationAsync_WithValidStudentId_ShouldCreateConversation`
@@ -1068,19 +1082,19 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 17 services (252 tests)
+- ✅ **Hoàn thành**: 18 services (270 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 9 services còn lại
+- ⏳ **Chưa bắt đầu**: 8 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (128/140 = 91% hoàn thành)
+- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (146/140 = 104% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (User interaction): FeedbackService, ConversationService
+1. **Trung bình** (User interaction): ConversationService
 2. **Trung bình** (Core features): AttemptAnswerService, LessonProgressService
 3. **Thấp** (Supporting features): SubContent, Profile Management
 
@@ -1124,10 +1138,10 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 14. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **252 tests passing** (0 failures)
-- **17 services completed** out of 26 total services  
+- **270 tests passing** (0 failures)
+- **18 services completed** out of 26 total services  
 - **100% completion** of high-priority services (8/8)
-- **65% overall completion** of all planned services
+- **69% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1147,7 +1161,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - TestTemplateConfigService: 16 tests
 - TestTemplateTypeService: 20 tests
 - LivestreamService: 18 tests
-- **Total: 252 tests**
+- FeedbackService: 18 tests
+- **Total: 270 tests**
 
 ## 📈 Implementation Status
 
@@ -1225,11 +1240,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 252+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 270+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 17/26 Services (65% tổng dự án)
+**✅ HOÀN THÀNH:** 18/26 Services (69% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1253,7 +1268,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 🎯 **Key Achievements**
 
-- **252 Unit Tests** - All passing with 0 failures
+- **270 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
