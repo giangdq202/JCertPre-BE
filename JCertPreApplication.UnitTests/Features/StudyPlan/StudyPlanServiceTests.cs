@@ -648,11 +648,11 @@ namespace JCertPreApplication.UnitTests.Features.StudyPlan
         {
             // Arrange
             var planId = Guid.NewGuid();
-            var studyPlanItems = new List<StudyPlanItem>
+            var studyPlanItems = new List<Domain.Entities.StudyPlanItem>
             {
-                new StudyPlanItem { itemId = Guid.NewGuid() },
-                new StudyPlanItem { itemId = Guid.NewGuid() },
-                new StudyPlanItem { itemId = Guid.NewGuid() }
+                new Domain.Entities.StudyPlanItem { itemId = Guid.NewGuid() },
+                new Domain.Entities.StudyPlanItem { itemId = Guid.NewGuid() },
+                new Domain.Entities.StudyPlanItem { itemId = Guid.NewGuid() }
             };
 
             var studyPlan = StudyPlanBuilder.Create()
