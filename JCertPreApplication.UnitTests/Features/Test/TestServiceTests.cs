@@ -8,6 +8,7 @@ using JCertPreApplication.UnitTests.Common.Builders;
 using JCertPreApplication.UnitTests.Common.TestFixtures;
 using Moq;
 using System.Net;
+using StudentProfileEntity = JCertPreApplication.Domain.Entities.StudentProfile;
 
 namespace JCertPreApplication.UnitTests.Features.Test;
 
@@ -630,7 +631,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
 
         _fixture.MockStudentProfileRepository
             .Setup(x => x.GetFirstOrDefaultAsync(
-                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfile, bool>>>(), It.IsAny<string>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfileEntity, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(studentProfile);
 
         _fixture.MockTestTemplateTypeRepository
@@ -657,7 +658,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
             .Returns(Task.CompletedTask);
 
         _fixture.MockStudentProfileRepository
-            .Setup(x => x.UpdateAsync(It.IsAny<StudentProfile>()))
+            .Setup(x => x.UpdateAsync(It.IsAny<StudentProfileEntity>()))
             .Returns(Task.CompletedTask);
 
         _fixture.MockTestQuestionService
@@ -718,8 +719,8 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
 
         _fixture.MockStudentProfileRepository
             .Setup(x => x.GetFirstOrDefaultAsync(
-                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfile, bool>>>(), It.IsAny<string>()))
-            .ReturnsAsync((StudentProfile?)null);
+                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfileEntity, bool>>>(), It.IsAny<string>()))
+            .ReturnsAsync((StudentProfileEntity?)null);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ApiException>(
@@ -752,7 +753,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
 
         _fixture.MockStudentProfileRepository
             .Setup(x => x.GetFirstOrDefaultAsync(
-                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfile, bool>>>(), It.IsAny<string>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfileEntity, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(studentProfile);
 
         // Act & Assert
@@ -785,7 +786,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
 
         _fixture.MockStudentProfileRepository
             .Setup(x => x.GetFirstOrDefaultAsync(
-                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfile, bool>>>(), It.IsAny<string>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfileEntity, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(studentProfile);
 
         _fixture.MockTestTemplateTypeRepository
@@ -829,7 +830,7 @@ public class TestServiceTests : IClassFixture<TestServiceFixture>
 
         _fixture.MockStudentProfileRepository
             .Setup(x => x.GetFirstOrDefaultAsync(
-                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfile, bool>>>(), It.IsAny<string>()))
+                It.IsAny<System.Linq.Expressions.Expression<Func<StudentProfileEntity, bool>>>(), It.IsAny<string>()))
             .ReturnsAsync(studentProfile);
 
         _fixture.MockTestTemplateTypeRepository
