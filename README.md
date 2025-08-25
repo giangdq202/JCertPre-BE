@@ -1,4 +1,4 @@
-# 🏗️ JCertPre Backend - Clean Architecture Solution
+# JCertPre Backend - Clean Architecture Solution
 
 [![.NET 8](https://img.shields.io/badge/.NET-8.0-blue.svg)](https://dotnet.microsoft.com/download)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-13+-blue.svg)](https://www.postgresql.org/)
@@ -7,29 +7,29 @@
 
 ---
 
-## � Convention Rule - QUY TẮC PHÁT TRIỂN PHẢI FOLLOW
+## QUY TẮC PHÁT TRIỂN PHẢI FOLLOW
 
 > **Đây là quy tắc bắt buộc mọi dev phải tuân thủ khi code. Đọc kỹ và áp dụng ngay!**
 
-### 1. 🏗️ Cấu trúc Clean Architecture (Linh hoạt, không cứng nhắc)
+### 1. Cấu trúc Clean Architecture (Linh hoạt, không cứng nhắc)
 
 **Nguyên tắc đơn giản:** Chia code thành 4 phần rõ ràng, mỗi phần làm đúng nhiệm vụ của nó.
 
 ```
-📁 Domain/     → Định nghĩa business (Entity, Enum, Config)
-📁 Application/ → Xử lý logic nghiệp vụ (Service, Interface, DTO)  
-📁 Persistence/ → Truy cập database (Repository, EF Context)
-📁 API/        → Nhận/trả HTTP request (Controller, Middleware)
+Domain/     -> Định nghĩa business (Entity, Enum, Config)
+Application/ -> Xử lý logic nghiệp vụ (Service, Interface, DTO)  
+Persistence/ -> Truy cập database (Repository, EF Context)
+API/        -> Nhận/trả HTTP request (Controller, Middleware)
 ```
 
-**✅ Làm đúng:**
+**Làm đúng:**
 ```csharp
 // Controller chỉ gọi Service
 public class UserController 
 {
     public async Task<IActionResult> GetUser(Guid id)
     {
-        var user = await _userService.GetUserAsync(id);  // ✅ Gọi service
+        var user = await _userService.GetUserAsync(id);  // Gọi service
         return Ok(user);
     }
 }
@@ -39,41 +39,41 @@ public class UserService
 {
     public async Task<UserDto> GetUserAsync(Guid id)
     {
-        var user = await _userRepository.GetByIdAsync(id);  // ✅ Gọi repository
+        var user = await _userRepository.GetByIdAsync(id);  // Gọi repository
         if (user == null) throw ApiException.NotFound("User", id);
         return _mapper.Map<UserDto>(user);
     }
 }
 ```
 
-**❌ Làm sai:**
+**Làm sai:**
 ```csharp
-// ❌ Controller trực tiếp truy cập database
+// Controller trực tiếp truy cập database
 public class UserController 
 {
-    private readonly JCertPreDatabaseContext _context;  // ❌ KHÔNG!
+    private readonly JCertPreDatabaseContext _context;  // KHÔNG!
     
     public async Task<IActionResult> GetUser(Guid id)
     {
-        var user = await _context.Users.FindAsync(id);  // ❌ Logic trong Controller
+        var user = await _context.Users.FindAsync(id);  // Logic trong Controller (không nên)
         if (user == null) return NotFound();
         return Ok(user);
     }
 }
 ```
 
-### 2. 🚨 API Exception theo chuẩn DUY NHẤT
+### 2. API Exception theo chuẩn DUY NHẤT
 
 **Nguyên tắc đơn giản:** Mọi lỗi phải dùng `ApiException`, không được trả về lỗi theo cách khác.
 
-**✅ Làm đúng:**
+**Làm đúng:**
 ```csharp
 // Trong Service layer
 if (user == null)
-    throw ApiException.NotFound("User", userId);  // ✅ Dùng ApiException
+    throw ApiException.NotFound("User", userId);  // Dùng ApiException
 
 if (request.Email.IsEmpty())
-    throw ApiException.BadRequest("INVALID_EMAIL", "Email không được để trống");  // ✅
+    throw ApiException.BadRequest("INVALID_EMAIL", "Email không được để trống");
 
 // Validation errors
 var errors = new Dictionary<string, string[]>();
@@ -81,16 +81,16 @@ if (dto.Age < 18) errors.Add("age", new[] { "Phải từ 18 tuổi trở lên" }
 if (errors.Any()) throw new ApiException("VALIDATION_FAILED", "Dữ liệu không hợp lệ", errors);
 ```
 
-**❌ Làm sai:**
+**Làm sai:**
 ```csharp
-// ❌ Trả về object lỗi
-if (user == null) return new { Error = "User not found" };  // ❌ KHÔNG!
+// Trả về object lỗi
+if (user == null) return new { Error = "User not found" };  // KHÔNG!
 
-// ❌ Dùng generic Exception  
-throw new Exception("Something wrong");  // ❌ KHÔNG!
+// Dùng generic Exception  
+throw new Exception("Something wrong");  // KHÔNG!
 
-// ❌ Try-catch trong Controller
-try { ... } catch { return BadRequest(); }  // ❌ KHÔNG! Middleware sẽ handle
+// Try-catch trong Controller
+try { ... } catch { return BadRequest(); }  // KHÔNG! Middleware sẽ handle
 ```
 
 **Format lỗi trả về (tự động):**
@@ -104,18 +104,18 @@ try { ... } catch { return BadRequest(); }  // ❌ KHÔNG! Middleware sẽ handl
 }
 ```
 
-### 3. 🔄 Tuân theo IoC (Inversion of Control)
+### 3. Tuân theo IoC (Inversion of Control)
 
 **Nguyên tắc đơn giản:** Không được `new` trực tiếp, phải inject dependency qua constructor.
 
-**✅ Làm đúng:**
+**Làm đúng:**
 ```csharp
 // Service inject Repository qua constructor
 public class UserService 
 {
-    private readonly IUserRepository _userRepository;  // ✅ Interface
+    private readonly IUserRepository _userRepository;  // Interface
     
-    public UserService(IUserRepository userRepository)  // ✅ Constructor injection
+    public UserService(IUserRepository userRepository)  // Constructor injection
     {
         _userRepository = userRepository;
     }
@@ -126,85 +126,88 @@ services.AddScoped<IUserService, UserService>();
 services.AddScoped<IUserRepository, UserRepository>();
 ```
 
-**❌ Làm sai:**
+**Làm sai:**
 ```csharp
-// ❌ New trực tiếp
+// New trực tiếp
 public class UserService 
 {
     public async Task GetUser()
     {
-        var repository = new UserRepository();  // ❌ KHÔNG new trực tiếp!
-        var context = new JCertPreDatabaseContext();  // ❌ KHÔNG!
+        var repository = new UserRepository();  // KHÔNG new trực tiếp!
+        var context = new JCertPreDatabaseContext();  // KHÔNG!
     }
 }
 
-// ❌ Domain phụ thuộc vào Infrastructure
+// Domain phụ thuộc vào Infrastructure
 // Trong Domain layer:
-using Microsoft.EntityFrameworkCore;  // ❌ KHÔNG import EF trong Domain!
+using Microsoft.EntityFrameworkCore;  // KHÔNG import EF trong Domain!
 ```
 
 ---
 
-## 📋 Mục lục
+## Mục lục
 
-- [Tổng quan](#-tổng-quan)
-- [Cấu trúc Project](#-cấu-trúc-project)
-- [Cài đặt và chạy](#-cài-đặt-và-chạy)
-- [Thêm Feature mới](#-thêm-feature-mới)
-- [Troubleshooting](#-troubleshooting)
+- [Cập nhật gần nhất](#cập-nhật-gần-nhất)
+- [Tổng quan](#tổng-quan)
+- [Cấu trúc Project](#cấu-trúc-project)
+- [Cài đặt và chạy](#cài-đặt-và-chạy)
+- [Tài liệu](#tài-liệu)
+- [Kiểm thử](#kiểm-thử)
+- [Thêm Feature mới](#thêm-feature-mới)
+- [Troubleshooting](#troubleshooting)
 
 ---
 
-## 🎯 Tổng quan
+## Tổng quan
 
 JCertPre là một nền tảng học tập và chứng chỉ được xây dựng theo **Clean Architecture** với .NET 8. 
 
 **Tại sao dùng Clean Architecture?**
-- 📚 **Code dễ hiểu**: Ai cũng biết tìm code ở đâu
-- 🔧 **Dễ sửa bug**: Thay đổi ở một chỗ không ảnh hưởng chỗ khác
-- 🚀 **Thêm tính năng nhanh**: Cấu trúc rõ ràng, không sợ làm hỏng code cũ
-- ✅ **Test dễ dàng**: Mock được mọi thứ
-- 🔄 **Thay đổi linh hoạt**: Đổi database, framework không ảnh hưởng business logic
+- Code dễ hiểu: Ai cũng biết tìm code ở đâu
+- Dễ sửa bug: Thay đổi ở một chỗ không ảnh hưởng chỗ khác
+- Thêm tính năng nhanh: Cấu trúc rõ ràng, không sợ làm hỏng code cũ
+- Test dễ dàng: Mock được mọi thứ
+- Thay đổi linh hoạt: Đổi database, framework không ảnh hưởng business logic
 
-## 📁 Cấu trúc Project
+## Cấu trúc Project
 
 ```
 JCertPre-BE/
-├── 🎯 Domain/           # Trái tim ứng dụng - Business rules
+├── Domain/             # Business rules
 │   ├── Entities/        # Các đối tượng nghiệp vụ (User, Course, Test...)
-│   ├── Enums/          # Các giá trị cố định (UserStatus, CourseLevel...)  
-│   └── Configuration/   # Config nghiệp vụ
+│   ├── Enums/           # Các giá trị cố định (UserStatus, CourseLevel...)
+│   └── Configuration/   # Cấu hình nghiệp vụ
 │
-├── 🧠 Application/      # Bộ não - Xử lý logic
-│   ├── Contracts/      # Interface (IUserRepository, IAuthService...)
-│   ├── Features/       # Logic nghiệp vụ (AuthService, CourseService...)
-│   └── Dtos/          # Object truyền dữ liệu
+├── Application/        # Xử lý logic nghiệp vụ
+│   ├── Contracts/       # Interfaces (IUserRepository, IAuthService...)
+│   ├── Features/        # Services/Handlers theo use case
+│   └── Dtos/            # DTOs
 │
-├── 💾 Persistence/      # Kho dữ liệu - Database & External Services  
-│   ├── Repositories/   # Truy cập database
-│   ├── DatabaseContext/ # EF Core context
-│   └── Services/       # External APIs (Firebase, Redis...)
+├── Persistence/        # Database & External services
+│   ├── Repositories/    # Truy cập database (EF Core)
+│   ├── DatabaseContext/ # DbContext
+│   └── Services/        # Tích hợp ngoài (Firebase, Redis, LiveKit, PayOS...)
 │
-└── 🌐 API/             # Cổng giao tiếp - HTTP endpoints
-    ├── Controllers/    # API endpoints
-    └── Middleware/     # Xử lý request/response
+└── API/                # HTTP endpoints
+    ├── Controllers/     # REST APIs
+    └── Middleware/      # Xử lý request/response
 ```
 
 **Luồng xử lý thông thường:**
 ```
-Client Request → Controller → Service → Repository → Database
+Client Request -> Controller -> Service -> Repository -> Database
               (API)      (Application) (Persistence)
 ```
 
-## ⚡ Cài đặt và chạy
+## Cài đặt và chạy
 
 ### Yêu cầu hệ thống
-- ✅ .NET 8 SDK
-- ✅ PostgreSQL 13+
-- ✅ Redis 6+ (tùy chọn, dùng cho cache)
-- ✅ Visual Studio 2022 hoặc VS Code
+- .NET 8 SDK
+- PostgreSQL 13+
+- Redis 6+ (tùy chọn, dùng cho cache)
+- Visual Studio 2022 hoặc VS Code
 
-### 🚀 Chạy nhanh trong 5 phút
+### Chạy nhanh trong 5 phút
 
 1. **Clone code về:**
 ```bash
@@ -241,9 +244,27 @@ dotnet run --project JCertPreApplication.API
 https://localhost:5001/swagger
 ```
 
-**Xong! Giờ có thể test API rồi 🎉**
+**Xong! Giờ có thể test API trên Swagger.**
 
-## � Thêm Feature mới
+---
+
+## Tài liệu
+
+- API tổng hợp: `Documents/API_DOCUMENTATION.md`
+- Admin Dashboard API: `Documents/ADMIN_DASHBOARD_API.md`
+- Livestream + LiveKit Guide: `Documents/LIVESTREAM_LIVEKIT_GUIDE.md`
+- AI Integration (Generate/Explain Question): `Documents/AI_INTEGRATION.md`
+- Hướng dẫn Unit Test: `Documents/UNIT_TESTING_GUIDE.md`
+
+---
+
+## Kiểm thử
+
+- Dự án kiểm thử hiện tại: `JCertPreApplication.UnitTests`
+- ĐÃ LOẠI BỎ project Integration Tests khỏi solution để đơn giản hoá pipeline.
+- Nguyên tắc: test unit không sửa đổi business code; điều chỉnh test cho phù hợp service.
+
+## Thêm Feature mới
 
 ### Quy trình chuẩn (làm theo thứ tự)
 
@@ -354,11 +375,11 @@ dotnet ef database update \
   --startup-project JCertPreApplication.API
 ```
 
-**Xong! Feature mới đã sẵn sàng 🎉**
+**Xong! Feature mới đã sẵn sàng.**
 
-## � Troubleshooting - Xử lý lỗi thường gặp
+## Troubleshooting - Xử lý lỗi thường gặp
 
-### 🚨 Lỗi phổ biến và cách fix
+### Lỗi phổ biến và cách fix
 
 #### 1. **Lỗi Circular Dependency (A phụ thuộc B, B phụ thuộc A)**
 ```
@@ -408,7 +429,7 @@ app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 ---
 
-## 🤝 Hỗ trợ
+## Hỗ trợ
 
 - **Có thắc mắc gì?** Hỏi lead hoặc senior dev
 - **Bug gì lạ?** Tạo issue trên Git với logs chi tiết
@@ -416,13 +437,13 @@ app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 ---
 
-## � Lưu ý quan trọng
+## Lưu ý quan trọng
 
-> **⚠️ Nhớ kỹ:** Clean Architecture không phải về thư mục, mà về cách quản lý dependency và phân tách trách nhiệm!
+> **Nhớ kỹ:** Clean Architecture không phải về thư mục, mà về cách quản lý dependency và phân tách trách nhiệm!
 
 **3 điều quan trọng nhất:**
-1. 🏗️ **Phân tách rõ ràng**: Mỗi layer làm đúng việc của nó
-2. 🚨 **Exception chuẩn**: Luôn dùng `ApiException`, không trả lỗi kiểu khác  
-3. � **IoC đúng cách**: Inject dependency, không `new` trực tiếp
+1. **Phân tách rõ ràng**: Mỗi layer làm đúng việc của nó
+2. **Exception chuẩn**: Luôn dùng `ApiException`, không trả lỗi kiểu khác  
+3. **IoC đúng cách**: Inject dependency, không `new` trực tiếp
 
-**Làm đúng 3 điều này = code clean, dễ maintain, team happy! 🎉** 
+**Làm đúng 3 điều này = code clean, dễ maintain, team happy!** 
