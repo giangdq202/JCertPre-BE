@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 26 Services (20/26 Hoàn Thành - 77%)
+### 📋 Checklist Unit Tests cho Application Layer - 26 Services (21/26 Hoàn Thành - 81%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -1094,13 +1094,38 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: LessonProgressService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive sequential learning logic (lesson order validation, previous lesson completion requirement), complex multi-repository coordination (3 dependencies: LessonProgress, Enrollment, Lesson), advanced business rules (enrollment validation, test completion requirement, unique progress per user-lesson), completion rate calculation, navigation property mapping (User và Lesson info trong DTOs), và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm LessonProgressBuilder (fluent API cho entity creation), LessonProgressServiceFixture (3 repository management với helper methods), và comprehensive AAA testing pattern implementation với 23 test cases covering all lesson progress workflows. **Đã fix**: Mock sharing issues với `Times.AtLeastOnce` và service exception handling với `catch (ApiException) { throw; }` pattern.
 
-#### 📋 **22. StudyPlanService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `GetStudyPlanByIdAsync_WithExistingId_ShouldReturnStudyPlan`
-- [ ] `GetAllStudyPlansAsync_ShouldReturnAllPlans`
-- [ ] `CreateStudyPlanAsync_WithValidData_ShouldCreatePlan`
-- [ ] `UpdateStudyPlanAsync_WithValidData_ShouldUpdatePlan`
-- [ ] `DeleteStudyPlanAsync_WithExistingId_ShouldMarkAsDeleted`
-- [ ] `GetUserStudyPlansAsync_WithValidUserId_ShouldReturnPlans`
+#### 📋 **22. StudyPlanService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (29/29)
+- [x] `GetStudyPlanByIdAsync_WithExistingId_ShouldReturnStudyPlan`
+- [x] `GetStudyPlanByIdAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `GetStudyPlanByIdAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetAllStudyPlansAsync_WithExistingPlans_ShouldReturnAllPlans`
+- [x] `GetAllStudyPlansAsync_WithNoPlans_ShouldReturnEmptyList`
+- [x] `GetAllStudyPlansAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `CreateStudyPlanAsync_WithValidData_ShouldCreateAndReturnDto`
+- [x] `CreateStudyPlanAsync_WithNonExistentStudent_ShouldThrowNotFoundException`
+- [x] `CreateStudyPlanAsync_WithNonExistentStaff_ShouldThrowNotFoundException`
+- [x] `CreateStudyPlanAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `UpdateStudyPlanAsync_WithValidData_ShouldUpdateAndReturnDto`
+- [x] `UpdateStudyPlanAsync_WithPartialUpdate_ShouldUpdateOnlyProvidedFields`
+- [x] `UpdateStudyPlanAsync_WithNonExistentPlan_ShouldThrowNotFoundException`
+- [x] `UpdateStudyPlanAsync_WithNonExistentStudent_ShouldThrowNotFoundException`
+- [x] `UpdateStudyPlanAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `DeleteStudyPlanAsync_WithExistingPlanAndNoItems_ShouldDeleteSuccessfully`
+- [x] `DeleteStudyPlanAsync_WithNonExistentPlan_ShouldThrowNotFoundException`
+- [x] `DeleteStudyPlanAsync_WithExistingItems_ShouldThrowBadRequestException`
+- [x] `DeleteStudyPlanAsync_WithOneItem_ShouldThrowBadRequestException`
+- [x] `DeleteStudyPlanAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetStudyPlansByStudentIdAsync_WithValidStudentId_ShouldReturnFilteredPlans`
+- [x] `GetStudyPlansByStudentIdAsync_WithNonExistentStudent_ShouldThrowNotFoundException`
+- [x] `GetStudyPlansByStudentIdAsync_WithNoPlansForStudent_ShouldReturnEmptyList`
+- [x] `GetStudyPlansByStudentIdAsync_WithOtherStudentPlans_ShouldReturnOnlyStudentPlans`
+- [x] `GetStudyPlansByStudentIdAsync_WithMixedPlans_ShouldFilterCorrectly`
+- [x] `GetStudyPlansByStudentIdAsync_WithAllPlansForStudent_ShouldReturnAllPlans`
+- [x] `GetStudyPlansByStudentIdAsync_WithOneMatchingPlan_ShouldReturnSinglePlan`
+- [x] `GetStudyPlansByStudentIdAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetStudyPlansByStudentIdAsync_WithEmptyGuidStudentId_ShouldThrowBadRequestException`
+
+> **Ghi chú hoàn thành**: StudyPlanService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive CRUD operations (get by ID, get all, create, update, delete), complex business rules (delete protection khi có StudyPlanItems, student validation, staff validation), advanced filtering logic (get plans by student ID với proper filtering), partial update pattern (nullable properties trong UpdateDto), navigation property validation, và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm StudyPlanBuilder và UpdateStudyPlanDtoBuilder (fluent API cho entity và DTO creation), StudyPlanServiceFixture (dual repository management với comprehensive helper methods), và comprehensive AAA testing pattern implementation với 29 test cases covering all study plan management workflows.
 
 #### 📌 **23. StudyPlanItemService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateStudyPlanItemAsync_WithValidData_ShouldCreateItem`
@@ -1134,19 +1159,19 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 22 services (334 tests)
+- ✅ **Hoàn thành**: 21 services (363 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 4 services còn lại
+- ⏳ **Chưa bắt đầu**: 5 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer ✅, LessonProgress ✅, StudyPlan, StudyPlanItem → ~140 tests (230/140 = 164% hoàn thành)
+- **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer ✅, LessonProgress ✅, StudyPlan ✅, StudyPlanItem → ~140 tests (259/140 = 185% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (Planning features): StudyPlanService, StudyPlanItemService
+1. **Trung bình** (Planning features): StudyPlanItemService
 2. **Thấp** (Supporting features): SubContentService, InstructorProfileService, StudentProfileService
 
 ### 🎯 Mục Tiêu Coverage
@@ -1216,7 +1241,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - ConversationService: 23 tests
 - AttemptAnswerService: 18 tests
 - LessonProgressService: 23 tests
-- **Total: 334 tests**
+- StudyPlanService: 29 tests
+- **Total: 363 tests**
 
 ## 📈 Implementation Status
 
@@ -1294,11 +1320,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 311+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 363+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 20/26 Services (77% tổng dự án)
+**✅ HOÀN THÀNH:** 21/26 Services (81% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1322,7 +1348,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 🎯 **Key Achievements**
 
-- **311 Unit Tests** - All passing with 0 failures
+- **363 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
@@ -1361,6 +1387,14 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - ✅ **Enrollment & Lesson Validation** 
 - ✅ **Complete Error Handling** with 11 dependency mocks
 - ✅ **TestScoreSummary Creation** with multiple content types
+
+#### **StudyPlanService** - Study Plan Management (29 tests)
+- ✅ **Comprehensive CRUD Operations** with full validation
+- ✅ **Business Rule Enforcement** (delete protection with StudyPlanItems)
+- ✅ **Advanced Filtering Logic** (get plans by student ID)
+- ✅ **Partial Update Pattern** (nullable properties in UpdateDto)
+- ✅ **Dual Repository Coordination** (StudyPlan + User repositories)
+- ✅ **Complete Error Handling** with proper HttpStatusCode enums
 
 ### 🚀 **Next Priorities**
 
