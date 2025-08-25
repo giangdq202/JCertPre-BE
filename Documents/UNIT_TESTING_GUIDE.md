@@ -1177,12 +1177,27 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: SubContentService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive CRUD operations (create, read, update, delete), advanced multi-filter search system (string search, enum filters, pagination), enum integration testing (SubContentName, CourseLevel, ContentName với 14, 5, và 5 values respectively), repository pattern implementation với GenericRepository<SubContent>, và complete error handling với proper exception types và error codes. Infrastructure bao gồm SubContentBuilder, CreateSubContentDtoBuilder, UpdateSubContentDtoBuilder (fluent API cho entity và DTO creation), fresh mock creation pattern (tránh mock sharing issues), và comprehensive AAA testing pattern implementation với 22 test cases covering all content management workflows.
 
-#### 👨‍🏫 **25. InstructorProfileService Tests** (Độ ưu tiên: Thấp)
-- [ ] `CreateProfileAsync_WithValidData_ShouldCreateProfile`
-- [ ] `GetProfileByIdAsync_WithExistingId_ShouldReturnProfile`
-- [ ] `UpdateProfileAsync_WithValidData_ShouldUpdateProfile`
-- [ ] `GetProfileByUserIdAsync_WithValidUserId_ShouldReturnProfile`
-- [ ] `GetAllInstructorProfilesAsync_ShouldReturnAllProfiles`
+#### 👨‍🏫 **25. InstructorProfileService Tests** (Độ ưu tiên: Thấp) - ✅ HOÀN THÀNH (18/18)
+- [x] `CreateInstructorProfileAsync_WithValidInstructorUser_ShouldCreateProfile`
+- [x] `CreateInstructorProfileAsync_WithNonExistentUser_ShouldThrowInternalServerError`
+- [x] `CreateInstructorProfileAsync_WithNonInstructorUser_ShouldThrowInternalServerError`
+- [x] `CreateInstructorProfileAsync_WithEmptyIntroduction_ShouldCreateProfile`
+- [x] `CreateInstructorProfileAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetInstructorProfileAsync_WithExistingInstructorProfile_ShouldReturnProfile`
+- [x] `GetInstructorProfileAsync_WithNonExistentUser_ShouldThrowNotFoundException`
+- [x] `GetInstructorProfileAsync_WithNonInstructorUser_ShouldThrowNotFoundException`
+- [x] `GetInstructorProfileAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `UpdateInstructorProfileAsync_WithValidData_ShouldUpdateProfile`
+- [x] `UpdateInstructorProfileAsync_WithNonExistentUser_ShouldThrowNotFoundException`
+- [x] `UpdateInstructorProfileAsync_WithNonInstructorUser_ShouldThrowNotFoundException`
+- [x] `UpdateInstructorProfileAsync_WithPartialData_ShouldUpdateOnlyProvidedFields`
+- [x] `UpdateInstructorProfileAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `DeleteInstructorProfileAsync_WithExistingProfile_ShouldDeleteSuccessfully`
+- [x] `DeleteInstructorProfileAsync_WithNonExistentUser_ShouldThrowNotFoundException`
+- [x] `DeleteInstructorProfileAsync_WithNonInstructorUser_ShouldThrowNotFoundException`
+- [x] `DeleteInstructorProfileAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+
+> **Ghi chú hoàn thành**: InstructorProfileService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive CRUD operations (create, read, update, delete), role validation testing (instructor-only access), partial update scenarios (nullable fields), repository pattern implementation với IInstructorProfileRepository, và complete error handling với proper exception types và error codes. Infrastructure bao gồm InstructorProfileBuilder (fluent API cho entity creation), fresh mock creation pattern (tránh mock sharing issues), và comprehensive AAA testing pattern implementation với 18 test cases covering all instructor profile management workflows.
 
 #### 👨‍🎓 **26. StudentProfileService Tests** (Độ ưu tiên: Thấp)
 - [ ] `CreateProfileAsync_WithValidData_ShouldCreateProfile`
@@ -1194,19 +1209,19 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 23 services (405 tests)
+- ✅ **Hoàn thành**: 24 services (423 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 3 services còn lại
+- ⏳ **Chưa bắt đầu**: 2 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
 - **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer ✅, LessonProgress ✅, StudyPlan ✅, StudyPlanItem ✅ → ~140 tests (280/140 = 200% hoàn thành)
-- **Thấp** (6 services): TestTemplateType ✅, SubContent ✅, InstructorProfile, StudentProfile → ~40 tests (42/40 = 105% hoàn thành)
+- **Thấp** (6 services): TestTemplateType ✅, SubContent ✅, InstructorProfile ✅, StudentProfile → ~40 tests (60/40 = 150% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Thấp** (Supporting features): InstructorProfileService, StudentProfileService
+1. **Thấp** (Supporting features): StudentProfileService
 
 ### 🎯 Mục Tiêu Coverage
 
@@ -1258,17 +1273,19 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 24. ✅ **StudyPlanService tests** - **100% hoàn thành (29/29 tests passing)**
 25. ✅ **StudyPlanItemService tests** - **100% hoàn thành (21/21 tests passing)**
 26. ✅ **SubContentService tests** - **100% hoàn thành (22/22 tests passing)**
-27. ⏳ **InstructorProfileService tests** - *Ưu tiên tiếp theo*
+27. ✅ **InstructorProfileService tests** - **100% hoàn thành (18/18 tests passing)**
 28. ⏳ **StudentProfileService tests** - *Ưu tiên tiếp theo*
 29. ⏳ Setup CI/CD pipeline
 30. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **405 tests passing** (0 failures)
-- **23 services completed** out of 26 total services  
+- **423 tests passing** (0 failures)
+- **24 services completed** out of 26 total services  
 - **100% completion** of high-priority services (8/8)
-- **88% overall completion** of all planned services
-- **3 services remaining**: InstructorProfileService, StudentProfileService, CI/CD Pipeline
+- **92% overall completion** of all planned services
+- **2 services remaining**: StudentProfileService, CI/CD Pipeline
+
+**📝 Ghi chú hoàn thành**: InstructorProfileService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive CRUD operations (create, read, update, delete), role validation testing (instructor-only access), partial update scenarios (nullable fields), repository pattern implementation với IInstructorProfileRepository, và complete error handling với proper exception types và error codes. Infrastructure bao gồm InstructorProfileBuilder (fluent API cho entity creation), fresh mock creation pattern (tránh mock sharing issues), và comprehensive AAA testing pattern implementation với 18 test cases covering all instructor profile management workflows.
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1295,7 +1312,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - StudyPlanService: 29 tests
 - StudyPlanItemService: 21 tests
 - SubContentService: 22 tests
-- **Total: 405 tests**
+- InstructorProfileService: 18 tests
+- **Total: 423 tests**
 
 ## 📈 Implementation Status
 
@@ -1373,11 +1391,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 405+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 423+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 23/26 Services (88% tổng dự án)
+**✅ HOÀN THÀNH:** 24/26 Services (92% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1401,10 +1419,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 | 📚 **StudyPlanService** | 29/29 | ✅ 100% | 90%+ | Study plan management với business rules |
 | 📋 **StudyPlanItemService** | 21/21 | ✅ 100% | 85%+ | Study plan item management |
 | 🔤 **SubContentService** | 22/22 | ✅ 100% | 85%+ | Content management với advanced filtering |
+| 👨‍🏫 **InstructorProfileService** | 18/18 | ✅ 100% | 85%+ | Instructor profile management với role validation |
 
 ### 🎯 **Key Achievements**
 
-- **405 Unit Tests** - All passing with 0 failures
+- **423 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
@@ -1469,9 +1488,9 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 🏆 **Quality Metrics**
 
-- **Zero Test Failures** - 405/405 tests passing
+- **Zero Test Failures** - 423/423 tests passing
 - **High Priority Services** - 100% complete (8/8 services)
-- **Overall Progress** - 88% of total planned services (23/26)
+- **Overall Progress** - 92% of total planned services (24/26)
 - **Code Quality** - Comprehensive error handling and validation
 
 ---
