@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 26 Services (18/26 Hoàn Thành - 69%)
+### 📋 Checklist Unit Tests cho Application Layer - 26 Services (19/26 Hoàn Thành - 73%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -1018,13 +1018,32 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: FeedbackService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive feedback management (CRUD operations với enrollment validation), complex business rules (one feedback per user per course, rating range validation), partial update logic (nullable properties trong UpdateDto), pagination với user navigation property loading, enrollment verification với `IEnrollmentRepository`, average rating calculations, và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm FeedbackBuilder (fluent API cho entity creation), FeedbackServiceFixture (dual repository management với helper methods), và comprehensive AAA testing pattern implementation với 18 test cases covering all scenarios.
 
-#### 🗨️ **19. ConversationService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateConversationAsync_WithValidStudentId_ShouldCreateConversation`
-- [ ] `SendMessageAsync_WithValidData_ShouldSendMessage`
-- [ ] `AssignInstructorAsync_WithValidIds_ShouldAssignInstructor`
-- [ ] `GetConversationDetailsAsync_WithValidId_ShouldReturnDetails`
-- [ ] `GetUserConversationsAsync_WithValidUserId_ShouldReturnConversations`
-- [ ] `MarkMessageAsReadAsync_WithValidId_ShouldMarkAsRead`
+#### 🗨️ **19. ConversationService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (23/23)
+- [x] `CreateConversationAsync_WithValidStudent_ShouldCreateConversationWithRandomAcademicManager`
+- [x] `CreateConversationAsync_WithNonExistentStudent_ShouldThrowNotFoundException`
+- [x] `CreateConversationAsync_WithNonStudentUser_ShouldThrowBadRequestException`
+- [x] `CreateConversationAsync_WithStudentWithoutRole_ShouldThrowBadRequestException`
+- [x] `CreateConversationAsync_WithNoAcademicManagers_ShouldThrowInternalServerError`
+- [x] `CreateConversationAsync_WithInvalidAcademicManager_ShouldThrowInternalServerError`
+- [x] `CreateConversationAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `SendMessageAsync_WithValidParticipant_ShouldSendMessage`
+- [x] `SendMessageAsync_WithEmptyContent_ShouldThrowBadRequestException`
+- [x] `SendMessageAsync_WithWhitespaceContent_ShouldThrowBadRequestException`
+- [x] `SendMessageAsync_WithNonExistentConversation_ShouldThrowNotFoundException`
+- [x] `SendMessageAsync_WithNonExistentSender_ShouldThrowNotFoundException`
+- [x] `SendMessageAsync_WithNonParticipantSender_ShouldThrowForbiddenException`
+- [x] `SendMessageAsync_WithValidContentTrimming_ShouldTrimWhitespace`
+- [x] `SendMessageAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `AssignInstructorAsync_WithValidInstructor_ShouldAddToParticipants`
+- [x] `AssignInstructorAsync_WithNonExistentConversation_ShouldThrowNotFoundException`
+- [x] `AssignInstructorAsync_WithNonExistentInstructor_ShouldThrowNotFoundException`
+- [x] `AssignInstructorAsync_WithNonInstructorUser_ShouldThrowBadRequestException`
+- [x] `GetConversationAsync_WithValidId_ShouldReturnConversationWithDetails`
+- [x] `GetConversationAsync_WithNonExistentId_ShouldThrowNotFoundException`
+- [x] `GetConversationsForUserAsync_WithValidUserId_ShouldReturnUserConversations`
+- [x] `GetConversationsForUserAsync_WithNonExistentUser_ShouldThrowNotFoundException`
+
+> **Ghi chú hoàn thành**: ConversationService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive conversation management (student-academic manager pairing với random assignment), complex messaging system (participant validation, content trimming, role-based access), instructor assignment logic, multi-repository coordination (3 dependencies: Conversation, Message, User), complex role validation (STUDENT, ACADEMIC_MANAGER, INSTRUCTOR), navigation property mapping (participants và messages trong DTOs), và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm ConversationBuilder và MessageBuilder (fluent API cho entity creation), ConversationServiceFixture (3 repository management với comprehensive helper methods), và comprehensive AAA testing pattern implementation với 23 test cases covering all conversation workflows.
 
 #### 📝 **20. AttemptAnswerService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateAttemptAnswerAsync_WithValidData_ShouldCreateAnswer`
@@ -1082,20 +1101,20 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 18 services (270 tests)
+- ✅ **Hoàn thành**: 19 services (293 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 8 services còn lại
+- ⏳ **Chưa bắt đầu**: 7 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (146/140 = 104% hoàn thành)
+- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (169/140 = 121% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (User interaction): ConversationService
-2. **Trung bình** (Core features): AttemptAnswerService, LessonProgressService
+1. **Trung bình** (Core features): AttemptAnswerService, LessonProgressService
+2. **Trung bình** (Planning features): StudyPlan, StudyPlanItem
 3. **Thấp** (Supporting features): SubContent, Profile Management
 
 ### 🎯 Mục Tiêu Coverage
@@ -1138,10 +1157,10 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 14. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **270 tests passing** (0 failures)
-- **18 services completed** out of 26 total services  
+- **293 tests passing** (0 failures)
+- **19 services completed** out of 26 total services  
 - **100% completion** of high-priority services (8/8)
-- **69% overall completion** of all planned services
+- **73% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1162,7 +1181,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - TestTemplateTypeService: 20 tests
 - LivestreamService: 18 tests
 - FeedbackService: 18 tests
-- **Total: 270 tests**
+- ConversationService: 23 tests
+- **Total: 293 tests**
 
 ## 📈 Implementation Status
 
@@ -1240,11 +1260,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 270+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 293+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 18/26 Services (69% tổng dự án)
+**✅ HOÀN THÀNH:** 19/26 Services (73% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1268,7 +1288,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 🎯 **Key Achievements**
 
-- **270 Unit Tests** - All passing with 0 failures
+- **293 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
