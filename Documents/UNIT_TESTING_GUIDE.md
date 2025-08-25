@@ -674,7 +674,7 @@ open coverage/index.html
 
 ## Danh Sách Unit Tests Cần Thiết
 
-### 📋 Checklist Unit Tests cho Application Layer - 26 Services (19/26 Hoàn Thành - 73%)
+### 📋 Checklist Unit Tests cho Application Layer - 26 Services (20/26 Hoàn Thành - 77%)
 
 #### 🔐 **1. AuthService Tests** (Độ ưu tiên: Cao) - ✅ HOÀN THÀNH (12/12)
 - [x] `LoginAsync_WithValidCredentials_ShouldReturnTokens`
@@ -1045,13 +1045,27 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: ConversationService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive conversation management (student-academic manager pairing với random assignment), complex messaging system (participant validation, content trimming, role-based access), instructor assignment logic, multi-repository coordination (3 dependencies: Conversation, Message, User), complex role validation (STUDENT, ACADEMIC_MANAGER, INSTRUCTOR), navigation property mapping (participants và messages trong DTOs), và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm ConversationBuilder và MessageBuilder (fluent API cho entity creation), ConversationServiceFixture (3 repository management với comprehensive helper methods), và comprehensive AAA testing pattern implementation với 23 test cases covering all conversation workflows.
 
-#### 📝 **20. AttemptAnswerService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateAttemptAnswerAsync_WithValidData_ShouldCreateAnswer`
-- [ ] `GetAttemptAnswerByIdAsync_WithExistingId_ShouldReturnAnswer`
-- [ ] `UpdateAttemptAnswerAsync_WithValidData_ShouldUpdateAnswer`
-- [ ] `GetAnswersByAttemptIdAsync_WithValidAttemptId_ShouldReturnAnswers`
-- [ ] `ValidateAnswerAsync_WithCorrectAnswer_ShouldReturnTrue`
-- [ ] `CalculateScoreAsync_WithValidAnswers_ShouldReturnCorrectScore`
+#### 📝 **20. AttemptAnswerService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (18/18)
+- [x] `AddOrUpdateAnswersAsync_WithNewAnswer_ShouldCreateNewAnswer`
+- [x] `AddOrUpdateAnswersAsync_WithExistingAnswer_ShouldUpdateAnswer`
+- [x] `AddOrUpdateAnswersAsync_WithCorrectChoice_ShouldCalculateCorrectScore`
+- [x] `AddOrUpdateAnswersAsync_WithIncorrectChoice_ShouldCalculateZeroScore`
+- [x] `AddOrUpdateAnswersAsync_WithNonExistentAttempt_ShouldThrowNotFoundException`
+- [x] `AddOrUpdateAnswersAsync_WithSuspendedAttempt_ShouldThrowBadRequestException`
+- [x] `AddOrUpdateAnswersAsync_WithCompletedAttempt_ShouldThrowBadRequestException`
+- [x] `AddOrUpdateAnswersAsync_WithExpiredAttempt_ShouldThrowBadRequestException`
+- [x] `AddOrUpdateAnswersAsync_WithNonExistentChoice_ShouldThrowNotFoundException`
+- [x] `AddOrUpdateAnswersAsync_WithNonExistentQuestion_ShouldThrowNotFoundException`
+- [x] `AddOrUpdateAnswersAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `AddOrUpdateAnswersAsync_WithMultipleAnswers_ShouldProcessAllSuccessfully`
+- [x] `AddOrUpdateAnswersAsync_WithMixedNewAndExisting_ShouldHandleBothCorrectly`
+- [x] `AddOrUpdateAnswersAsync_WithPartialFailure_ShouldStopAtFirstError`
+- [x] `GetAllByAttemptIdAsync_WithExistingAnswers_ShouldReturnAllAnswers`
+- [x] `GetAllByAttemptIdAsync_WithNoAnswers_ShouldReturnEmptyList`
+- [x] `GetAllByAttemptIdAsync_WithValidAttemptId_ShouldReturnMappedDtos`
+- [x] `GetAllByAttemptIdAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+
+> **Ghi chú hoàn thành**: AttemptAnswerService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive answer management (add/update operations với smart logic: existing answer → update, new → create), complex validation matrix (TestAttempt status: InProgress/Suspended/Completed, time expiration validation, entity existence checks), advanced scoring logic (correct choice → question.points, incorrect → 0), multi-repository coordination (4 dependencies: AttemptAnswer, TestAttempt, Choice, Question), batch processing capabilities (multiple DTOs trong single transaction, mixed new/existing answers, partial failure handling), và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm AttemptAnswerBuilder (fluent API cho entity creation), AttemptAnswerServiceFixture (4 repository management với comprehensive helper methods cho different test scenarios), và comprehensive AAA testing pattern implementation với 18 test cases covering all attempt answer workflows.
 
 #### 📊 **21. LessonProgressService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `CreateProgressAsync_WithValidData_ShouldCreateProgress`
@@ -1101,19 +1115,19 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 19 services (293 tests)
+- ✅ **Hoàn thành**: 20 services (311 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 7 services còn lại
+- ⏳ **Chưa bắt đầu**: 6 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (169/140 = 121% hoàn thành)
+- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer ✅, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (187/140 = 134% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (Core features): AttemptAnswerService, LessonProgressService
+1. **Trung bình** (Core features): LessonProgressService
 2. **Trung bình** (Planning features): StudyPlan, StudyPlanItem
 3. **Thấp** (Supporting features): SubContent, Profile Management
 
@@ -1157,10 +1171,10 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 14. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **293 tests passing** (0 failures)
-- **19 services completed** out of 26 total services  
+- **311 tests passing** (0 failures)
+- **20 services completed** out of 26 total services  
 - **100% completion** of high-priority services (8/8)
-- **73% overall completion** of all planned services
+- **77% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1182,7 +1196,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - LivestreamService: 18 tests
 - FeedbackService: 18 tests
 - ConversationService: 23 tests
-- **Total: 293 tests**
+- AttemptAnswerService: 18 tests
+- **Total: 311 tests**
 
 ## 📈 Implementation Status
 
@@ -1260,11 +1275,11 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ---
 
-## 🎉 **MILESTONE ACHIEVEMENT: 293+ TESTS PASSING!**
+## 🎉 **MILESTONE ACHIEVEMENT: 311+ TESTS PASSING!**
 
 ### 📈 **Current Status Summary**
 
-**✅ HOÀN THÀNH:** 19/26 Services (73% tổng dự án)
+**✅ HOÀN THÀNH:** 20/26 Services (77% tổng dự án)
 
 | Service | Tests | Status | Coverage | Ghi chú |
 |---------|-------|--------|----------|---------|
@@ -1288,7 +1303,7 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 
 ### 🎯 **Key Achievements**
 
-- **293 Unit Tests** - All passing with 0 failures
+- **311 Unit Tests** - All passing with 0 failures
 - **100% Success Rate** - Robust test infrastructure
 - **High Coverage** - Critical business logic thoroughly tested
 - **Clean Architecture** - Proper separation of concerns
