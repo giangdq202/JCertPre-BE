@@ -116,7 +116,6 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
                 var created = await _repo.GetByIdAsync(entity.progressId);
                 return MapToDto(created!);
             }
-            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("CREATE_LESSON_PROGRESS_ERROR", ex.Message);
@@ -142,7 +141,6 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
                 var updated = await _repo.GetByIdAsync(progressId);
                 return MapToDto(updated!);
             }
-            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("UPDATE_LESSON_PROGRESS_ERROR", ex.Message);
@@ -163,7 +161,6 @@ namespace JCertPreApplication.Application.Features.LessonProgresses
                 await _repo.DeleteAsync(entity);
                 await _repo.SaveChangesAsync();
             }
-            catch (ApiException) { throw; }
             catch (Exception ex)
             {
                 throw ApiException.InternalServerError("DELETE_LESSON_PROGRESS_ERROR", ex.Message);

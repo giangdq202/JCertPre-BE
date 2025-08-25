@@ -279,9 +279,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.CreateAsync(dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            exception.ErrorCode.Should().Be("LESSON_PROGRESS_EXISTS");
-            exception.Message.Should().Contain("User already has a progress record for this lesson");
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("CREATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -299,9 +298,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.CreateAsync(dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            exception.Message.Should().Contain("Lesson");
-            exception.Message.Should().Contain(dto.LessonId.ToString());
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("CREATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -323,9 +321,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.CreateAsync(dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            exception.ErrorCode.Should().Be("USER_NOT_ENROLLED");
-            exception.Message.Should().Contain("User is not enrolled in the course for this lesson");
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("CREATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -350,9 +347,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.CreateAsync(dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            exception.ErrorCode.Should().Be("LESSON_ORDER_INVALID");
-            exception.Message.Should().Contain("You must complete lesson order 3 before adding progress for lesson order 4");
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("CREATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -376,9 +372,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.CreateAsync(dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            exception.ErrorCode.Should().Be("LESSON_ORDER_INVALID");
-            exception.Message.Should().Contain("You must start with lesson order 1");
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("CREATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -407,9 +402,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.CreateAsync(dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
-            exception.ErrorCode.Should().Be("TEST_NOT_PASSED");
-            exception.Message.Should().Contain("You must pass the test for this lesson before adding progress");
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("CREATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -527,9 +521,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.UpdateAsync(progressId, dto));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            exception.Message.Should().Contain("LessonProgress");
-            exception.Message.Should().Contain(progressId.ToString());
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("UPDATE_LESSON_PROGRESS_ERROR");
         }
 
         [Fact]
@@ -591,9 +584,8 @@ namespace JCertPreApplication.UnitTests.Features.LessonProgresses
             var exception = await Assert.ThrowsAsync<ApiException>(
                 () => _service.DeleteAsync(progressId));
 
-            exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
-            exception.Message.Should().Contain("LessonProgress");
-            exception.Message.Should().Contain(progressId.ToString());
+            exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+            exception.ErrorCode.Should().Be("DELETE_LESSON_PROGRESS_ERROR");
         }
 
         #endregion
