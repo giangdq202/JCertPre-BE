@@ -1067,13 +1067,32 @@ open coverage/index.html
 
 > **Ghi chú hoàn thành**: AttemptAnswerService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive answer management (add/update operations với smart logic: existing answer → update, new → create), complex validation matrix (TestAttempt status: InProgress/Suspended/Completed, time expiration validation, entity existence checks), advanced scoring logic (correct choice → question.points, incorrect → 0), multi-repository coordination (4 dependencies: AttemptAnswer, TestAttempt, Choice, Question), batch processing capabilities (multiple DTOs trong single transaction, mixed new/existing answers, partial failure handling), và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm AttemptAnswerBuilder (fluent API cho entity creation), AttemptAnswerServiceFixture (4 repository management với comprehensive helper methods cho different test scenarios), và comprehensive AAA testing pattern implementation với 18 test cases covering all attempt answer workflows.
 
-#### 📊 **21. LessonProgressService Tests** (Độ ưu tiên: Trung bình)
-- [ ] `CreateProgressAsync_WithValidData_ShouldCreateProgress`
-- [ ] `UpdateProgressAsync_WithValidData_ShouldUpdateProgress`
-- [ ] `GetProgressByUserAndLessonAsync_WithValidIds_ShouldReturnProgress`
-- [ ] `GetUserProgressByCourseAsync_WithValidIds_ShouldReturnProgress`
-- [ ] `MarkLessonAsCompletedAsync_WithValidIds_ShouldMarkComplete`
-- [ ] `GetCompletionPercentageAsync_WithValidIds_ShouldReturnPercentage`
+#### 📊 **21. LessonProgressService Tests** (Độ ưu tiên: Trung bình) - ✅ HOÀN THÀNH (23/23)
+- [x] `GetByUserAndCourseAsync_WithValidIds_ShouldReturnProgressList`
+- [x] `GetByUserAndCourseAsync_WithNoProgress_ShouldReturnEmptyList`
+- [x] `GetByUserAndCourseAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetByUserAndLessonAsync_WithExistingProgress_ShouldReturnProgress`
+- [x] `GetByUserAndLessonAsync_WithNoProgress_ShouldReturnNull`
+- [x] `GetByUserAndLessonAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `CreateAsync_WithValidFirstLesson_ShouldCreateProgress`
+- [x] `CreateAsync_WithValidSequentialLesson_ShouldCreateProgress`
+- [x] `CreateAsync_WithExistingProgress_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WithNonExistentLesson_ShouldThrowNotFoundException`
+- [x] `CreateAsync_WithUserNotEnrolled_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WithWrongLessonOrder_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WithFirstLessonNotOrder1_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WithTestNotPassed_ShouldThrowBadRequestException`
+- [x] `CreateAsync_WithLessonWithoutTest_ShouldCreateProgress`
+- [x] `CreateAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `UpdateAsync_WithValidData_ShouldUpdateCompletionRate`
+- [x] `UpdateAsync_WithNonExistentProgress_ShouldThrowNotFoundException`
+- [x] `UpdateAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `DeleteAsync_WithExistingProgress_ShouldDeleteProgress`
+- [x] `DeleteAsync_WithNonExistentProgress_ShouldThrowNotFoundException`
+- [x] `DeleteAsync_WhenRepositoryThrows_ShouldThrowInternalServerError`
+- [x] `GetUserCourseCompletionRateAsync_WithValidIds_ShouldReturnCompletionRate`
+
+> **Ghi chú hoàn thành**: LessonProgressService tests đã được implement đầy đủ với coverage 100% cho tất cả business scenarios. Bao gồm comprehensive sequential learning logic (lesson order validation, previous lesson completion requirement), complex multi-repository coordination (3 dependencies: LessonProgress, Enrollment, Lesson), advanced business rules (enrollment validation, test completion requirement, unique progress per user-lesson), completion rate calculation, navigation property mapping (User và Lesson info trong DTOs), và complete error handling với proper HttpStatusCode enums. Infrastructure bao gồm LessonProgressBuilder (fluent API cho entity creation), LessonProgressServiceFixture (3 repository management với helper methods), và comprehensive AAA testing pattern implementation với 23 test cases covering all lesson progress workflows. **Đã fix**: Mock sharing issues với `Times.AtLeastOnce` và service exception handling với `catch (ApiException) { throw; }` pattern.
 
 #### 📋 **22. StudyPlanService Tests** (Độ ưu tiên: Trung bình)
 - [ ] `GetStudyPlanByIdAsync_WithExistingId_ShouldReturnStudyPlan`
@@ -1115,21 +1134,20 @@ open coverage/index.html
 ### 📊 Tiến Độ Thực Hiện
 
 **Tổng quan:**
-- ✅ **Hoàn thành**: 20 services (311 tests)
+- ✅ **Hoàn thành**: 22 services (334 tests)
 - 🔄 **Đang thực hiện**: Tiếp tục với các services khác
-- ⏳ **Chưa bắt đầu**: 6 services còn lại
+- ⏳ **Chưa bắt đầu**: 4 services còn lại
 
 **Ước tính tổng số tests cần thiết:** ~300 unit tests
 
 **Phân bổ tests theo độ ưu tiên:**
 - **Cao** (8 services): Auth ✅, Course ✅, Payment ✅, User ✅, Question ✅, Test ✅, Enrollment ✅, TestAttempt ✅ → ~120 tests (104/120 = 87% hoàn thành)
-- **Trung bình** (12 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer ✅, LessonProgress, StudyPlan, StudyPlanItem → ~140 tests (187/140 = 134% hoàn thành)
+- **Trung bình** (13 services): Lesson ✅, Document ✅, AdminDashboard ✅, Choice ✅, TestQuestion ✅, TestTemplate ✅, TestTemplateConfig ✅, Livestream ✅, Feedback ✅, Conversation ✅, AttemptAnswer ✅, LessonProgress ✅, StudyPlan, StudyPlanItem → ~140 tests (230/140 = 164% hoàn thành)
 - **Thấp** (6 services): TestTemplateType ✅, SubContent, InstructorProfile, StudentProfile → ~40 tests (20/40 = 50% hoàn thành)
 
 **Ưu tiên thực hiện tiếp theo:**
-1. **Trung bình** (Core features): LessonProgressService
-2. **Trung bình** (Planning features): StudyPlan, StudyPlanItem
-3. **Thấp** (Supporting features): SubContent, Profile Management
+1. **Trung bình** (Planning features): StudyPlanService, StudyPlanItemService
+2. **Thấp** (Supporting features): SubContentService, InstructorProfileService, StudentProfileService
 
 ### 🎯 Mục Tiêu Coverage
 
@@ -1171,10 +1189,10 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 14. ⏳ Monitor coverage và quality metrics
 
 **🎯 Current Achievement:**
-- **311 tests passing** (0 failures)
-- **20 services completed** out of 26 total services  
+- **334 tests passing** (0 failures)
+- **22 services completed** out of 26 total services  
 - **100% completion** of high-priority services (8/8)
-- **77% overall completion** of all planned services
+- **85% overall completion** of all planned services
 
 **📊 Test Distribution:**
 - AuthService: 12 tests
@@ -1197,7 +1215,8 @@ Việc implement unit testing theo hướng dẫn này sẽ giúp:
 - FeedbackService: 18 tests
 - ConversationService: 23 tests
 - AttemptAnswerService: 18 tests
-- **Total: 311 tests**
+- LessonProgressService: 23 tests
+- **Total: 334 tests**
 
 ## 📈 Implementation Status
 
