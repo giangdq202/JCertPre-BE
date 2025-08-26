@@ -1,15 +1,17 @@
 ﻿using JCertPreApplication.Application.Features.Cache;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages Redis-based distributed caching operations.
+    /// Manages cache operations.
     /// </summary>
     [Route("api/cache")]
     [ApiController]
     [Tags("Cache")]
     [Produces("application/json")]
+    [Authorize]
     public class CacheController : ControllerBase
     {
         private readonly ICacheService _cacheService;

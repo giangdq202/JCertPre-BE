@@ -1,17 +1,19 @@
 ﻿using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlanItem;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages study plan items within a study plan.
+    /// Manages study plan items.
     /// </summary>
-    [ApiController]
     [Route("api/study-plan-items")]
-    [Tags("StudyplanItems")]
+    [ApiController]
+    [Tags("StudyPlanItems")]
     [Produces("application/json")]
+    [Authorize]
     public class StudyPlanItemsController : ControllerBase
     {
         private readonly IStudyPlanItemService _studyPlanItemService;

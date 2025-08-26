@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Dtos.TestTemplate;
 using JCertPreApplication.Application.Features.TestTemplates;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages test templates.
+    /// Manages test template operations.
     /// </summary>
-    [ApiController]
     [Route("api/test-templates")]
+    [ApiController]
     [Tags("TestTemplates")]
     [Produces("application/json")]
+    [Authorize]
     public class TestTemplateController : ControllerBase
 {
     private readonly ITestTemplateService _service;

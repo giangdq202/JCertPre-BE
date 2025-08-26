@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Dtos.AttemptAnswer;
 using JCertPreApplication.Application.Features.AttemptAnswers;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages attempt answers.
+    /// Manages attempt answer operations.
     /// </summary>
     [Route("api/attempt-answers")]
     [ApiController]
     [Tags("AttemptAnswers")]
     [Produces("application/json")]
+    [Authorize]
     public class AttemptAnswerController : ControllerBase
 {
     private readonly IAttemptAnswerService _service;

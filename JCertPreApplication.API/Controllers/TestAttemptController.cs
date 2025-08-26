@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Dtos.TestAttempt;
 using JCertPreApplication.Application.Features.TestAttempts;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -12,6 +13,7 @@ namespace JCertPreApplication.API.Controllers
     [Route("api/test-attempts")]
     [Tags("TestAttempts")]
     [Produces("application/json")]
+    [Authorize]
     public class TestAttemptController : ControllerBase
 {
     private readonly ITestAttemptService _service;

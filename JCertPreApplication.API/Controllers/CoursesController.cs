@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Dtos.Course;
 using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -14,6 +15,7 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Courses")]
     [Produces("application/json")]
+    [Authorize]
     public class CoursesController : ControllerBase
     {
         private readonly ICourseService _courseService;

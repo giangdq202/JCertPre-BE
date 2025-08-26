@@ -2,17 +2,19 @@ using JCertPreApplication.Application.Dtos.Lesson;
 using JCertPreApplication.Application.Features.Lessons;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages course lessons and their content.
+    /// Manages lesson operations including creation, updates, and deletion.
     /// </summary>
     [Route("api/lessons")]
     [ApiController]
     [Tags("Lessons")]
     [Produces("application/json")]
+    [Authorize]
     public class LessonsController : ControllerBase
     {
         private readonly ILessonService _lessonService;

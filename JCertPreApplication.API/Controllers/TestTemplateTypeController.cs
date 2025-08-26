@@ -2,17 +2,19 @@ using JCertPreApplication.Application.Dtos.TestTemplateType;
 using JCertPreApplication.Application.Dtos.TestTemplateTypes;
 using JCertPreApplication.Application.Features.TestTemplateTypes;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages test template types.
+    /// Manages test template type operations.
     /// </summary>
-    [ApiController]
     [Route("api/test-template-types")]
+    [ApiController]
     [Tags("TestTemplateTypes")]
     [Produces("application/json")]
+    [Authorize]
     public class TestTemplateTypeController : ControllerBase
     {
         private readonly ITestTemplateTypeService _service;

@@ -1,16 +1,18 @@
-using JCertPreApplication.Application.Features.Choices;
 using JCertPreApplication.Application.Dtos.Choice;
+using JCertPreApplication.Application.Features.Choices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages question choices and answers.
+    /// Manages choice operations for questions.
     /// </summary>
-    [ApiController]
     [Route("api/choices")]
-    [Tags("Choice")]
+    [ApiController]
+    [Tags("Choices")]
     [Produces("application/json")]
+    [Authorize]
     public class ChoiceController : ControllerBase
     {
         private readonly IChoiceService _choiceService;

@@ -1,16 +1,19 @@
-﻿using JCertPreApplication.Application.Dtos.Message;
+﻿using JCertPreApplication.Application.Dtos.Conversation;
+using JCertPreApplication.Application.Dtos.Message;
 using JCertPreApplication.Application.Features.Conversation;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages conversations between students and academic managers.
+    /// Manages conversation operations.
     /// </summary>
     [Route("api/conversations")]
     [ApiController]
     [Tags("Conversations")]
     [Produces("application/json")]
+    [Authorize]
     public class ConversationController : ControllerBase
     {
         private readonly IConversationService _conversationService;

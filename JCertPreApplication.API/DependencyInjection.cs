@@ -62,7 +62,7 @@ namespace JCertPreApplication.API
                     Description = "Enter JWT Bearer token. Format: Bearer {your-jwt-token}",
                     Name = "Authorization",
                     In = ParameterLocation.Header,
-                    Type = SecuritySchemeType.ApiKey,
+                    Type = SecuritySchemeType.Http,
                     Scheme = "Bearer",
                     BearerFormat = "JWT"
                 });
@@ -77,7 +77,7 @@ namespace JCertPreApplication.API
                                 Type = ReferenceType.SecurityScheme,
                                 Id = "Bearer"
                             },
-                            Scheme = "oauth2",
+                            Scheme = "Bearer",
                             Name = "Bearer",
                             In = ParameterLocation.Header,
                         },

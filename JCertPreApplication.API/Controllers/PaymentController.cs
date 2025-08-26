@@ -12,6 +12,7 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Payment")]
     [Produces("application/json")]
+    [Authorize]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
