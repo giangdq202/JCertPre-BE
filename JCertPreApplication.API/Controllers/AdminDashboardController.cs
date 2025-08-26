@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Features.AdminDashboard;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -10,7 +11,8 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Admin Dashboard")]
     [Produces("application/json")]
-    // [Authorize(Roles = "Admin")] // Uncomment this if you want to restrict access to admin only
+    [Authorize]
+    [Authorize(Roles = "ADMIN")]
     public class AdminDashboardController : ControllerBase
     {
         private readonly IAdminDashboardService _adminDashboardService;
