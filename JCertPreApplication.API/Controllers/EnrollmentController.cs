@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Dtos.Enrollment;
 using JCertPreApplication.Application.Features.Enrollment;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -12,6 +13,7 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Enrollment")]
     [Produces("application/json")]
+    [Authorize]
     public class EnrollmentController : ControllerBase
     {
         private readonly IEnrollmentService _enrollmentService;

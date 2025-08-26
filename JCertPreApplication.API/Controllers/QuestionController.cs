@@ -1,17 +1,19 @@
 using JCertPreApplication.Application.Dtos.Question;
 using JCertPreApplication.Application.Features.Questions;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages question entities.
+    /// Manages question operations including creation, updates, and retrieval.
     /// </summary>
-    [ApiController]
     [Route("api/questions")]
+    [ApiController]
     [Tags("Questions")]
     [Produces("application/json")]
+    [Authorize]
     public class QuestionController : ControllerBase
     {
     private readonly IQuestionService _questionService;

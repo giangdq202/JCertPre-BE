@@ -1,5 +1,6 @@
 ﻿using JCertPreApplication.Application.Dtos.StudyPlan;
 using JCertPreApplication.Application.Features.StudyPlan;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -11,6 +12,7 @@ namespace JCertPreApplication.API.Controllers
     [Route("api/study-plans")]
     [Tags("Studyplans")]
     [Produces("application/json")]
+    [Authorize]
     public class StudyPlansController : ControllerBase
     {
         private readonly IStudyPlanService _studyPlanService;

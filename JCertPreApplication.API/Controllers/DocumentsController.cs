@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Dtos.Document;
 using JCertPreApplication.Application.Features.Documents;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Handles document management, including upload for images, videos, and raw documents.
+    /// Manages document operations including upload, retrieval, and deletion.
     /// </summary>
     [Route("api/documents")]
     [ApiController]
     [Tags("Documents")]
     [Produces("application/json")]
+    [Authorize]
     public class DocumentsController : ControllerBase
     {
         private readonly IDocumentService _documentService;

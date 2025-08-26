@@ -1,16 +1,18 @@
 ﻿using JCertPreApplication.Application.Dtos.Profile;
 using JCertPreApplication.Application.Features.StudentProfile;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages student profile information.
+    /// Manages student profile operations.
     /// </summary>
     [Route("api/student-profile")]
     [ApiController]
     [Tags("StudentProfile")]
     [Produces("application/json")]
+    [Authorize]
     public class StudentProfileController : ControllerBase
     {
         private readonly IStudentProfileService _studentProfileService;

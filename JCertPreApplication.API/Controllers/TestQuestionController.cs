@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Dtos.TestQuestion;
 using JCertPreApplication.Application.Features.TestQuestions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages test questions.
+    /// Manages test question operations.
     /// </summary>
-    [ApiController]
     [Route("api/test-questions")]
+    [ApiController]
     [Tags("TestQuestions")]
     [Produces("application/json")]
+    [Authorize]
     public class TestQuestionController : ControllerBase
     {
         private readonly ITestQuestionService _service;

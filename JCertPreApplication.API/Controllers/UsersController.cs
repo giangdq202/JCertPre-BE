@@ -1,6 +1,7 @@
 using JCertPreApplication.API.Common;
 using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Features.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -12,6 +13,7 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("User Management")]
     [Produces("application/json")]
+    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;

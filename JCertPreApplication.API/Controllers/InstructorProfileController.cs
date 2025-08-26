@@ -1,16 +1,18 @@
 ﻿using JCertPreApplication.Application.Dtos.Profile;
 using JCertPreApplication.Application.Features.InstructorProfile;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages instructor profile information.
+    /// Manages instructor profile operations.
     /// </summary>
     [Route("api/instructor-profile")]
     [ApiController]
     [Tags("InstructorProfile")]
     [Produces("application/json")]
+    [Authorize]
     public class InstructorProfileController : ControllerBase
     {
         private readonly IInstructorProfileService _instructorProfileService;

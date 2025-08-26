@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Dtos.Feedback;
 using JCertPreApplication.Application.Features.Feedbacks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages feedback for courses.
+    /// Manages feedback operations.
     /// </summary>
-    [ApiController]
     [Route("api/feedbacks")]
+    [ApiController]
     [Tags("Feedbacks")]
     [Produces("application/json")]
+    [Authorize]
     public class FeedbackController : ControllerBase
     {
         private readonly IFeedbackService _feedbackService;

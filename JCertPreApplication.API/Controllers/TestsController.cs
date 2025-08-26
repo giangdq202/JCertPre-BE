@@ -1,17 +1,19 @@
 using JCertPreApplication.Application.Dtos.Test;
 using JCertPreApplication.Application.Features.Tests;
 using JCertPreApplication.Domain.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Manages tests and assessments.
+    /// Manages test operations including creation, updates, and retrieval.
     /// </summary>
     [Route("api/tests")]
     [ApiController]
     [Tags("Tests")]
     [Produces("application/json")]
+    [Authorize]
     public class TestsController : ControllerBase
     {
         private readonly ITestService _testService;

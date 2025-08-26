@@ -1,16 +1,18 @@
 using JCertPreApplication.Application.Dtos.LessonProgress;
 using JCertPreApplication.Application.Features.LessonProgresses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
 {
     /// <summary>
-    /// Controller for managing LessonProgress CRUD operations.
+    /// Manages lesson progress tracking for students.
     /// </summary>
-    [ApiController]
     [Route("api/lesson-progress")]
+    [ApiController]
     [Tags("LessonProgress")]
     [Produces("application/json")]
+    [Authorize]
     public class LessonProgressController : ControllerBase
     {
         private readonly ILessonProgressService _service;

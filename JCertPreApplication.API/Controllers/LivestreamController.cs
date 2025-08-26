@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Dtos.Livestream;
 using JCertPreApplication.Application.Features.Livestreams;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -12,6 +13,7 @@ namespace JCertPreApplication.API.Controllers
     [Route("api/livestreams")]
     [Tags("Livestreams")]
     [Produces("application/json")]
+    [Authorize]
     public class LivestreamController : ControllerBase
     {
         private readonly ILivestreamService _livestreamService;
