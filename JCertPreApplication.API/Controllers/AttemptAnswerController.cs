@@ -2,6 +2,7 @@ using JCertPreApplication.Application.Dtos.AttemptAnswer;
 using JCertPreApplication.Application.Features.AttemptAnswers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -26,7 +27,8 @@ namespace JCertPreApplication.API.Controllers
     /// Get all attempt answers by attemptId.
     /// </summary>
     [HttpGet("by-attempt/{attemptId}")]
-    public async Task<IActionResult> GetAllByAttemptId(Guid attemptId)
+    [Authorize(Roles = "STUDENT")]
+        public async Task<IActionResult> GetAllByAttemptId(Guid attemptId)
     {
         var result = await _service.GetAllByAttemptIdAsync(attemptId);
         return Ok(result);
@@ -36,9 +38,15 @@ namespace JCertPreApplication.API.Controllers
     /// Add or update one or multiple attempt answers.
     /// </summary>
     [HttpPost("add-or-update")]
-    public async Task<IActionResult> AddOrUpdateAnswers([FromBody] List<CreateAttemptAnswerDto> dtos)
-    {
-        var result = await _service.AddOrUpdateAnswersAsync(dtos);
-        return Ok(result);
-    }
+    [Authorize(Roles = "STUDENT")]
+        public async Task<IActionResult> AddOrUpdateAnswers([FromBody] List<CreateAttemptAnswerDto> dtos)
+        {
+            var userClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userClaim == null || !Guid.TryParse(userClaim.Value, out var userClaimId))
+            {
+                return Unauthorized("User identifier claim is missing or invalid.");
+            }
+            var result = await _service.AddOrUpdateAnswersAsync(dtos, userClaimId);
+            return Ok(result);
+        }
 }}

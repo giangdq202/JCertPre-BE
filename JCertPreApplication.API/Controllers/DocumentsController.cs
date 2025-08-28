@@ -26,6 +26,7 @@ namespace JCertPreApplication.API.Controllers
         /// Uploads an image document.
         /// </summary>
         [HttpPost("upload/image")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UploadImageDocument([FromForm] CreateDocumentDto createDocumentDto)
         {
             var result = await _documentService.UploadImageDocumentAsync(createDocumentDto);
@@ -36,6 +37,7 @@ namespace JCertPreApplication.API.Controllers
         /// Uploads a video document.
         /// </summary>
         [HttpPost("upload/video")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UploadVideoDocument([FromForm] CreateDocumentDto createDocumentDto)
         {
             var result = await _documentService.UploadVideoDocumentAsync(createDocumentDto);
@@ -46,6 +48,7 @@ namespace JCertPreApplication.API.Controllers
         /// Uploads a raw document.
         /// </summary>
         [HttpPost("upload/document")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UploadRawDocument([FromForm] CreateDocumentDto createDocumentDto)
         {
             var result = await _documentService.UploadRawDocumentAsync(createDocumentDto);
@@ -56,6 +59,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets document by ID.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetDocumentById(Guid id)
         {
             var result = await _documentService.GetDocumentByIdAsync(id);
@@ -66,6 +70,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets documents by lesson ID.
         /// </summary>
         [HttpGet("lesson/{lessonId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetDocumentsByLessonId(Guid lessonId)
         {
             var result = await _documentService.GetDocumentsByLessonIdAsync(lessonId);
@@ -76,6 +81,7 @@ namespace JCertPreApplication.API.Controllers
         /// Deletes a document.
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteDocument(Guid id)
         {
             await _documentService.DeleteDocumentAsync(id);

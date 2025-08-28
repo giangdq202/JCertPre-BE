@@ -112,6 +112,41 @@ public class TestAttemptService : ITestAttemptService
     /// <summary>
     /// Submit a test attempt and calculate score.
     /// </summary>
+    public async Task<TestAttemptDto> SubmitTestAttemptAsync(SubmitTestAttemptDto dto, Guid userClaimId)
+    {
+        try
+        {
+            var attempt = await _testAttemptRepository.GetByIdAsync(dto.AttemptId);
+            if (attempt == null)
+                throw ApiException.NotFound("TestAttempt", dto.AttemptId);
+
+            // Check if the attempt belongs to the current user
+            if (attempt.userId != userClaimId)
+                throw ApiException.Forbidden("FORBIDDEN", "You are not allowed to submit this test attempt.");
+
+            // Prevent submission if status is Suspended
+            if (attempt.status == TestAttemptStatus.Suspended)
+                throw ApiException.BadRequest("ATTEMPT_SUSPENDED", "Cannot submit a suspended test attempt.");
+
+            var test = await _testRepository.GetByIdAsync(attempt.testId);
+            if (test == null)
+                throw ApiException.NotFound("Test", attempt.testId);
+
+            // Calculate and save score summary for this attempt
+            await CalculateAndSaveTestScoreSummaryAsync(attempt, test);
+
+            attempt.status = TestAttemptStatus.Completed;
+            await _testAttemptRepository.UpdateAsync(attempt);
+            await _testAttemptRepository.SaveChangesAsync();
+
+            return MapToDto(attempt);
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", $"An error occurred while submitting test attempt: {ex.Message}");
+        }
+    }
     public async Task<TestAttemptDto> SubmitTestAttemptAsync(SubmitTestAttemptDto dto)
     {
         try

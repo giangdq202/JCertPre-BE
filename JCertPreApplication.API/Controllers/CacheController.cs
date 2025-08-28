@@ -27,6 +27,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="id">Cache key identifier.</param>
         /// <returns>The cached data if found.</returns>
         [HttpGet("{id}")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> Get(string id)
         {
             var result = await _cacheService.GetDataAsync(id);

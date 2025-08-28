@@ -141,12 +141,14 @@ public class TestTemplateTypeService : ITestTemplateTypeService
                 entity.testType = dto.testType.Value;
             if (dto.description != null)
                 entity.description = dto.description;
-            if (dto.isActive.HasValue)
-                entity.isActive = dto.isActive.Value;
+               
             if (dto.totalTestScore.HasValue)
                 entity.totalTestScore = dto.totalTestScore.Value;
             if (dto.totalPassPercentage.HasValue)
                 entity.totalPassPercentage = dto.totalPassPercentage.Value;
+
+            entity.isActive = false;
+            entity.verifiedUserId = null;
 
             await _repo.UpdateAsync(entity);
             await _repo.SaveChangesAsync();

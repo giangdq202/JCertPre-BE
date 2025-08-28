@@ -33,6 +33,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="pageSize">Items per page.</param>
         /// <returns>Paginated list of lessons.</returns>
         [HttpGet("by-course/{courseId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetLessonsByCourseId(
             Guid courseId,
             [FromQuery] string? searchTerm,
@@ -57,6 +58,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="updateLessonDto">Updated lesson data.</param>
         /// <returns>Updated lesson details.</returns>
         [HttpPut("{lessonId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateLesson(Guid lessonId, [FromBody] UpdateLessonDto updateLessonDto)
         {
             var updatedEntity = await _lessonService.UpdateLessonAsync(lessonId, updateLessonDto);
@@ -71,6 +73,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="createLessonDto">Lesson creation data.</param>
         /// <returns>Created lesson details.</returns>
         [HttpPost("{courseId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateLesson(Guid courseId, [FromBody] CreateLessonDto createLessonDto)
         {
             var createdEntity = await _lessonService.CreateLessonAsync(courseId, createLessonDto);
@@ -84,6 +87,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="courseId">Course ID.</param>
         /// <returns>No content on success.</returns>
         [HttpDelete("by-course/{courseId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteAllByCourseId(Guid courseId)
         {
             await _lessonService.DeleteAllByCourseIdAsync(courseId);
@@ -96,6 +100,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="lessonId">Lesson ID.</param>
         /// <returns>No content on success.</returns>
         [HttpDelete("{lessonId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteLessonById(Guid lessonId)
         {
             await _lessonService.DeleteLessonByIdAsync(lessonId);

@@ -26,6 +26,7 @@ namespace JCertPreApplication.API.Controllers
     /// Get all test templates by testTemplateTypeId.
     /// </summary>
     [HttpGet("by-type/{testTemplateTypeId:guid}")]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> GetAllByTypeId(Guid testTemplateTypeId)
     {
         var result = await _service.GetAllByTypeIdAsync(testTemplateTypeId);
@@ -36,6 +37,7 @@ namespace JCertPreApplication.API.Controllers
     /// Create a new test template.
     /// </summary>
     [HttpPost]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> Create([FromBody] CreateTestTemplateDto dto)
     {
         var result = await _service.CreateAsync(dto);
@@ -46,6 +48,7 @@ namespace JCertPreApplication.API.Controllers
     /// Update a test template by templateId.
     /// </summary>
     [HttpPut("{templateId:guid}")]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> Update(Guid templateId, [FromBody] UpdateTestTemplateDto dto)
     {
         var result = await _service.UpdateAsync(templateId, dto);
@@ -56,6 +59,7 @@ namespace JCertPreApplication.API.Controllers
     /// Delete a test template by templateId.
     /// </summary>
     [HttpDelete("{templateId:guid}")]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> Delete(Guid templateId)
     {
         await _service.DeleteAsync(templateId);

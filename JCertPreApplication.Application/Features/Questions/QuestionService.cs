@@ -568,6 +568,61 @@ namespace JCertPreApplication.Application.Features.Questions
             }
         }
 
+        /// <summary>
+        /// Retrieves random questions with choices for a specific subcontent.
+        /// </summary>
+        public async Task<List<RandomQuestionWithChoicesDto>> GetRandomQuestionsWithChoicesAsync(GetRandomQuestionsRequestDto requestDto)
+        {
+            try
+            {
+                // Find the SubContent entity matching the enums
+                var subContent = await _subContentRepository.GetFirstOrDefaultAsync(
+                    s => s.ContentName == requestDto.ContentName
+                      && s.Level == requestDto.Level
+                      && s.SubContentName == requestDto.SubContentName
+                );
+                if (subContent == null)
+                    throw ApiException.BadRequest("SUBCONTENT_NOT_FOUND", "SubContent does not exist for the provided enums.");
+
+                // Get random question IDs for this subcontent
+                var questionIds = await _questionRepository.GetRandomQuestionIdsAsync(
+                    subContent.SubContentId,
+                    requestDto.NumberOfQuestions,
+                    pointPerQuestion: 0 // or set as needed
+                );
+                if (questionIds == null || questionIds.Count == 0)
+                    return new List<RandomQuestionWithChoicesDto>();
+
+                // Load questions with choices
+                var questions = await _questionRepository.GetAllAsync(
+                    q => questionIds.Contains(q.questionId),
+                    "Choices"
+                );
+
+                // Map to DTOs
+                var result = questions.Select(q => new RandomQuestionWithChoicesDto
+                {
+                    QuestionId = q.questionId,
+                    QuestionText = q.questionText,
+                    Explanation = q.explanation,
+                    Choices = q.Choices?.Select(c => new RandomChoiceDto
+                    {
+                        ChoiceId = c.choiceId,
+                        Content = c.choiceText,
+                        IsCorrect = c.isCorrect
+                    }).ToList() ?? new List<RandomChoiceDto>()
+                }).ToList();
+
+                return result;
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                // Catch and wrap unexpected errors
+                throw ApiException.InternalServerError("GET_RANDOM_QUESTIONS_ERROR", ex.Message);
+            }
+        }
+
         // --- Helper for custom file name ---
         private static IFormFile CreateCustomFormFile(IFormFile originalFile, string customFileName)
         {

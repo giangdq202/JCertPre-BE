@@ -28,6 +28,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="questionId">ID of the question.</param>
         /// <returns>List of choices.</returns>
         [HttpGet("question/{questionId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetByQuestionId(Guid questionId)
         {
             var choices = await _choiceService.GetByQuestionIdAsync(questionId);
@@ -41,6 +42,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="dto">Choice creation data.</param>
         /// <returns>The created choice.</returns>
         [HttpPost("question/{questionId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> Create(Guid questionId, [FromBody] ChoiceCreateDto dto)
         {
             var created = await _choiceService.CreateAsync(questionId, dto);
@@ -54,6 +56,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="dto">Choice update data.</param>
         /// <returns>No content on success.</returns>
         [HttpPut("choice/{choiceId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> Update(Guid choiceId, [FromBody] ChoiceUpdateDto dto)
         {
             await _choiceService.UpdateAsync(choiceId, dto);
@@ -66,6 +69,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="choiceId">ID of the choice to delete.</param>
         /// <returns>No content on success.</returns>
         [HttpDelete("choice/{choiceId}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> Delete(Guid choiceId)
         {
             await _choiceService.DeleteAsync(choiceId);

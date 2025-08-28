@@ -28,6 +28,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="createDto">Study plan details.</param>
         /// <returns>Created study plan.</returns>
         [HttpPost("create")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateStudyPlan([FromBody] StudyPlanDto createDto)
         {
             if (!ModelState.IsValid)
@@ -49,6 +50,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="planId">Study plan ID.</param>
         /// <returns>Study plan details.</returns>
         [HttpGet("{planId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetStudyPlanById(Guid planId)
         {
             var studyPlan = await _studyPlanService.GetStudyPlanByIdAsync(planId);
@@ -64,6 +66,7 @@ namespace JCertPreApplication.API.Controllers
         /// </summary>
         /// <returns>List of all study plans.</returns>
         [HttpGet("get-all")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetAllStudyPlans()
         {
             var studyPlans = await _studyPlanService.GetAllStudyPlansAsync();
@@ -76,6 +79,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="studentId">Student ID.</param>
         /// <returns>List of student's study plans.</returns>
         [HttpGet("get-by-studentid/{studentId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetStudyPlansByStudentId(Guid studentId)
         {
             var studyPlans = await _studyPlanService.GetStudyPlansByStudentIdAsync(studentId);
@@ -93,6 +97,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="updateDto">Updated study plan details.</param>
         /// <returns>Updated study plan.</returns>
         [HttpPut("update/{planId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateStudyPlan(Guid planId, [FromBody] UpdateStudyPlanDto updateDto)
         {
             if (!ModelState.IsValid)

@@ -29,6 +29,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">Enrollment request containing user ID and course ID.</param>
         /// <returns>Enrollment details including transaction information.</returns>
         [HttpPost("enroll")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> EnrollInCourse([FromBody] EnrollmentRequestDto request)
         {
             var result = await _enrollmentService.EnrollUserAsync(request.UserId, request.CourseId);
@@ -41,6 +42,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">Self enrollment request containing course ID.</param>
         /// <returns>Enrollment details including transaction information.</returns>
         [HttpPost("enroll-self")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> EnrollSelfInCourse([FromBody] SelfEnrollmentRequestDto request)
         {
             var userId = GetCurrentUserId();
@@ -54,6 +56,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="courseId">The course ID to check enrollment status for.</param>
         /// <returns>The enrollment status result.</returns>
         [HttpGet("check/{courseId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> CheckEnrollmentStatus(Guid courseId)
         {
             var userId = GetCurrentUserId();
@@ -69,6 +72,7 @@ namespace JCertPreApplication.API.Controllers
         /// </summary>
         /// <returns>List of user enrollments with course details.</returns>
         [HttpGet("my-enrollments")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetMyEnrollments()
         {
             var userId = GetCurrentUserId();
@@ -82,6 +86,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="courseId">The course ID to unenroll from.</param>
         /// <returns>The unenrollment result.</returns>
         [HttpDelete("unenroll/{courseId}")]
+        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> UnenrollFromCourse(Guid courseId)
         {
             var userId = GetCurrentUserId();

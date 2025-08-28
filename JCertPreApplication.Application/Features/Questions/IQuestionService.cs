@@ -32,5 +32,9 @@ namespace JCertPreApplication.Application.Features.Questions
         Task<ImportQuestionsResultDto> ImportQuestionsAsync(ImportQuestionsRequestDto dto);
         Task<GeneratedQuestionResponseDto> GenerateQuestionWithAIAsync(GenerateQuestionRequestDto requestDto);
         Task<ExplanationResponseDto> GenerateExplanationAsync(ExplanationRequestDto requestDto);
+        /// <summary>
+        /// Get a random list of questions with choices and explanation by subcontent.
+        /// </summary>
+        Task<List<RandomQuestionWithChoicesDto>> GetRandomQuestionsWithChoicesAsync(GetRandomQuestionsRequestDto requestDto);
     }
 }

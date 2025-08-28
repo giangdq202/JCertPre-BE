@@ -31,6 +31,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="queryParameters">Query parameters for filtering courses by various criteria including CourseType (Personal=0, Public=1)</param>
         /// <returns>Paginated list of courses</returns>
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCourses([FromQuery] CourseQueryParameters queryParameters)
         {
             var result = await _courseService.GetCoursesWithPaginationAsync(queryParameters);
@@ -41,6 +42,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets course by ID.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetCourse(Guid id)
         {
             var course = await _courseService.GetCourseByIdAsync(id);
@@ -54,6 +56,7 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Created course details</returns>
         [HttpPost]
         [Consumes("multipart/form-data")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateCourse([FromForm] CreateCourseDto createCourseDto)
         {
             if (!ModelState.IsValid)
@@ -71,6 +74,7 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Updated course details</returns>
         [HttpPut("{id}")]
         [Consumes("multipart/form-data")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateCourse(Guid id, [FromForm] UpdateCourseDto updateCourseDto)
         {
             if (!ModelState.IsValid)
@@ -84,6 +88,7 @@ namespace JCertPreApplication.API.Controllers
         /// Deletes a course.
         /// </summary>
         [HttpDelete("{id}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteCourse(Guid id)
         {
             await _courseService.DeleteCourseAsync(id);
@@ -97,6 +102,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="status">New course status (Draft, Published, Archived)</param>
         /// <returns>No content if successful</returns>
         [HttpPatch("{id}/status")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateCourseStatus(Guid id, [FromBody] CourseStatus status)
         {
             await _courseService.UpdateCourseStatusAsync(id, status);
@@ -107,6 +113,7 @@ namespace JCertPreApplication.API.Controllers
         /// Assigns an instructor to a course.
         /// </summary>
         [HttpPost("{courseId}/instructors/{instructorId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> AddInstructorToCourse(Guid courseId, Guid instructorId)
         {
             await _courseService.AddInstructorToCourseAsync(courseId, instructorId);
@@ -117,6 +124,7 @@ namespace JCertPreApplication.API.Controllers
         /// Removes an instructor from a course.
         /// </summary>
         [HttpDelete("{courseId}/instructors/{instructorId}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> RemoveInstructorFromCourse(Guid courseId, Guid instructorId)
         {
             await _courseService.RemoveInstructorFromCourseAsync(courseId, instructorId);
@@ -127,6 +135,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets all instructors for a course.
         /// </summary>
         [HttpGet("{courseId}/instructors")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetCourseInstructors(Guid courseId)
         {
             var instructors = await _courseService.GetCourseInstructorsAsync(courseId);
@@ -137,6 +146,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets instructor assignment history for a course.
         /// </summary>
         [HttpGet("{courseId}/instructors/history")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetCourseInstructorHistory(Guid courseId)
         {
             var history = await _courseService.GetCourseInstructorHistoryAsync(courseId);
@@ -147,6 +157,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets courses taught by an instructor.
         /// </summary>
         [HttpGet("instructor/{instructorId}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetCoursesByInstructor(Guid instructorId)
         {
             var courses = await _courseService.GetCoursesByInstructorAsync(instructorId);
@@ -157,6 +168,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets courses enrolled by a student.
         /// </summary>
         [HttpGet("student/{studentId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetCoursesByStudent(Guid studentId)
         {
             var courses = await _courseService.GetCoursesByStudentAsync(studentId);

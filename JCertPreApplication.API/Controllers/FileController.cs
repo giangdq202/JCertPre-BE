@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.File;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -11,6 +12,7 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Files")]
     [Produces("application/json")]
+    [Authorize]
     public class FileController : ControllerBase
     {
         private readonly IFileService _fileService;
@@ -27,6 +29,7 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Upload result with public ID and URL.</returns>
         [HttpPost("upload/image")]
         [Consumes("multipart/form-data")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UploadImage(IFormFile file)
         {
             var result = await _fileService.UploadImageAsync(file);
@@ -63,6 +66,7 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Upload result with public ID and URL.</returns>
         [HttpPost("upload/video")]
         [Consumes("multipart/form-data")]
+        [Authorize (Roles = "ADMIN")]
         public async Task<IActionResult> UploadVideo(IFormFile file)
         {
             var result = await _fileService.UploadVideoAsync(file);
@@ -100,6 +104,7 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Upload result with public ID and URL.</returns>
         [HttpPost("upload/document")]
         [Consumes("multipart/form-data")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> UploadDocument(IFormFile file)
         {
             var result = await _fileService.UploadDocumentAsync(file);
@@ -135,6 +140,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">Delete request containing the public ID.</param>
         /// <returns>Deletion result.</returns>
         [HttpDelete("delete")]
+        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteFile([FromBody] DeleteResourceDto request)
         {
             var result = await _fileService.DeleteFileAsync(request.PublicId);
@@ -166,6 +172,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">Delete request containing the file URL.</param>
         /// <returns>Deletion result.</returns>
         [HttpDelete("delete/by-url")]
+        [Authorize (Roles = "ADMIN")]
         public async Task<IActionResult> DeleteFileByUrl([FromBody] DeleteResourceByUrlDto request)
         {
             var result = await _fileService.DeleteFileByUrlAsync(request.FileUrl);
@@ -198,6 +205,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">Request containing the file URL.</param>
         /// <returns>Extracted public ID.</returns>
         [HttpPost("extract-public-id")]
+        [Authorize (Roles = "ADMIN")]
         public IActionResult ExtractPublicId([FromBody] ExtractPublicIdDto request)
         {
             var publicId = _fileService.ExtractPublicIdFromUrl(request.FileUrl);
@@ -231,6 +239,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="resourceType">Type of resources to retrieve: "image", "video", or "raw". Default: "image".</param>
         /// <returns>Paginated list of resources with cursor for next page.</returns>
         [HttpGet("resources")]
+        [Authorize (Roles = "ADMIN")]
         public async Task<IActionResult> GetResources(
             [FromQuery] int maxResults = 100,
             [FromQuery] string? nextCursor = null,
@@ -250,6 +259,7 @@ namespace JCertPreApplication.API.Controllers
         /// </summary>
         /// <returns>Service status.</returns>
         [HttpGet("health")]
+        [Authorize(Roles = "ADMIN")]
         public IActionResult HealthCheck()
         {
             return Ok(new

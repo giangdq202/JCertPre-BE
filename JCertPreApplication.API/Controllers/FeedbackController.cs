@@ -26,6 +26,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get paginated feedbacks for a course, ordered by createdAt descending.
         /// </summary>
         [HttpGet("course/{courseId:guid}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetPagingByCourseId(Guid courseId, [FromQuery] int pageIndex = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _feedbackService.GetPagingByCourseIdAsync(courseId, pageIndex, pageSize);
@@ -36,8 +37,15 @@ namespace JCertPreApplication.API.Controllers
         /// Create a feedback for a user and course.
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> Create([FromBody] CreateFeedbackDto dto)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != dto.UserId)
+            {
+                return Forbid();
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -49,8 +57,15 @@ namespace JCertPreApplication.API.Controllers
         /// Update a feedback by user and course.
         /// </summary>
         [HttpPut("{userId:guid}/{courseId:guid}")]
+        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> Update(Guid userId, Guid courseId, [FromBody] UpdateFeedbackDto dto)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
@@ -62,8 +77,15 @@ namespace JCertPreApplication.API.Controllers
         /// Delete a feedback by user and course.
         /// </summary>
         [HttpDelete("{userId:guid}/{courseId:guid}")]
+        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> Delete(Guid userId, Guid courseId)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
             await _feedbackService.DeleteAsync(userId, courseId);
             return NoContent();
         }
@@ -72,6 +94,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get average rating for a course.
         /// </summary>
         [HttpGet("course/{courseId:guid}/average-rating")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetCourseAverageRating(Guid courseId)
         {
             var avg = await _feedbackService.GetCourseAverageRatingAsync(courseId);

@@ -1,5 +1,6 @@
 using JCertPreApplication.Application.Dtos.Auth;
 using JCertPreApplication.Application.Features.Auth;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace JCertPreApplication.API.Controllers
@@ -11,6 +12,7 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Authentication")]
     [Produces("application/json")]
+    [Authorize]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -27,6 +29,7 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Authentication tokens and user profile.</returns>
         [HttpPost("register")]
         [Consumes("multipart/form-data")]
+        [AllowAnonymous]
         public async Task<IActionResult> Register([FromForm] RegisterModel model)
         {
             var (accessToken, refreshToken, user) = await _authService.RegisterAsync(model);
@@ -39,6 +42,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">User login credentials.</param>
         /// <returns>Authentication tokens and user profile.</returns>
         [HttpPost("login")]
+        [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var (accessToken, refreshToken, user) = await _authService.LoginAsync(model.Email, model.Password);
@@ -51,6 +55,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">Firebase ID token for social login.</param>
         /// <returns>Authentication tokens and user profile.</returns>
         [HttpPost("firebase-login")]
+        [AllowAnonymous]
         public async Task<IActionResult> FirebaseLogin([FromBody] FirebaseLoginModel model)
         {
             var (accessToken, refreshToken, user) = await _authService.FirebaseLoginAsync(model.FirebaseToken);
@@ -63,6 +68,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">The current access and refresh token pair.</param>
         /// <returns>A new token pair and user profile.</returns>
         [HttpPost("refresh")]
+        [AllowAnonymous]
         public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenModel model)
         {
             var (accessToken, newRefreshToken, user) = await _authService.RefreshTokenAsync(model.AccessToken, model.RefreshToken);
@@ -75,6 +81,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">The access and refresh tokens to revoke.</param>
         /// <returns>A confirmation message.</returns>
         [HttpPost("logout")]
+        [AllowAnonymous]
         public async Task<IActionResult> Logout([FromBody] LogoutModel model)
         {
             await _authService.LogoutAsync(model.AccessToken, model.RefreshToken);
@@ -87,6 +94,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">The access token to validate.</param>
         /// <returns>The validation result.</returns>
         [HttpPost("validate-access-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateAccessToken([FromBody] ValidateAccessTokenModel model)
         {
             var isValid = await _authService.ValidateAccessTokenAsync(model.AccessToken);
@@ -102,6 +110,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">The refresh token to validate.</param>
         /// <returns>The validation result.</returns>
         [HttpPost("validate-refresh-token")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateRefreshToken([FromBody] ValidateRefreshTokenModel model)
         {
             var isValid = await _authService.ValidateRefreshTokenAsync(model.RefreshToken);
@@ -117,6 +126,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">The email address to send reset instructions to.</param>
         /// <returns>Success message (generic for security).</returns>
         [HttpPost("forgot-password")]
+        [AllowAnonymous]
         public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest model)
         {
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -130,6 +140,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="model">Reset token and new password information.</param>
         /// <returns>Success message.</returns>
         [HttpPost("reset-password")]
+        [AllowAnonymous]
         public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest model)
         {
             var ipAddress = HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -143,6 +154,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="token">The reset token to validate.</param>
         /// <returns>The validation result.</returns>
         [HttpGet("validate-reset-token/{token}")]
+        [AllowAnonymous]
         public async Task<IActionResult> ValidateResetToken(string token)
         {
             var isValid = await _authService.ValidateResetTokenAsync(token);
