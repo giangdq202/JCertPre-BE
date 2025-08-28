@@ -29,7 +29,9 @@ namespace JCertPreApplication.Application.Features.AttemptAnswers
         /// Add or update one or multiple attempt answers. If answer exists, update choice; otherwise, add new.
         /// Throws if TestAttempt status is Suspended or Completed.
         /// </summary>
-        public async Task<List<AttemptAnswerDetailDto>> AddOrUpdateAnswersAsync(IEnumerable<CreateAttemptAnswerDto> dtos)
+        public async Task<List<AttemptAnswerDetailDto>> AddOrUpdateAnswersAsync(
+            IEnumerable<CreateAttemptAnswerDto> dtos,
+            Guid userClaimId)
         {
             var result = new List<AttemptAnswerDetailDto>();
             try
@@ -39,6 +41,10 @@ namespace JCertPreApplication.Application.Features.AttemptAnswers
                     var attempt = await _testAttemptRepo.GetByIdAsync(dto.AttemptId);
                     if (attempt == null)
                         throw ApiException.NotFound("TestAttempt", dto.AttemptId);
+
+                    // Check if the attempt belongs to the current user
+                    if (attempt.userId != userClaimId)
+                        throw ApiException.Forbidden("FORBIDDEN", "You are not allowed to modify answers for this attempt.");
 
                     // Check status before allowing add/update
                     if (attempt.status == TestAttemptStatus.Suspended)

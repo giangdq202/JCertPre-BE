@@ -34,6 +34,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="courseLevel">Optional course level filter.</param>
         /// <returns>Paginated list of tests.</returns>
         [HttpGet("user/{userId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetAllByUserId(
             Guid userId,
             [FromQuery] string? searchTerm,
@@ -59,6 +60,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="lessonId">Lesson ID.</param>
         /// <returns>Test details.</returns>
         [HttpGet("by-lesson/{lessonId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetByLessonId(Guid lessonId)
         {
             var dto = await _testService.GetByLessonIdAsync(lessonId);
@@ -73,8 +75,15 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="createTestDto">Test details.</param>
         /// <returns>Created test.</returns>
         [HttpPost("by-lesson/{lessonId}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateByLessonId(Guid userId,Guid lessonId, [FromBody] CreateTestDto createTestDto)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
             var dto = await _testService.CreateByLessonIdAsync(lessonId, createTestDto, userId);
             return CreatedAtAction(nameof(GetByLessonId), new { lessonId = dto.LessonId }, dto);
         }
@@ -86,6 +95,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="updateTestDto">Updated test details.</param>
         /// <returns>Updated test.</returns>
         [HttpPut("{testId}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> Update(Guid testId, [FromBody] UpdateTestDto updateTestDto)
         {
             var dto = await _testService.UpdateAsync(testId, updateTestDto);
@@ -98,6 +108,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="testId">Test ID.</param>
         /// <returns>No content on success.</returns>
         [HttpDelete("{testId}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> Delete(Guid testId)
         {
             await _testService.DeleteAsync(testId);
@@ -111,6 +122,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="status">New status.</param>
         /// <returns>Updated test.</returns>
         [HttpPatch("{testId}/status")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateStatus(Guid testId, [FromBody] TestStatus status)
         {
             var dto = await _testService.UpdateStatusAsync(testId, status);
@@ -123,6 +135,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="testId">Test ID.</param>
         /// <returns>Test details.</returns>
         [HttpGet("{testId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetByTestId(Guid testId)
         {
             var dto = await _testService.GetByTestIdAsync(testId);
@@ -138,8 +151,15 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="userId">User ID.</param>
         /// <returns>Created test info.</returns>
         [HttpPost("auto-create")]
+        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> CreateAutoTestAndAddQuestions([FromBody] CreateAutoTestInput input, [FromQuery] Guid userId)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
             var result = await _testService.CreateAutoTestAndAddQuestionsAsync(input, userId);
             return Ok(result);
         }

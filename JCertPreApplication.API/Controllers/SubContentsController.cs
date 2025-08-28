@@ -29,6 +29,7 @@ namespace JCertPreApplication.API.Controllers
     /// </summary>
     [HttpGet]
     [ProducesResponseType(typeof(Pagination<SubContentDto>), StatusCodes.Status200OK)]
+    [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
     public async Task<IActionResult> GetAll(
         [FromQuery] string? search,
         [FromQuery] CourseLevel? level,
@@ -64,6 +65,7 @@ namespace JCertPreApplication.API.Controllers
     /// </summary>
     [HttpPost]
     [ProducesResponseType(typeof(SubContentDto), StatusCodes.Status201Created)]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> Create([FromBody] CreateSubContentDto dto)
     {
         var entity = await _service.CreateAsync(dto);
@@ -85,6 +87,7 @@ namespace JCertPreApplication.API.Controllers
     /// </summary>
     [HttpPut("{subContentId}")]
     [ProducesResponseType(typeof(SubContentDto), StatusCodes.Status200OK)]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> Update(Guid subContentId, [FromBody] UpdateSubContentDto dto)
     {
         var entity = await _service.UpdateAsync(subContentId, dto);
@@ -106,6 +109,7 @@ namespace JCertPreApplication.API.Controllers
     /// </summary>
     [HttpDelete("{subContentId}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [Authorize(Roles = "ACADEMIC_MANAGER")]
     public async Task<IActionResult> Delete(Guid subContentId)
     {
         await _service.DeleteAsync(subContentId);
@@ -116,6 +120,7 @@ namespace JCertPreApplication.API.Controllers
     /// Get all values and descriptions for SubContentName enum.
     /// </summary>
     [HttpGet("enum-values/subcontent-name")]
+    [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
     public async Task<IActionResult> GetSubContentNameEnumValues()
     {
         var values = await _service.GetSubContentNameEnumValuesAsync();
@@ -126,6 +131,7 @@ namespace JCertPreApplication.API.Controllers
     /// Get all values and descriptions for CourseLevel enum.
     /// </summary>
     [HttpGet("enum-values/level")]
+    [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
     public async Task<IActionResult> GetLevelEnumValues()
     {
         var values = await _service.GetLevelEnumValuesAsync();
@@ -136,6 +142,7 @@ namespace JCertPreApplication.API.Controllers
     /// Get all values and descriptions for ContentName enum.
     /// </summary>
     [HttpGet("enum-values/content-name")]
+    [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
     public async Task<IActionResult> GetContentNameEnumValues()
     {
         var values = await _service.GetContentNameEnumValuesAsync();

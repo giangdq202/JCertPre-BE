@@ -26,6 +26,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get all test template configs by templateId.
         /// </summary>
         [HttpGet("by-template/{templateId:guid}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetAllByTemplateId(Guid templateId)
         {
             var result = await _service.GetAllByTemplateIdAsync(templateId);
@@ -36,6 +37,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get a test template config by configId.
         /// </summary>
         [HttpGet("{configId:guid}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetByConfigId(Guid configId)
         {
             var result = await _service.GetByConfigIdAsync(configId);
@@ -48,6 +50,7 @@ namespace JCertPreApplication.API.Controllers
         /// Create a test template config by templateId.
         /// </summary>
         [HttpPost("{templateId:guid}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> Create(Guid templateId, [FromBody] CreateTestTemplateConfigDto dto)
         {
             var result = await _service.CreateAsync(templateId, dto);
@@ -58,6 +61,7 @@ namespace JCertPreApplication.API.Controllers
         /// Update a test template config by configId.
         /// </summary>
         [HttpPut("{configId:guid}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> Update(Guid configId, [FromBody] UpdateTestTemplateConfigDto dto)
         {
             var result = await _service.UpdateAsync(configId, dto);
@@ -68,6 +72,7 @@ namespace JCertPreApplication.API.Controllers
         /// Delete a test template config by configId.
         /// </summary>
         [HttpDelete("{configId:guid}")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> Delete(Guid configId)
         {
             await _service.DeleteAsync(configId);

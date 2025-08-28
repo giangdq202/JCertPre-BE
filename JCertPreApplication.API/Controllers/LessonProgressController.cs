@@ -26,6 +26,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get all lesson progress records for a user in a course.
         /// </summary>
         [HttpGet("by-user-course")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetByUserAndCourse([FromQuery] Guid userId, [FromQuery] Guid courseId)
         {
             var result = await _service.GetByUserAndCourseAsync(userId, courseId);
@@ -36,6 +37,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get a lesson progress record by user and lesson.
         /// </summary>
         [HttpGet("by-user-lesson")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetByUserAndLesson([FromQuery] Guid userId, [FromQuery] Guid lessonId)
         {
             var result = await _service.GetByUserAndLessonAsync(userId, lessonId);
@@ -48,8 +50,15 @@ namespace JCertPreApplication.API.Controllers
         /// Create a new lesson progress record.
         /// </summary>
         [HttpPost]
+        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> Create([FromBody] CreateLessonProgressDto dto)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != dto.UserId)
+            {
+                return Forbid();
+            }
             var result = await _service.CreateAsync(dto);
             return CreatedAtAction(nameof(GetByUserAndLesson), new { userId = result.UserId, lessonId = result.LessonId }, result);
         }
@@ -78,6 +87,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get the current user's overall completion rate for a course.
         /// </summary>
         [HttpGet("completion-rate")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetUserCourseCompletionRate([FromQuery] Guid userId, [FromQuery] Guid courseId)
         {
             var rate = await _service.GetUserCourseCompletionRateAsync(userId, courseId);

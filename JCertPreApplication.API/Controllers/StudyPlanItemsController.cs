@@ -34,6 +34,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="status">Item status.</param>
         /// <returns>Created study plan item.</returns>
         [HttpPost("create")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateStudyPlanItem(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status)
         {
             if (!ModelState.IsValid)
@@ -51,6 +52,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="itemId">Study plan item ID.</param>
         /// <returns>Study plan item details.</returns>
         [HttpGet("get-by-id/{itemId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetStudyPlanItemById(Guid itemId)
         {
             var studyPlanItem = await _studyPlanItemService.GetStudyPlanItemByIdAsync(itemId);
@@ -67,6 +69,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="planId">Study plan ID.</param>
         /// <returns>List of study plan items.</returns>
         [HttpGet("get-by-plan/{planId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetStudyPlanItemsByPlanId(Guid planId)
         {
             var studyPlanItems = await _studyPlanItemService.GetStudyPlanItemsByPlanIdAsync(planId);
@@ -80,6 +83,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="updateDto">Updated item details.</param>
         /// <returns>Updated study plan item.</returns>
         [HttpPut("update/{itemId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateStudyPlanItem(Guid itemId, [FromBody] UpdateStudyPlanItemDto updateDto)
         {
             if (!ModelState.IsValid)
@@ -97,6 +101,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="itemId">Study plan item ID.</param>
         /// <returns>No content on success.</returns>
         [HttpDelete("delete/{itemId}")]
+        [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteStudyPlanItem(Guid itemId)
         {
             var result = await _studyPlanItemService.DeleteStudyPlanItemAsync(itemId);

@@ -14,8 +14,8 @@ namespace JCertPreApplication.Application.Features.TestAttempts
         /// <summary>
         /// Submit a test attempt and calculate score.
         /// </summary>
+        Task<TestAttemptDto> SubmitTestAttemptAsync(SubmitTestAttemptDto dto, Guid userClaimId);
         Task<TestAttemptDto> SubmitTestAttemptAsync(SubmitTestAttemptDto dto);
-
         /// <summary>
         /// Get all test attempts by user id.
         /// </summary>

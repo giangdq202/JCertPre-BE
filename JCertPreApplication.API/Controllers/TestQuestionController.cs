@@ -39,6 +39,7 @@ namespace JCertPreApplication.API.Controllers
         /// ]
         /// </remarks>
         [HttpPost("custom-manual/add")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> AddQuestionsCustomManual([FromBody] List<AddTestQuestionManualDto> testQuestionPairs)
         {
             var pairs = testQuestionPairs.Select(x => (x.TestId, x.QuestionId)).ToList();
@@ -50,6 +51,7 @@ namespace JCertPreApplication.API.Controllers
         /// Get all questions from a test (no paging).
         /// </summary>
         [HttpGet("{testId}/questions")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetQuestionsByTestId(Guid testId)
         {
             var result = await _service.GetQuestionsByTestIdAsync(testId);
@@ -60,6 +62,7 @@ namespace JCertPreApplication.API.Controllers
         /// Delete a question from a test.
         /// </summary>
         [HttpDelete("{testQuestionId}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteTestQuestion(Guid testQuestionId)
         {
             await _service.DeleteTestQuestionAsync(testQuestionId);
@@ -84,6 +87,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="testId">The ID of the test to delete questions from.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         [HttpDelete("all/{testId:guid}")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteAllTestQuestions(Guid testId)
         {
             await _service.DeleteAllTestQuestionsAsync(testId);

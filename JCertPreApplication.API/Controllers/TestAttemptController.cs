@@ -3,6 +3,7 @@ using JCertPreApplication.Application.Features.TestAttempts;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace JCertPreApplication.API.Controllers
 {
@@ -29,9 +30,16 @@ namespace JCertPreApplication.API.Controllers
     /// Start a test attempt.
     /// </summary>
     [HttpPost("start")]
+    [Authorize(Roles = "STUDENT")]
     public async Task<IActionResult> StartTestAttempt([FromBody] StartTestAttemptDto dto)
     {
-        try
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != dto.UserId)
+            {
+                return Forbid();
+            }
+            try
         {
             // The service handles both test creation AND monitoring activation
             var result = await _service.StartTestAttemptAsync(dto);
@@ -47,11 +55,17 @@ namespace JCertPreApplication.API.Controllers
     /// Submit a test attempt.
     /// </summary>
     [HttpPost("submit")]
+    [Authorize(Roles = "STUDENT")]
     public async Task<IActionResult> SubmitTestAttempt([FromBody] SubmitTestAttemptDto dto)
     {
         try
         {
-            var result = await _service.SubmitTestAttemptAsync(dto);
+            var userClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            if (userClaim == null || !Guid.TryParse(userClaim.Value, out var userClaimId))
+            {
+                return Unauthorized("User identifier claim is missing or invalid.");
+            }
+            var result = await _service.SubmitTestAttemptAsync(dto, userClaimId);
             return Ok(result);
         }
         catch (Exception ex)
@@ -64,9 +78,16 @@ namespace JCertPreApplication.API.Controllers
     /// Get all test attempts by user id.
     /// </summary>
     [HttpGet("by-user/{userId}")]
+    [Authorize(Roles = "STUDENT")]
     public async Task<IActionResult> GetAllByUserId(Guid userId)
     {
-        try
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
+            try
         {
             var result = await _service.GetAllByUserIdAsync(userId);
             return Ok(result);
@@ -100,6 +121,7 @@ namespace JCertPreApplication.API.Controllers
     /// Get a test attempt by Id with score summary.
     /// </summary>
     [HttpGet("{attemptId}/with-score-summary")]
+    [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
     public async Task<IActionResult> GetAttemptWithScoreSummary(Guid attemptId)
     {
         var (attempt, scoreSummary) = await _service.GetAttemptWithScoreSummaryAsync(attemptId);

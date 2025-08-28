@@ -27,6 +27,7 @@ namespace JCertPreApplication.API.Controllers
         /// Creates a new conversation.
         /// </summary>
         [HttpPost("create")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateConversation([FromQuery] Guid studentId)
         {
             var conversation = await _conversationService.CreateConversationAsync(studentId);
@@ -37,6 +38,7 @@ namespace JCertPreApplication.API.Controllers
         /// Sends a message in a conversation.
         /// </summary>
         [HttpPost("send-messages/{conversationId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> SendMessage(Guid conversationId, [FromBody] MessageRequest model)
         {
             //var senderIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -58,6 +60,7 @@ namespace JCertPreApplication.API.Controllers
         /// Assigns an instructor to a conversation.
         /// </summary>
         [HttpPost("assign-instructor/{conversationId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> AssignInstructor([FromRoute] Guid conversationId, [FromQuery] Guid instructorId)
         {
             await _conversationService.AssignInstructorAsync(conversationId, instructorId);
@@ -68,6 +71,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets conversation details with messages.
         /// </summary>
         [HttpGet("{id}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetConversation(Guid id)
         {
             var conversation = await _conversationService.GetConversationAsync(id);
@@ -78,6 +82,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets all conversations for the user.
         /// </summary>
         [HttpGet("my-conversations/{userId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetMyConversations([FromRoute] Guid userId)
         {
             var conversations = await _conversationService.GetConversationsForUserAsync(userId);

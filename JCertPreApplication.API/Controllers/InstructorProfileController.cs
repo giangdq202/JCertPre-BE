@@ -31,6 +31,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="teachingStyle">Teaching methodology.</param>
         /// <returns>Created instructor profile.</returns>
         [HttpPost("create")]
+        [Authorize(Roles = "INSTRUCTOR")]
         public async Task<ActionResult> CreateInstructorProfile([FromQuery] Guid userId, [FromQuery] string introduction, [FromQuery] string? experience, [FromQuery] string? teachingStyle)
         {
             var profile = await _instructorProfileService.CreateInstructorProfileAsync(userId, introduction, experience, teachingStyle);
@@ -44,6 +45,7 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="userId">Instructor user ID.</param>
         /// <returns>Instructor profile details.</returns>
         [HttpGet("{userId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<ActionResult<InstructorProfileDto>> GetInstructorProfile(Guid userId)
         {
             var profile = await _instructorProfileService.GetInstructorProfileAsync(userId);
@@ -60,8 +62,15 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="teachingStyle">Updated teaching style.</param>
         /// <returns>Updated instructor profile.</returns>
         [HttpPut("update/{userId}")]
+        [Authorize(Roles = "INSTRUCTOR")]
         public async Task<ActionResult<InstructorProfileDto>> UpdateInstructorProfile(Guid userId, [FromQuery] string introduction, [FromQuery] string? experience, [FromQuery] string? teachingStyle)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
             var profile = await _instructorProfileService.UpdateInstructorProfileAsync(userId, introduction, experience, teachingStyle);
             if (profile == null) return NotFound();
             return Ok(profile);
@@ -73,8 +82,15 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="userId">Instructor user ID.</param>
         /// <returns>No content on success.</returns>
         [HttpDelete("delete/{userId}")]
+        [Authorize(Roles = "INSTRUCTOR")]
         public async Task<IActionResult> DeleteInstructorProfile(Guid userId)
         {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
             var result = await _instructorProfileService.DeleteInstructorProfileAsync(userId);
             if (!result) return NotFound();
             return Ok();
