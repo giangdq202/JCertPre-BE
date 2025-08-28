@@ -588,7 +588,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 var questionIds = await _questionRepository.GetRandomQuestionIdsAsync(
                     subContent.SubContentId,
                     requestDto.NumberOfQuestions,
-                    pointPerQuestion: 0 // or set as needed
+                    pointPerQuestion: 2 // or set as needed
                 );
                 if (questionIds == null || questionIds.Count == 0)
                     return new List<RandomQuestionWithChoicesDto>();
