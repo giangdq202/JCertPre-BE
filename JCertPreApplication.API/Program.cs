@@ -2,6 +2,7 @@ using JCertPreApplication.API;
 using JCertPreApplication.API.Extensions;
 using JCertPreApplication.API.Middleware;
 using JCertPreApplication.Application;
+using JCertPreApplication.API.Hubs;
 using JCertPreApplication.Domain.Configuration;
 using JCertPreApplication.Persistence;
 
@@ -149,6 +150,7 @@ static void ConfigurePipeline(WebApplication app)
     
     app.UseAuthorization();
     app.MapControllers();
+    app.MapHub<ChatHub>("/hubs/chat");
 }
 
 #endregion

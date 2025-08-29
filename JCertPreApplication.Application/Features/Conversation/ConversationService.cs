@@ -12,12 +12,20 @@ namespace JCertPreApplication.Application.Features.Conversation
         private readonly IConversationRepository _conversationRepository;
         private readonly IMessageRepository _messageRepository;
         private readonly IUserRepository _userRepository;
+        private readonly IChatNotifier _chatNotifier;
 
-        public ConversationService(IConversationRepository conversationRepository, IMessageRepository messageRepository, IUserRepository userRepository)
+        public ConversationService(IConversationRepository conversationRepository, IMessageRepository messageRepository, IUserRepository userRepository, IChatNotifier chatNotifier)
         {
             _conversationRepository = conversationRepository ?? throw new ArgumentNullException(nameof(conversationRepository));
             _messageRepository = messageRepository ?? throw new ArgumentNullException(nameof(messageRepository));
             _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _chatNotifier = chatNotifier ?? throw new ArgumentNullException(nameof(chatNotifier));
+        }
+
+        // Backward-compatible constructor for existing unit tests; will use a no-op notifier
+        public ConversationService(IConversationRepository conversationRepository, IMessageRepository messageRepository, IUserRepository userRepository)
+            : this(conversationRepository, messageRepository, userRepository, new NoopChatNotifier())
+        {
         }
 
         public async Task<ConversationDto> CreateConversationAsync(Guid studentId)
@@ -93,7 +101,9 @@ namespace JCertPreApplication.Application.Features.Conversation
             await _messageRepository.InsertAsync(message);
             await _messageRepository.SaveChangesAsync();
 
-            return MapToMessageDto(message, sender);
+            var messageDto = MapToMessageDto(message, sender);
+            await _chatNotifier.NotifyMessageCreatedAsync(conversationId, messageDto);
+            return messageDto;
         }
 
         public async Task AssignInstructorAsync(Guid conversationId, Guid instructorId)
