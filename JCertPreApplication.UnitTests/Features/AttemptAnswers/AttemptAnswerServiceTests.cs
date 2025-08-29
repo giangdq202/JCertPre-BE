@@ -47,6 +47,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
             var choice = AttemptAnswerServiceFixture.CreateCorrectChoice(dto.ChoiceId, dto.QuestionId);
             var question = AttemptAnswerServiceFixture.CreateQuestionWithPoints(5, dto.QuestionId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -62,7 +63,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto });
+            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId);
 
             // Assert
             result.Should().NotBeNull();
@@ -88,6 +89,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
             var newChoice = AttemptAnswerServiceFixture.CreateCorrectChoice(dto.ChoiceId, dto.QuestionId);
             var question = AttemptAnswerServiceFixture.CreateQuestionWithPoints(10, dto.QuestionId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -103,7 +105,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto });
+            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId);
 
             // Assert
             result.Should().NotBeNull();
@@ -130,6 +132,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
             var correctChoice = AttemptAnswerServiceFixture.CreateCorrectChoice(dto.ChoiceId, dto.QuestionId);
             var question = AttemptAnswerServiceFixture.CreateQuestionWithPoints(8, dto.QuestionId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -145,7 +148,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto });
+            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId);
 
             // Assert
             result.Should().NotBeNull();
@@ -163,6 +166,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
             var incorrectChoice = AttemptAnswerServiceFixture.CreateIncorrectChoice(dto.ChoiceId, dto.QuestionId);
             var question = AttemptAnswerServiceFixture.CreateQuestionWithPoints(5, dto.QuestionId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -178,7 +182,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto });
+            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId);
 
             // Assert
             result.Should().NotBeNull();
@@ -197,13 +201,14 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
         {
             // Arrange
             var dto = AttemptAnswerServiceFixture.ValidCreateDto();
+            var userClaimId = Guid.NewGuid(); // Create a new user ID for this test
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync((JCertPreApplication.Domain.Entities.TestAttempt?)null);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
             exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
@@ -218,13 +223,14 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var dto = AttemptAnswerServiceFixture.ValidCreateDto();
             var suspendedAttempt = AttemptAnswerServiceFixture.CreateSuspendedAttempt(dto.AttemptId);
+            var userClaimId = suspendedAttempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(suspendedAttempt);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             exception.ErrorCode.Should().Be("ATTEMPT_SUSPENDED");
@@ -239,13 +245,14 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var dto = AttemptAnswerServiceFixture.ValidCreateDto();
             var completedAttempt = AttemptAnswerServiceFixture.CreateCompletedAttempt(dto.AttemptId);
+            var userClaimId = completedAttempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(completedAttempt);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             exception.ErrorCode.Should().Be("ATTEMPT_COMPLETED");
@@ -260,13 +267,14 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var dto = AttemptAnswerServiceFixture.ValidCreateDto();
             var expiredAttempt = AttemptAnswerServiceFixture.CreateExpiredAttempt(dto.AttemptId);
+            var userClaimId = expiredAttempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(expiredAttempt);
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.BadRequest);
             exception.ErrorCode.Should().Be("ATTEMPT_OUT_OF_TIME");
@@ -281,6 +289,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var dto = AttemptAnswerServiceFixture.ValidCreateDto();
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -289,7 +298,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
             exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
@@ -305,6 +314,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var dto = AttemptAnswerServiceFixture.ValidCreateDto();
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
             var choice = AttemptAnswerServiceFixture.CreateCorrectChoice(dto.ChoiceId, dto.QuestionId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -315,7 +325,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
             exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
@@ -333,6 +343,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(dto.AttemptId);
             var choice = AttemptAnswerServiceFixture.CreateCorrectChoice(dto.ChoiceId, dto.QuestionId);
             var question = AttemptAnswerServiceFixture.CreateQuestionWithPoints(5, dto.QuestionId);
+            var userClaimId = attempt.userId; // Use the user ID from the attempt
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(dto.AttemptId))
                 .ReturnsAsync(attempt);
@@ -345,7 +356,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(new[] { dto }, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
             exception.ErrorCode.Should().Be("ATTEMPT_ANSWER_ERROR");
@@ -362,6 +373,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var dtos = AttemptAnswerServiceFixture.CreateMultipleDtos(3);
             var attemptId = dtos[0].AttemptId;
+            var userClaimId = Guid.NewGuid(); // Create a new user ID for this test
             
             // Use same attempt for all DTOs
             foreach (var dto in dtos)
@@ -393,7 +405,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(dtos);
+            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(dtos, userClaimId);
 
             // Assert
             result.Should().NotBeNull();
@@ -409,6 +421,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var (dtos, existingAnswers) = AttemptAnswerServiceFixture.CreateMixedBatchScenario();
             var attemptId = dtos[0].AttemptId;
+            var userClaimId = Guid.NewGuid(); // Create a new user ID for this test
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(attemptId);
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(attemptId))
@@ -438,7 +451,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
                 .ReturnsAsync(1);
 
             // Act
-            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(dtos);
+            var result = await _attemptAnswerService.AddOrUpdateAnswersAsync(dtos, userClaimId);
 
             // Assert
             result.Should().NotBeNull();
@@ -455,6 +468,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             // Arrange
             var dtos = AttemptAnswerServiceFixture.CreateMultipleDtos(2);
             var attemptId = dtos[0].AttemptId;
+            var userClaimId = Guid.NewGuid(); // Create a new user ID for this test
             
             foreach (var dto in dtos)
             {
@@ -482,7 +496,7 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<ApiException>(
-                () => _attemptAnswerService.AddOrUpdateAnswersAsync(dtos));
+                () => _attemptAnswerService.AddOrUpdateAnswersAsync(dtos, userClaimId));
 
             exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
             exception.ErrorCode.Should().Be("RESOURCE_NOT_FOUND");
