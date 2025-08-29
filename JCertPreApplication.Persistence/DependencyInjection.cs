@@ -82,8 +82,8 @@ namespace JCertPreApplication.Persistence
             services.AddScoped<IAIIntegration, GeminiService>();
 
             // Infrastructure Services - File Service using Appwrite
-            services.AddScoped<IFileService, AppwriteFileService>();
-            services.AddScoped<IFirebaseService, FirebaseService>();
+            services.AddSingleton<IFileService, AppwriteFileService>();
+            services.AddSingleton<IFirebaseService, FirebaseService>();
             services.AddScoped<ILiveKitService, Services.LiveKit.LiveKitService>();
             services.AddSingleton<IPasswordService, PasswordService>();
 
