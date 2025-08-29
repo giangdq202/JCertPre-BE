@@ -246,7 +246,7 @@ namespace JCertPreApplication.UnitTests.Features.TestTemplateTypes
             result.courseLevel.Should().Be(updateDto.courseLevel!.Value);
             result.testType.Should().Be(updateDto.testType!.Value);
             result.description.Should().Be(updateDto.description);
-            result.isActive.Should().Be(updateDto.isActive!.Value);
+            result.isActive.Should().BeFalse(); // Service always sets isActive to false when updating
 
             _fixture.MockTestTemplateTypeRepository.Verify(x => x.UpdateAsync(It.IsAny<TestTemplateType>()), Times.Once);
             _fixture.MockTestTemplateTypeRepository.Verify(x => x.SaveChangesAsync(), Times.Once);

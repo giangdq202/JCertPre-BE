@@ -382,6 +382,8 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             }
 
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(attemptId);
+            // Set the userId of the attempt to match userClaimId to pass permission check
+            attempt.userId = userClaimId;
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(attemptId))
                 .ReturnsAsync(attempt);
@@ -423,6 +425,8 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             var attemptId = dtos[0].AttemptId;
             var userClaimId = Guid.NewGuid(); // Create a new user ID for this test
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(attemptId);
+            // Set the userId of the attempt to match userClaimId to pass permission check
+            attempt.userId = userClaimId;
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(attemptId))
                 .ReturnsAsync(attempt);
@@ -476,6 +480,8 @@ namespace JCertPreApplication.UnitTests.Features.AttemptAnswers
             }
 
             var attempt = AttemptAnswerServiceFixture.CreateInProgressAttempt(attemptId);
+            // Set the userId of the attempt to match userClaimId to pass permission check
+            attempt.userId = userClaimId;
 
             _mockTestAttemptRepository.Setup(x => x.GetByIdAsync(attemptId))
                 .ReturnsAsync(attempt);
