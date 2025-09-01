@@ -70,6 +70,12 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
                 if (isTypeActive)
                     throw ApiException.BadRequest("TYPE_ACTIVE", "Cannot perform this operation because the test template type is active.");
 
+                // --- Duplicate subContentId check across all templates of the same type ---
+                var allTemplates = await _templateRepo.GetAllAsync(t => t.TestTemplateTypeId == template.TestTemplateTypeId, "TestTemplateConfigs");
+                var allConfigs = allTemplates.SelectMany(t => t.TestTemplateConfigs).ToList();
+                if (allConfigs.Any(c => c.subContentId == dto.subContentId))
+                    throw ApiException.BadRequest("DUPLICATE_SUBCONTENT", "Duplicate subContentId found in another test template of the same type.");
+
                 // Efficiently check if there are enough questions in DB for this subContentId
                 var availableCount = await _questionRepo.CountAsync(q =>
                     q.SubContentId == dto.subContentId && q.isActive);

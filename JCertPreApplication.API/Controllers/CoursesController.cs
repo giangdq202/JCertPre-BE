@@ -1,4 +1,6 @@
+using System.Security.Claims;
 using JCertPreApplication.Application.Dtos.Course;
+using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Features.Course;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -174,5 +176,41 @@ namespace JCertPreApplication.API.Controllers
             var courses = await _courseService.GetCoursesByStudentAsync(studentId);
             return Ok(courses);
         }
+
+        /// <summary>
+        /// Creates a personal course for a user.
+        /// </summary>
+        [HttpPost("personal/{userPersonalId}")]
+        [Consumes("multipart/form-data")]
+        [Authorize(Roles = "ACADEMIC_MANAGER")]
+        public async Task<IActionResult> CreatePersonalCourse([FromRoute] Guid userPersonalId, [FromForm] CreateCourseDto createCourseDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var course = await _courseService.CreatePersonalCourseAsync(createCourseDto, userPersonalId);
+            return CreatedAtAction(nameof(GetCourse), new { id = course.CourseId }, course);
+        }
+
+        /// <summary>
+        /// Gets a personal course by courseId (only owner or academic manager can access).
+        /// </summary>
+        [HttpGet("personal/detail/{courseId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
+        public async Task<IActionResult> GetPersonalCourse([FromRoute] Guid courseId)
+        {
+            var course = await _courseService.GetPersonalCourseByUserAsync(courseId, User);
+            return Ok(course);
+        }
+        /// <summary>
+        /// Gets all personal courses for a user (only owner or academic manager can access).
+        /// </summary>
+        [HttpGet("personal/list/{userPersonalId}")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
+        public async Task<IActionResult> GetPersonalCourses([FromRoute] Guid userPersonalId)
+        {
+            var result = await _courseService.GetPersonalCoursesByUserAsync(userPersonalId, User);
+            return Ok(result);
+        }
     }
-} 
+}

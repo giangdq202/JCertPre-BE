@@ -38,6 +38,9 @@ namespace JCertPreApplication.Persistence.Repositories
                 .Include(c => c.Enrollments)
                 .AsQueryable();
 
+            // Filter out courses with userPersonal not null
+            query = query.Where(c => c.userPersonal == null);
+
             // Apply search filter
             if (!string.IsNullOrEmpty(queryParameters.SearchTerm))
             {
@@ -197,4 +200,4 @@ namespace JCertPreApplication.Persistence.Repositories
                 .ToListAsync();
         }
     }
-} 
+}
