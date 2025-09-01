@@ -9,5 +9,6 @@ namespace JCertPreApplication.Application.Dtos.StudyPlan
         public Guid? CourseId { get; set; }
         public Guid? TestTemplateTypeId { get; set; }
         public ItemStatus? Status { get; set; }
+        public string? Description { get; set; } // <-- Added
     }
 } 

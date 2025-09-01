@@ -32,17 +32,18 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="courseId">Optional course ID.</param>
         /// <param name="testId">Optional test ID.</param>
         /// <param name="status">Item status.</param>
+        /// <param name="description">Item description.</param>
         /// <returns>Created study plan item.</returns>
         [HttpPost("create")]
         [Authorize(Roles = "STUDENT,ACADEMIC_MANAGER")]
-        public async Task<IActionResult> CreateStudyPlanItem(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status)
+        public async Task<IActionResult> CreateStudyPlanItem(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status, string description)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            var createdStudyPlanItem = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
+            var createdStudyPlanItem = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status, description);
             return CreatedAtAction(nameof(GetStudyPlanItemById), new { itemId = createdStudyPlanItem.ItemId }, createdStudyPlanItem);
         }
 

@@ -16,7 +16,7 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
             _studyPlanRepository = studyPlanRepository ?? throw new ArgumentNullException(nameof(studyPlanRepository));
         }
 
-        public async Task<StudyPlanItemDto> CreateStudyPlanItemAsync(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status)
+        public async Task<StudyPlanItemDto> CreateStudyPlanItemAsync(Guid planId, int sequence, string itemType, Guid? courseId, Guid? testId, ItemStatus status, string description)
         {
             var studyPlanExists = await _studyPlanRepository.GetStudyPlanByIdAsync(planId);
             if (studyPlanExists == null)
@@ -30,7 +30,8 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
                 itemType = itemType,
                 courseId = courseId,
                 TestTemplateTypeId = testId,
-                status = status
+                status = status,
+                description = description // or set from input if you add it to the method signature
             };
             await _studyPlanItemRepository.CreateStudyPlanItemAsync(studyPlanItem);
             return MapToStudyPlanItemDto(studyPlanItem);
@@ -71,6 +72,8 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
                 existingItem.TestTemplateTypeId = updateDto.TestTemplateTypeId;
             if (updateDto.Status.HasValue)
                 existingItem.status = updateDto.Status.Value;
+            if (updateDto.Description != null)
+                existingItem.description = updateDto.Description;
 
             var updated = await _studyPlanItemRepository.UpdateStudyPlanItemAsync(existingItem);
             return MapToStudyPlanItemDto(updated);
@@ -95,7 +98,8 @@ namespace JCertPreApplication.Application.Features.StudyPlanItem
                 ItemType = studyPlanItem.itemType,
                 CourseId = studyPlanItem.courseId,
                 TestTemplateTypeId = studyPlanItem.TestTemplateTypeId,
-                Status = studyPlanItem.status
+                Status = studyPlanItem.status,
+                Description = studyPlanItem.description
             };
         }
     }
