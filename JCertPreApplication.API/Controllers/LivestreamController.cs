@@ -13,7 +13,6 @@ namespace JCertPreApplication.API.Controllers
     [Route("api/livestreams")]
     [Tags("Livestreams")]
     [Produces("application/json")]
-    [Authorize]
     public class LivestreamController : ControllerBase
     {
         private readonly ILivestreamService _livestreamService;
@@ -27,7 +26,6 @@ namespace JCertPreApplication.API.Controllers
         /// Creates a new livestream.
         /// </summary>
         [HttpPost]
-        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> CreateLivestream([FromBody] CreateLivestreamDto createDto)
         {
             if (!ModelState.IsValid)
@@ -41,7 +39,6 @@ namespace JCertPreApplication.API.Controllers
         /// Gets livestream by ID.
         /// </summary>
         [HttpGet("{id}")]
-        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
         public async Task<IActionResult> GetLivestreamById(Guid id)
         {
             var result = await _livestreamService.GetLivestreamByIdAsync(id);
@@ -55,7 +52,6 @@ namespace JCertPreApplication.API.Controllers
         /// Updates a livestream.
         /// </summary>
         [HttpPut("{id}")]
-        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> UpdateLivestream(Guid id, [FromBody] UpdateLivestreamDto updateDto)
         {
             if (!ModelState.IsValid)
@@ -69,7 +65,6 @@ namespace JCertPreApplication.API.Controllers
         /// Deletes a livestream.
         /// </summary>
         [HttpDelete("{id}")]
-        [Authorize(Roles = "ACADEMIC_MANAGER")]
         public async Task<IActionResult> DeleteLivestream(Guid id)
         {
             await _livestreamService.DeleteLivestreamAsync(id);

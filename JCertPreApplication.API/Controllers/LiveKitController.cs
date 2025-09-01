@@ -13,7 +13,6 @@ namespace JCertPreApplication.API.Controllers;
 [Route("api/livekit")]
 [Tags("LiveKit")]
 [Produces("application/json")]
-[Authorize]
 public class LiveKitController : ControllerBase
 {
     private readonly ILiveKitService _liveKitService;
@@ -32,7 +31,6 @@ public class LiveKitController : ControllerBase
     /// <param name="role">The role of the participant (Student, Instructor).</param>
     /// <returns>A JWT token that can be used to connect to LiveKit.</returns>
     [HttpGet("token")]
-    [Authorize]
     public IActionResult GetToken(
         [FromQuery] [Required] string roomName,
         [FromQuery] string? participantIdentity = null,
@@ -64,7 +62,6 @@ public class LiveKitController : ControllerBase
     /// Creates a new room with specified settings.
     /// </summary>
     [HttpPost("rooms")]
-    [Authorize]
     public async Task<IActionResult> CreateRoom(
         [FromBody] CreateRoomRequest request)
     {
@@ -84,7 +81,6 @@ public class LiveKitController : ControllerBase
     /// Gets all active rooms.
     /// </summary>
     [HttpGet("rooms")]
-    [Authorize]
     public async Task<IActionResult> GetRooms()
     {
         var rooms = await _liveKitService.ListRoomsAsync();
@@ -95,7 +91,6 @@ public class LiveKitController : ControllerBase
     /// Gets information about a specific room.
     /// </summary>
     [HttpGet("rooms/{roomName}")]
-    [Authorize]
     public async Task<IActionResult> GetRoom(string roomName)
     {
         var room = await _liveKitService.GetRoomAsync(roomName);
@@ -110,7 +105,6 @@ public class LiveKitController : ControllerBase
     /// Deletes a room and disconnects all participants.
     /// </summary>
     [HttpDelete("rooms/{roomName}")]
-    [Authorize]
     public async Task<IActionResult> DeleteRoom(string roomName)
     {
         await _liveKitService.DeleteRoomAsync(roomName);
@@ -121,7 +115,6 @@ public class LiveKitController : ControllerBase
     /// Gets all participants in a room.
     /// </summary>
     [HttpGet("rooms/{roomName}/participants")]
-    [Authorize]
     public async Task<IActionResult> GetParticipants(string roomName)
     {
         var participants = await _liveKitService.ListParticipantsAsync(roomName);
@@ -132,7 +125,6 @@ public class LiveKitController : ControllerBase
     /// Removes a participant from a room.
     /// </summary>
     [HttpDelete("rooms/{roomName}/participants/{identity}")]
-    [Authorize]
     public async Task<IActionResult> RemoveParticipant(string roomName, string identity)
     {
         await _liveKitService.RemoveParticipantAsync(roomName, identity);
@@ -143,7 +135,6 @@ public class LiveKitController : ControllerBase
     /// Mutes a participant's audio.
     /// </summary>
     [HttpPost("rooms/{roomName}/participants/{identity}/mute")]
-        [Authorize]
     public async Task<IActionResult> MuteParticipant(string roomName, string identity)
     {
         await _liveKitService.MuteParticipantAudioAsync(roomName, identity);
@@ -154,7 +145,6 @@ public class LiveKitController : ControllerBase
     /// Unmutes a participant's audio.
     /// </summary>
     [HttpPost("rooms/{roomName}/participants/{identity}/unmute")]
-    [Authorize]
     public async Task<IActionResult> UnmuteParticipant(string roomName, string identity)
     {
         await _liveKitService.UnmuteParticipantAudioAsync(roomName, identity);
