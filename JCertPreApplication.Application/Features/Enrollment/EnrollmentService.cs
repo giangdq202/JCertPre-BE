@@ -35,7 +35,7 @@ namespace JCertPreApplication.Application.Features.Enrollment
             // 1. Validate input
             if (userId == Guid.Empty)
                 throw ApiException.BadRequest("INVALID_USER_ID", "User ID cannot be empty");
-            
+
             if (courseId == Guid.Empty)
                 throw ApiException.BadRequest("INVALID_COURSE_ID", "Course ID cannot be empty");
 
@@ -47,6 +47,13 @@ namespace JCertPreApplication.Application.Features.Enrollment
             var course = await _courseRepository.GetByIdAsync(courseId);
             if (course == null)
                 throw ApiException.NotFound("COURSE_NOT_FOUND", "Course not found");
+
+            // --- PERSONAL COURSE ENROLLMENT CHECK ---
+            if (course.userPersonal.HasValue)
+            {
+                if (course.userPersonal.Value != userId)
+                    throw ApiException.Forbidden("PERSONAL_COURSE_FORBIDDEN", "You are not allowed to enroll in this personal course.");
+            }
 
             // 3. Check if user is already enrolled
             var isAlreadyEnrolled = await _enrollmentRepository.IsUserEnrolledAsync(userId, courseId);
@@ -63,7 +70,7 @@ namespace JCertPreApplication.Application.Features.Enrollment
             {
                 var currentCredit = user.credit;
                 var requiredCredit = (int)Math.Ceiling(course.price);
-                throw ApiException.BadRequest("INSUFFICIENT_CREDIT", 
+                throw ApiException.BadRequest("INSUFFICIENT_CREDIT",
                     $"Insufficient credit. Required: {requiredCredit}, Available: {currentCredit}");
             }
 
@@ -71,9 +78,9 @@ namespace JCertPreApplication.Application.Features.Enrollment
             {
                 // 6. Process payment using PaymentService
                 var paymentResult = await _paymentService.ProcessCreditPaymentAsync(
-                    userId, 
-                    courseId, 
-                    course.price, 
+                    userId,
+                    courseId,
+                    course.price,
                     $"Course enrollment: {course.title}");
 
                 if (!paymentResult.IsSuccess)
@@ -94,7 +101,7 @@ namespace JCertPreApplication.Application.Features.Enrollment
                 await _enrollmentRepository.InsertAsync(enrollment);
                 await _enrollmentRepository.SaveChangesAsync();
 
-                _logger.LogInformation("Successfully enrolled user {UserId} in course {CourseId} with payment {PaymentId}", 
+                _logger.LogInformation("Successfully enrolled user {UserId} in course {CourseId} with payment {PaymentId}",
                     userId, courseId, paymentResult.PaymentId);
 
                 // 8. Return response
