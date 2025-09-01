@@ -7,6 +7,8 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using System.Text;
+using JCertPreApplication.API.Services;
+using JCertPreApplication.Application.Contracts;
 
 namespace JCertPreApplication.API
 {
@@ -35,6 +37,9 @@ namespace JCertPreApplication.API
             // Global Exception Handling Middleware
             services.AddScoped<GlobalExceptionHandlingMiddleware>();
 
+            // SignalR Notifier
+            services.AddScoped<IChatNotifier, SignalRChatNotifier>();
+
             return services;
         }
 
@@ -43,6 +48,7 @@ namespace JCertPreApplication.API
             services.AddControllers();
             services.AddEndpointsApiExplorer();
             services.AddHttpContextAccessor(); // Required for accessing HTTP context in services
+            services.AddSignalR();
         }
 
         private static void AddSwaggerServices(IServiceCollection services)
