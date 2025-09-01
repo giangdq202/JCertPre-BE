@@ -24,6 +24,8 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.Property(c => c.startDate).IsRequired();
             builder.Property(c => c.endDate).IsRequired();
 
+            builder.Property(c => c.userPersonal).IsRequired(false); // <-- Added configuration
+
             // Configure relationship with instructors through CourseInstructor
             builder.HasMany(c => c.CourseInstructors)
                    .WithOne(ci => ci.Course)

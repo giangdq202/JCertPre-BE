@@ -11,6 +11,7 @@ namespace JCertPreApplication.Domain.Entities
         public CourseType courseType { get; set; }
         public decimal price { get; set; }
         public string? thumbnailUrl { get; set; }
+        public Guid? userPersonal { get; set; }
         public CourseStatus status { get; set; }
         public DateTime createdAt { get; set; }
         public DateTime startDate { get; set; }  // New field

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Dtos.Course;
 using JCertPreApplication.Application.Dtos.User;
@@ -332,6 +333,131 @@ namespace JCertPreApplication.Application.Features.Course
             return courses.Select(MapToCourseListDto);
         }
 
+        /// <summary>
+        /// Create a personal course for a specific user.
+        /// </summary>
+        /// <param name="createCourseDto">Course creation data</param>
+        /// <param name="userPersonalId">User ID for whom the course is personal</param>
+        /// <returns>Created CourseDto</returns>
+        public async Task<CourseDto> CreatePersonalCourseAsync(CreateCourseDto createCourseDto, Guid userPersonalId)
+        {
+            try
+            {
+
+                // Check if title is unique
+                if (!await _courseRepository.IsTitleUniqueAsync(createCourseDto.Title))
+                    throw ApiException.BadRequest("COURSE_TITLE_EXISTS", "A course with this title already exists");
+
+                var courseId = Guid.NewGuid();
+                string? thumbnailUrl = null;
+
+                if (createCourseDto.ThumbnailFile != null)
+                {
+                    var customFormFile = CreateCustomFormFile(createCourseDto.ThumbnailFile, courseId.ToString());
+                    var uploadResult = await _fileService.UploadImageAsync(customFormFile);
+                    if (uploadResult.Success && !string.IsNullOrEmpty(uploadResult.Url))
+                    {
+                        thumbnailUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException($"Failed to upload thumbnail: {uploadResult.ErrorMessage}");
+                    }
+                }
+
+                var course = new Domain.Entities.Course
+                {
+                    courseId = courseId,
+                    title = createCourseDto.Title,
+                    description = createCourseDto.Description,
+                    level = createCourseDto.Level,
+                    courseType = createCourseDto.CourseType,
+                    price = createCourseDto.Price,
+                    thumbnailUrl = thumbnailUrl,
+                    status = CourseStatus.Draft,
+                    createdAt = DateTime.UtcNow,
+                    startDate = createCourseDto.StartDate,
+                    endDate = createCourseDto.EndDate,
+                    userPersonal = userPersonalId // Set personal user
+                };
+
+                await _courseRepository.InsertAsync(course);
+                await _courseRepository.SaveChangesAsync();
+
+                return MapToCourseDto(course);
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("PERSONAL_COURSE_CREATE_ERROR", $"An error occurred while creating the personal course: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Get a personal course by courseId, with claim/role check.
+        /// Returns a detailed CourseDto (with navigation properties).
+        /// </summary>
+        /// <param name="courseId">Course ID to get</param>
+        /// <param name="user">ClaimsPrincipal of the logged-in user</param>
+        /// <returns>CourseDto</returns>
+        public async Task<CourseDto> GetPersonalCourseByUserAsync(Guid courseId, ClaimsPrincipal user)
+        {
+            try
+            {
+                var course = await _courseRepository.GetCourseWithDetailsAsync(courseId);
+                if (course == null)
+                    throw ApiException.NotFound("Course", courseId);
+
+                // Only allow if user is owner or academic manager
+                var loggedUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var role = user.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (course.userPersonal == null)
+                    throw ApiException.BadRequest("NOT_PERSONAL_COURSE", "This course is not a personal course.");
+
+                if (role != "ACADEMIC_MANAGER" && loggedUserId != course.userPersonal.ToString())
+                    throw ApiException.Forbidden("FORBIDDEN", "You are not allowed to view this personal course.");
+
+                return MapToCourseDto(course);
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("GET_PERSONAL_COURSE_ERROR", $"An error occurred while getting the personal course: {ex.Message}");
+            }
+        }
+        /// <summary>
+        /// Get all personal courses for a user, with claim/role check.
+        /// Returns a list of detailed CourseDto (with navigation properties).
+        /// </summary>
+        /// <param name="userPersonalId">User ID to get personal courses for</param>
+        /// <param name="user">ClaimsPrincipal of the logged-in user</param>
+        /// <returns>List of CourseDto</returns>
+        public async Task<IEnumerable<CourseDto>> GetPersonalCoursesByUserAsync(Guid userPersonalId, ClaimsPrincipal user)
+        {
+            try
+            {
+                var loggedUserId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                var role = user.FindFirst(ClaimTypes.Role)?.Value;
+
+                if (role != "ACADEMIC_MANAGER" && loggedUserId != userPersonalId.ToString())
+                    throw ApiException.Forbidden("FORBIDDEN", "You are not allowed to view these personal courses.");
+
+                // Get all personal courses for the user, including navigation properties
+                var courses = await _courseRepository.GetAllAsync(
+                    c => c.userPersonal == userPersonalId,
+                    includeProperties: "Lessons,CourseInstructors.Instructor,Enrollments,Feedbacks"
+                );
+
+                // Map each course to a detailed CourseDto
+                return courses.Select(MapToCourseDto).ToList();
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("GET_PERSONAL_COURSE_LIST_ERROR", $"An error occurred while getting personal courses: {ex.Message}");
+            }
+        }
         private static CourseDto MapToCourseDto(Domain.Entities.Course course)
         {
             return new CourseDto

@@ -2,6 +2,7 @@ using JCertPreApplication.Application.Dtos.Course;
 using JCertPreApplication.Application.Dtos.User;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Enums;
+using System.Security.Claims;
 
 namespace JCertPreApplication.Application.Features.Course
 {
@@ -19,5 +20,8 @@ namespace JCertPreApplication.Application.Features.Course
         Task<IEnumerable<CourseInstructorHistoryDto>> GetCourseInstructorHistoryAsync(Guid courseId);
         Task<IEnumerable<CourseListDto>> GetCoursesByInstructorAsync(Guid instructorId);
         Task<IEnumerable<CourseListDto>> GetCoursesByStudentAsync(Guid studentId);
+        Task<CourseDto> CreatePersonalCourseAsync(CreateCourseDto createCourseDto, Guid userPersonalId);
+        Task<CourseDto> GetPersonalCourseByUserAsync(Guid courseId, ClaimsPrincipal user);
+        Task<IEnumerable<CourseDto>> GetPersonalCoursesByUserAsync(Guid userPersonalId, ClaimsPrincipal user);
     }
-} 
+}
