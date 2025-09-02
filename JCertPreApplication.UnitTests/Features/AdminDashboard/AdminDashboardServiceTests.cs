@@ -424,7 +424,7 @@ public class AdminDashboardServiceTests
     public async Task GetCurrentMonthRevenueAsync_AtMonthBoundary_ShouldCalculateCorrectDateRange()
     {
         // Arrange - Test at month boundary (last day of month)
-        var boundaryDate = DateTimeHelper.CreateUtcDate(2025, 8, 31, 23, 59, 59);
+        var boundaryDate = DateTimeHelper.CreateUtcDate(2025, 9, 30, 23, 59, 59);
         var startOfMonth = DateTimeHelper.GetStartOfMonth(boundaryDate);
         var startOfNextMonth = DateTimeHelper.GetStartOfNextMonth(boundaryDate);
 
@@ -436,11 +436,11 @@ public class AdminDashboardServiceTests
 
         // Assert
         result.Should().NotBeNull();
-        result.Month.Should().Be("08/2025");
+        result.Month.Should().Be("09/2025");
 
         _mockPaymentRepository.Verify(x => x.GetTotalRevenueByDateRangeAsync(
             It.Is<DateTime>(d => d.Day == 1 && d.Hour == 0 && d.Minute == 0 && d.Second == 0),
-            It.Is<DateTime>(d => d.Day == 1 && d.Month == 9)), Times.Once);
+            It.Is<DateTime>(d => d.Day == 1 && d.Month == 10)), Times.Once);
     }
 
     [Fact]
@@ -471,9 +471,9 @@ public class AdminDashboardServiceTests
         // Arrange - Use current test reference date for consistency
         var crossYearData = new List<MonthlyRevenue>
         {
-            new MonthlyRevenue(2024, 9, 1000000m), // 11 months ago from Aug 2025
+            new MonthlyRevenue(2024, 10, 1000000m), // 11 months ago from Sep 2025
             new MonthlyRevenue(2024, 12, 2000000m), // Dec 2024
-            new MonthlyRevenue(2025, 8, 3000000m) // Current month Aug 2025
+            new MonthlyRevenue(2025, 9, 3000000m) // Current month Sep 2025
         };
 
         _mockPaymentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
@@ -485,9 +485,9 @@ public class AdminDashboardServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Data.Should().HaveCount(12);
-        result.Data.Should().ContainKey("09/2024").WhoseValue.Should().Be(1000000m);
+        result.Data.Should().ContainKey("10/2024").WhoseValue.Should().Be(1000000m);
         result.Data.Should().ContainKey("12/2024").WhoseValue.Should().Be(2000000m);
-        result.Data.Should().ContainKey("08/2025").WhoseValue.Should().Be(3000000m);
+        result.Data.Should().ContainKey("09/2025").WhoseValue.Should().Be(3000000m);
     }
 
     [Fact]
@@ -496,9 +496,9 @@ public class AdminDashboardServiceTests
         // Arrange - Use current test reference date for consistency
         var crossYearData = new List<MonthlyCount>
         {
-            new MonthlyCount(2024, 9, 10), // 11 months ago from Aug 2025
+            new MonthlyCount(2024, 10, 10), // 11 months ago from Sep 2025
             new MonthlyCount(2024, 12, 25), // Dec 2024
-            new MonthlyCount(2025, 8, 30) // Current month Aug 2025
+            new MonthlyCount(2025, 9, 30) // Current month Sep 2025
         };
 
         _mockEnrollmentRepository.Setup(x => x.GetEnrollmentCountsByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
@@ -510,9 +510,9 @@ public class AdminDashboardServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Data.Should().HaveCount(12);
-        result.Data.Should().ContainKey("09/2024").WhoseValue.Should().Be(10);
+        result.Data.Should().ContainKey("10/2024").WhoseValue.Should().Be(10);
         result.Data.Should().ContainKey("12/2024").WhoseValue.Should().Be(25);
-        result.Data.Should().ContainKey("08/2025").WhoseValue.Should().Be(30);
+        result.Data.Should().ContainKey("09/2025").WhoseValue.Should().Be(30);
     }
 
     [Fact]

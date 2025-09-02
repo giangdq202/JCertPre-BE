@@ -18,6 +18,7 @@ COPY ["JCertPreApplication.API/JCertPreApplication.API.csproj", "JCertPreApplica
 COPY ["JCertPreApplication.Application/JCertPreApplication.Application.csproj", "JCertPreApplication.Application/"]
 COPY ["JCertPreApplication.Domain/JCertPreApplication.Domain.csproj", "JCertPreApplication.Domain/"]
 COPY ["JCertPreApplication.Persistence/JCertPreApplication.Persistence.csproj", "JCertPreApplication.Persistence/"]
+COPY ["JCertPreApplication.UnitTests/JCertPreApplication.UnitTests.csproj", "JCertPreApplication.UnitTests/"]
 
 # Restore với verbose để debug nếu cần
 RUN dotnet restore "JCertPreApplication.sln" --verbosity normal
