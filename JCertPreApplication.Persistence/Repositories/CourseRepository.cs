@@ -39,7 +39,7 @@ namespace JCertPreApplication.Persistence.Repositories
                 .AsQueryable();
 
             // Filter out courses with userPersonal not null
-            query = query.Where(c => c.userPersonal == null);
+            //query = query.Where(c => c.userPersonal == null);
 
             // Apply search filter
             if (!string.IsNullOrEmpty(queryParameters.SearchTerm))
