@@ -204,6 +204,7 @@ namespace JCertPreApplication.Application.Features.Questions
                     {
                         // Update existing attachment
                         existingAttachment.mediaUrl = uploadResult.SecureUrl ?? uploadResult.Url;
+                        await _questionAttachmentRepository.UpdateAsync(existingAttachment);
                     }
                     else
                     {
