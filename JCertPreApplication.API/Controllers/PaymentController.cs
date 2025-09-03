@@ -12,7 +12,6 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("Payment")]
     [Produces("application/json")]
-    [Authorize]
     public class PaymentController : ControllerBase
     {
         private readonly IPaymentService _paymentService;
@@ -28,7 +27,6 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="userId">User ID to get payment history for</param>
         /// <returns>List of user payments</returns>
         [HttpGet("history/{userId:guid}")]
-        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> GetPaymentHistory(Guid userId)
         {
             // Get the authenticated user's ID from claims
@@ -47,7 +45,6 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="userId">User ID to get credit history for</param>
         /// <returns>List of credit transactions</returns>
         [HttpGet("credit-history/{userId:guid}")]
-        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> GetCreditHistory(Guid userId)
         {
             // Get the authenticated user's ID from claims
@@ -67,7 +64,6 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="amount">Amount to check</param>
         /// <returns>Boolean indicating if user has sufficient credit</returns>
         [HttpGet("check-credit/{userId:guid}/{amount:decimal}")]
-        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> CheckSufficientCredit(Guid userId, decimal amount)
         {
             // Get the authenticated user's ID from claims
@@ -91,7 +87,6 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">Yêu cầu tạo thanh toán credit</param>
         /// <returns>Link thanh toán và thông tin đơn hàng</returns>
         [HttpPost("create-credit-purchase")]
-        [Authorize(Roles = "STUDENT")]
         public async Task<IActionResult> CreateCreditPurchase([FromBody] CreateCreditPurchaseRequestDto request)
         {
             // Get the authenticated user's ID from claims
@@ -110,7 +105,6 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="webhookBody">Dữ liệu webhook từ PayOS</param>
         /// <returns>200 OK response</returns>
         [HttpPost("payos-webhook")]
-        [Authorize]
         public async Task<IActionResult> HandlePayOSWebhook([FromBody] WebhookTypeDto webhookBody)
         {
             try
@@ -132,7 +126,6 @@ namespace JCertPreApplication.API.Controllers
         /// <param name="request">URL webhook cần đăng ký</param>
         /// <returns>Kết quả đăng ký</returns>
         [HttpPost("confirm-webhook")]
-        [Authorize]
         public async Task<IActionResult> ConfirmWebhook([FromBody] ConfirmWebhookRequestDto request)
         {
             try
@@ -150,7 +143,6 @@ namespace JCertPreApplication.API.Controllers
         /// Handle payment return from PayOS (success callback)
         /// </summary>
         [HttpGet("return")]
-        [Authorize]
         public async Task<IActionResult> HandlePaymentReturn([FromQuery] PaymentCallbackRequestDto request)
         {
             var result = await _paymentService.HandlePaymentReturnAsync(request);
@@ -163,7 +155,6 @@ namespace JCertPreApplication.API.Controllers
         /// Handle payment cancellation from PayOS
         /// </summary>
         [HttpGet("cancel")]
-        [Authorize]
         public async Task<IActionResult> HandlePaymentCancel([FromQuery] PaymentCallbackRequestDto request)
         {
             var result = await _paymentService.HandlePaymentCancelAsync(request);

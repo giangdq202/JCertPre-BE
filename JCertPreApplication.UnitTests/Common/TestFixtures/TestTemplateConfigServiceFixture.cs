@@ -100,6 +100,11 @@ namespace JCertPreApplication.UnitTests.Common.TestFixtures
             MockTestTemplateTypeRepository
                 .Setup(x => x.AnyAsync(It.IsAny<Expression<Func<TestTemplateType, bool>>>()))
                 .ReturnsAsync(false); // Type is inactive
+
+            // Setup GetAllAsync to return empty list for duplicate check
+            MockTestTemplateRepository
+                .Setup(x => x.GetAllAsync(It.IsAny<Expression<Func<TestTemplate, bool>>>(), It.IsAny<string>()))
+                .ReturnsAsync(new List<TestTemplate>());
         }
 
         public void SetupActiveTypeScenario(Guid templateId, Guid typeId)

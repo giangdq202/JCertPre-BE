@@ -13,7 +13,6 @@ namespace JCertPreApplication.API.Controllers
     [ApiController]
     [Tags("User Management")]
     [Produces("application/json")]
-    [Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -27,7 +26,6 @@ namespace JCertPreApplication.API.Controllers
         /// Retrieves all users with pagination and filtering.
         /// </summary>
         [HttpGet]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAllUsers([FromQuery] UserQueryParameters parameters)
         {
             var result = await _userService.GetAllUsersAsync(parameters);
@@ -41,7 +39,6 @@ namespace JCertPreApplication.API.Controllers
         /// <returns>Created user information.</returns>
         [HttpPost]
         [Consumes("multipart/form-data")]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> CreateUser([FromForm] CreateUserDto createUserDto)
         {
             var createdUser = await _userService.CreateUserAsync(createUserDto);
@@ -52,7 +49,6 @@ namespace JCertPreApplication.API.Controllers
         /// Retrieves all available roles for user creation.
         /// </summary>
         [HttpGet("roles")]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> GetAvailableRoles()
         {
             var roles = await _userService.GetAvailableRolesAsync();
@@ -63,7 +59,6 @@ namespace JCertPreApplication.API.Controllers
         /// Retrieves a specific user by ID.
         /// </summary>
         [HttpGet("{userId:guid}")]
-        [Authorize]
         public async Task<IActionResult> GetUserById(Guid userId)
         {
             if (!User.IsInRole("ADMIN"))
@@ -92,7 +87,6 @@ namespace JCertPreApplication.API.Controllers
         /// </summary>
         [HttpPut("{userId:guid}")]
         [Consumes("multipart/form-data")]
-        [Authorize]
         public async Task<IActionResult> UpdateUser(Guid userId, [FromForm] UpdateUserDto updateUserDto)
         {
             // Get the authenticated user's ID from claims
@@ -109,7 +103,6 @@ namespace JCertPreApplication.API.Controllers
         /// Deactivates a user account.
         /// </summary>
         [HttpDelete("{userId:guid}")]
-        [Authorize(Roles = "ADMIN")]
         public async Task<IActionResult> DeleteUser(Guid userId)
         {
             var result = await _userService.DeleteUserAsync(userId);
@@ -129,7 +122,6 @@ namespace JCertPreApplication.API.Controllers
         /// </summary>
         [HttpPut("{userId:guid}/avatar")]
         [Consumes("multipart/form-data")]
-        [Authorize] // Only require authentication, not specific roles
         public async Task<IActionResult> UpdateUserAvatar(Guid userId, IFormFile avatarFile)
         {
             // Get the authenticated user's ID from claims
@@ -148,7 +140,6 @@ namespace JCertPreApplication.API.Controllers
         /// Checks if a user exists.
         /// </summary>
         [HttpHead("{userId:guid}")]
-        [Authorize]
         public async Task<IActionResult> UserExists(Guid userId)
         {
             var exists = await _userService.UserExistsAsync(userId);
