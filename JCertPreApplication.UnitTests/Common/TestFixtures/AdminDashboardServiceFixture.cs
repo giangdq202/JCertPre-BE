@@ -42,7 +42,7 @@ public class AdminDashboardServiceFixture
                 .WithPaymentType(PaymentType.Money)
                 .WithStatus(PaymentStatus.Completed)
                 .WithAmount(baseAmount * (i + 1))
-                .WithCreatedAt(DateTimeHelper.CreateUtcDate(2025, 8, i + 1))
+                .WithCreatedAt(DateTimeHelper.CreateUtcDate(2025, 9, i + 1))
                 .Build());
         }
         
@@ -53,7 +53,7 @@ public class AdminDashboardServiceFixture
                 .WithPaymentType(PaymentType.Money)
                 .WithStatus(PaymentStatus.Pending)
                 .WithAmount(baseAmount * 0.5m)
-                .WithCreatedAt(DateTimeHelper.CreateUtcDate(2025, 8, i + 10))
+                .WithCreatedAt(DateTimeHelper.CreateUtcDate(2025, 9, i + 10))
                 .Build());
         }
         
@@ -73,7 +73,7 @@ public class AdminDashboardServiceFixture
                 .WithPaymentType(PaymentType.Credit)
                 .WithStatus(PaymentStatus.Completed)
                 .WithAmount(baseAmount)
-                .WithCreatedAt(DateTimeHelper.CreateUtcDate(2025, 8, i + 1))
+                .WithCreatedAt(DateTimeHelper.CreateUtcDate(2025, 9, i + 1))
                 .Build());
         }
         
@@ -154,7 +154,7 @@ public class AdminDashboardServiceFixture
     public static List<Enrollment> CreateEnrollments(int count, DateTime? enrollmentDate = null)
     {
         var enrollments = new List<Enrollment>();
-        var baseDate = enrollmentDate ?? DateTimeHelper.CreateUtcDate(2025, 8, 1);
+        var baseDate = enrollmentDate ?? DateTimeHelper.CreateUtcDate(2025, 9, 1);
         
         for (int i = 0; i < count; i++)
         {
@@ -233,6 +233,6 @@ public class AdminDashboardServiceFixture
     /// </summary>
     public static DateTime GetTestReferenceDate()
     {
-        return DateTimeHelper.CreateUtcDate(2025, 8, 15, 10, 30, 0);
+        return DateTimeHelper.CreateUtcDate(2025, 9, 15, 10, 30, 0);
     }
 }

@@ -186,9 +186,14 @@ namespace JCertPreApplication.UnitTests.Features.TestTemplateConfigs
             _fixture.SetupInactiveTypeScenario(templateId, typeId);
             _fixture.SetupQuestionAvailability(subContentId, 20); // More than required
 
+            var subContent = SubContentBuilder.Create()
+                .WithId(subContentId)
+                .Build();
+
             var createdConfig = TestTemplateConfigBuilder.Create()
                 .WithTemplateId(templateId)
                 .WithSubContentId(subContentId)
+                .WithSubContent(subContent)
                 .WithQuestionCount(createDto.questionCount)
                 .WithPointPerQuestion(createDto.pointPerQuestion)
                 .WithTotalPoints(createDto.totalPoints)

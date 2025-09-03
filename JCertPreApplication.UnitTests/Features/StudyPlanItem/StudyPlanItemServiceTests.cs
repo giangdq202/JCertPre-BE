@@ -64,7 +64,7 @@ public class StudyPlanItemServiceTests
             .ReturnsAsync(expectedItem);
 
         // Act
-        var result = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
+        var result = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status, "Test description");
 
         // Assert
         result.Should().NotBeNull();
@@ -95,7 +95,7 @@ public class StudyPlanItemServiceTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ApiException>(
-            () => _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status));
+            () => _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status, "Test description"));
 
         exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
         exception.Message.Should().Contain("StudyPlan");
@@ -129,7 +129,7 @@ public class StudyPlanItemServiceTests
             .ReturnsAsync(expectedItem);
 
         // Act
-        var result = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
+        var result = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status, "Test description");
 
         // Assert
         result.Should().NotBeNull();
@@ -162,7 +162,7 @@ public class StudyPlanItemServiceTests
             .ReturnsAsync(expectedItem);
 
         // Act
-        var result = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status);
+        var result = await _studyPlanItemService.CreateStudyPlanItemAsync(planId, sequence, itemType, courseId, testId, status, "Test description");
 
         // Assert
         result.Should().NotBeNull();
@@ -185,7 +185,7 @@ public class StudyPlanItemServiceTests
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<Exception>(
-            () => _studyPlanItemService.CreateStudyPlanItemAsync(planId, 1, "Course", Guid.NewGuid(), null, ItemStatus.Pending));
+            () => _studyPlanItemService.CreateStudyPlanItemAsync(planId, 1, "Course", Guid.NewGuid(), null, ItemStatus.Pending, "Test description"));
 
         exception.Message.Should().Be("Database error");
     }

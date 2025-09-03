@@ -72,7 +72,7 @@ namespace JCertPreApplication.Application.Features.TestTemplateConfigs
 
                 // --- Duplicate subContentId check across all templates of the same type ---
                 var allTemplates = await _templateRepo.GetAllAsync(t => t.TestTemplateTypeId == template.TestTemplateTypeId, "TestTemplateConfigs");
-                var allConfigs = allTemplates.SelectMany(t => t.TestTemplateConfigs).ToList();
+                var allConfigs = allTemplates?.SelectMany(t => t.TestTemplateConfigs ?? new List<TestTemplateConfig>()).ToList() ?? new List<TestTemplateConfig>();
                 if (allConfigs.Any(c => c.subContentId == dto.subContentId))
                     throw ApiException.BadRequest("DUPLICATE_SUBCONTENT", "Duplicate subContentId found in another test template of the same type.");
 
