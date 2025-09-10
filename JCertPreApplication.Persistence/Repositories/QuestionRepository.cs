@@ -101,7 +101,7 @@ namespace JCertPreApplication.Persistence.Repositories
         public async Task<List<Question>> GetByIdsAsync(IEnumerable<Guid> questionIds)
         {
             return await _context.Questions
-                .Where(q => questionIds.Contains(q.questionId)).Include(q => q.SubContent)
+                .Include(q => q.SubContent).Where(q => questionIds.Contains(q.questionId))
                 .ToListAsync();
         }
     }
