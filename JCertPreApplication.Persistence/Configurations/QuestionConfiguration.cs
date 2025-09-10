@@ -5,70 +5,71 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 namespace JCertPreApplication.Persistence.Configurations
 {
     public class QuestionConfiguration : IEntityTypeConfiguration<Question>
-{
-    public void Configure(EntityTypeBuilder<Question> builder)
     {
-        builder.ToTable("questions");
-        builder.HasKey(q => q.questionId);
+        public void Configure(EntityTypeBuilder<Question> builder)
+        {
+            builder.ToTable("questions");
+            builder.HasKey(q => q.questionId);
 
-        builder.Property(q => q.SubContentId)
-            .IsRequired();
+            builder.Property(q => q.SubContentId)
+                .IsRequired();
 
-        builder.Property(q => q.questionText)
-            .IsRequired()
-            .HasMaxLength(500);
+            builder.Property(q => q.questionText)
+                .IsRequired()
+                .HasMaxLength(500);
 
             builder.Property(q => q.questionType)
-            .IsRequired()
-            .HasMaxLength(50);
+                .IsRequired()
+                .HasConversion<string>() 
+                .HasMaxLength(50);
 
-        builder.Property(q => q.explanation)
-            .IsRequired(false)
-            .HasMaxLength(1000);
+            builder.Property(q => q.explanation)
+                .IsRequired(false)
+                .HasMaxLength(1000);
 
             builder.Property(q => q.difficulty)
-            .IsRequired()
-            .HasConversion<string>()
-            .HasMaxLength(10);
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(10);
 
             builder.Property(q => q.isActive)
-            .IsRequired();
+                .IsRequired();
 
             builder.Property(q => q.points)
-            .IsRequired();
+                .IsRequired();
 
-        builder.HasOne(q => q.SubContent)
-            .WithMany(sc => sc.Questions)
-            .HasForeignKey(q => q.SubContentId).OnDelete(DeleteBehavior.NoAction)
-            .IsRequired();
+            builder.HasOne(q => q.SubContent)
+                .WithMany(sc => sc.Questions)
+                .HasForeignKey(q => q.SubContentId)
+                .OnDelete(DeleteBehavior.NoAction)
+                .IsRequired();
 
-        // Add new one-to-many for TestQuestion
-        builder.HasMany(q => q.TestQuestions)
-            .WithOne(tq => tq.Question)
-            .HasForeignKey(tq => tq.questionId)
-            .OnDelete(DeleteBehavior.NoAction);
+            builder.HasMany(q => q.TestQuestions)
+                .WithOne(tq => tq.Question)
+                .HasForeignKey(tq => tq.questionId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             builder.HasMany(q => q.Choices)
-            .WithOne(c => c.Question)
-            .HasForeignKey(c => c.questionId)
-            .OnDelete(DeleteBehavior.Cascade);
+                .WithOne(c => c.Question)
+                .HasForeignKey(c => c.questionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(q => q.QuestionAttachments)
-            .WithOne(qa => qa.Question)
-            .HasForeignKey(qa => qa.questionId)
-            .OnDelete(DeleteBehavior.Cascade);
+            builder.HasMany(q => q.QuestionAttachments)
+                .WithOne(qa => qa.Question)
+                .HasForeignKey(qa => qa.questionId)
+                .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasMany(q => q.AttemptAnswers)
-            .WithOne(aa => aa.Question)
-            .HasForeignKey(aa => aa.questionId)
-            .OnDelete(DeleteBehavior.NoAction);
+            builder.HasMany(q => q.AttemptAnswers)
+                .WithOne(aa => aa.Question)
+                .HasForeignKey(aa => aa.questionId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
-        builder.HasIndex(q => q.SubContentId);
-        builder.HasIndex(q => q.isActive);
-        builder.HasIndex(q => q.difficulty);
-        builder.HasIndex(q => q.questionText);
-        builder.HasIndex(q => new { q.isActive, q.SubContentId, q.difficulty });
+            builder.HasIndex(q => q.SubContentId);
+            builder.HasIndex(q => q.isActive);
+            builder.HasIndex(q => q.difficulty);
+            builder.HasIndex(q => q.questionText);
+            builder.HasIndex(q => new { q.isActive, q.SubContentId, q.difficulty });
+        }
     }
-}
 }

@@ -1,4 +1,5 @@
 using JCertPreApplication.Application.Dtos.TestAttempt;
+using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 
@@ -27,5 +28,10 @@ namespace JCertPreApplication.Application.Features.TestAttempts
         Task<TestAttemptDto> UpdateStatusAsync(Guid attemptId, TestAttemptStatus status);
 
         Task<(TestAttemptDto Attempt, TestScoreSummary? ScoreSummary)> GetAttemptWithScoreSummaryAsync(Guid attemptId);
+
+        /// <summary>
+        /// Get paged test attempts by test id and isPass filter.
+        /// </summary>
+        Task<Pagination<TestAttemptDto>> GetPagedAttemptsByTestIdAndIsPassAsync(Guid testId, bool? isPass, int pageIndex = 1, int pageSize = 10);
     }
 }

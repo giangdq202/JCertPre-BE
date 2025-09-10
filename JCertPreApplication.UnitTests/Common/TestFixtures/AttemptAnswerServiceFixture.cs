@@ -18,6 +18,7 @@ namespace JCertPreApplication.UnitTests.Common.TestFixtures
         public Mock<ITestAttemptRepository> MockTestAttemptRepository { get; }
         public Mock<IChoiceRepository> MockChoiceRepository { get; }
         public Mock<IQuestionRepository> MockQuestionRepository { get; }
+        public Mock<ITestRepository> MockTestRepository { get; }
 
         public AttemptAnswerServiceFixture()
         {
@@ -25,12 +26,14 @@ namespace JCertPreApplication.UnitTests.Common.TestFixtures
             MockTestAttemptRepository = new Mock<ITestAttemptRepository>();
             MockChoiceRepository = new Mock<IChoiceRepository>();
             MockQuestionRepository = new Mock<IQuestionRepository>();
+            MockTestRepository = new Mock<ITestRepository>();
 
             AttemptAnswerService = new AttemptAnswerService(
                 MockAttemptAnswerRepository.Object,
                 MockTestAttemptRepository.Object,
                 MockChoiceRepository.Object,
-                MockQuestionRepository.Object
+                MockQuestionRepository.Object,
+                MockTestRepository.Object
             );
         }
 

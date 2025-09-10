@@ -41,6 +41,9 @@ namespace JCertPreApplication.Domain.Enums
         [Description("Diễn đạt bằng lời nói")]
         Mondai13,
         [Description("Phản hồi tức thời")]
-        Mondai14
+        Mondai14,
+        [Description("Viết đoạn văn ngắn")]
+        Mondai15,
+
     }
 }

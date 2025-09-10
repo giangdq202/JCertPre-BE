@@ -2,6 +2,7 @@ using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Application.Dtos.Choice;
+using JCertPreApplication.Domain.Enums;
 
 namespace JCertPreApplication.Application.Features.Choices
 {
@@ -12,10 +13,12 @@ namespace JCertPreApplication.Application.Features.Choices
     public class ChoiceService : IChoiceService
     {
         private readonly IChoiceRepository _choiceRepo;
+        private readonly IQuestionRepository _questionRepository;
 
-        public ChoiceService(IChoiceRepository choiceRepo)
+        public ChoiceService(IChoiceRepository choiceRepo, IQuestionRepository questionRepository)
         {
             _choiceRepo = choiceRepo ?? throw new ArgumentNullException(nameof(choiceRepo));
+            _questionRepository = questionRepository ?? throw new ArgumentNullException(nameof(questionRepository));
         }
 
         /// <summary>
@@ -37,14 +40,28 @@ namespace JCertPreApplication.Application.Features.Choices
 
         /// <summary>
         /// Creates a new choice for a question.
+        /// Prevents creating choices for questions with content name 'Writing'.
         /// </summary>
         public async Task<ChoiceReadDto> CreateAsync(Guid questionId, ChoiceCreateDto dto)
         {
             try
             {
+                // Efficiently fetch the question and its SubContent's ContentName in one query
+                var question = await _questionRepository.GetFirstOrDefaultAsync(
+                    q => q.questionId == questionId,
+                    "SubContent"
+                );
+
+                if (question == null)
+                    throw ApiException.NotFound("Question", questionId);
+
+                // Fast check: block choices for Writing questions
+                if (question.SubContent.ContentName == ContentName.Writing)
+                    throw ApiException.BadRequest("CHOICE_NOT_ALLOWED", "Cannot create choices for questions with content name 'Writing'.");
+
                 // Get current number of choices for the question
-                var existingChoices = await _choiceRepo.GetAllAsync(c => c.questionId == questionId);
-                if (existingChoices.Count() >= 4)
+                var choiceCount = await _choiceRepo.GetAllAsync(c => c.questionId == questionId);
+                if (choiceCount.Count >= 4)
                     throw ApiException.BadRequest("CHOICE_LIMIT", "A question can only have 4 choices.");
 
                 var choice = new Choice
@@ -57,11 +74,10 @@ namespace JCertPreApplication.Application.Features.Choices
                 var created = await _choiceRepo.InsertAsync(choice);
                 await _choiceRepo.SaveChangesAsync();
 
-                // After creation, ensure the total is not more than 4 (for concurrency safety)
+                // Concurrency safety: check again after insert
                 var totalChoices = await _choiceRepo.GetAllAsync(c => c.questionId == questionId);
-                if (totalChoices.Count() > 4)
+                if (totalChoices.Count > 4)
                 {
-                    // Rollback the insert (optional: or just throw)
                     await _choiceRepo.DeleteAsync(created);
                     await _choiceRepo.SaveChangesAsync();
                     throw ApiException.BadRequest("CHOICE_LIMIT", "A question can only have 4 choices.");

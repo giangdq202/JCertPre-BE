@@ -129,4 +129,19 @@ namespace JCertPreApplication.API.Controllers
             return NotFound();
         return Ok(new { Attempt = attempt, ScoreSummary = scoreSummary });
     }
+
+    /// <summary>
+    /// Get paged test attempts by test id and isPass filter.
+    /// </summary>
+    [HttpGet("by-test/{testId}/paged")]
+    [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
+    public async Task<IActionResult> GetPagedAttemptsByTestIdAndIsPass(
+        Guid testId,
+        [FromQuery] bool? isPass,
+        [FromQuery] int pageIndex = 1,
+        [FromQuery] int pageSize = 10)
+    {
+        var result = await _service.GetPagedAttemptsByTestIdAndIsPassAsync(testId, isPass, pageIndex, pageSize);
+        return Ok(result);
+    }
 }}

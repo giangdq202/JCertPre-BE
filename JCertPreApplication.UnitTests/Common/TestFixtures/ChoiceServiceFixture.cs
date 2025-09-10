@@ -14,11 +14,14 @@ public class ChoiceServiceFixture
 {
     public ChoiceService ChoiceService { get; }
     public Mock<IChoiceRepository> MockChoiceRepository { get; }
+    public Mock<IQuestionRepository> MockQuestionRepository { get; } 
 
     public ChoiceServiceFixture()
     {
         MockChoiceRepository = new Mock<IChoiceRepository>();
-        ChoiceService = new ChoiceService(MockChoiceRepository.Object);
+        MockQuestionRepository = new Mock<IQuestionRepository>();
+
+        ChoiceService = new ChoiceService(MockChoiceRepository.Object, MockQuestionRepository.Object);
     }
 
     public static List<Choice> CreateChoicesForQuestion(Guid questionId, int count, int correctIndex = 0)

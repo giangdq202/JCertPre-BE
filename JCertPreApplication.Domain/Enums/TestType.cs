@@ -3,5 +3,6 @@ public enum TestType
 {
     JLPTAuto,
     EntryAuto,
-    CustomManual
+    CustomManual,
+    WrittenManual
 }

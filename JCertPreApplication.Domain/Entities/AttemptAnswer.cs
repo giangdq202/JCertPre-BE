@@ -6,6 +6,8 @@
         public Guid attemptId { get; set; }
         public Guid? questionId { get; set; }
         public Guid? choiceId { get; set; }
+        public string? WrittenAnswer { get; set; }
+        public string? GraderComment { get; set; }
         public bool isCorrect { get; set; } // New field
         public int score { get; set; }      // New field
 
