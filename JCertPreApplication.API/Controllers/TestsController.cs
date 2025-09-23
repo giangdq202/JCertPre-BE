@@ -89,6 +89,27 @@ namespace JCertPreApplication.API.Controllers
         }
 
         /// <summary>
+        /// Creates a writing test for a lesson.
+        /// </summary>
+        /// <param name="userId">User ID.</param>
+        /// <param name="lessonId">Lesson ID.</param>
+        /// <param name="createTestDto">Test details.</param>
+        /// <returns>Created writing test.</returns>
+        [HttpPost("by-lesson/{lessonId}/writing")]
+        [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
+        public async Task<IActionResult> CreateWritingByLessonId(Guid userId, Guid lessonId, [FromBody] CreateTestDto createTestDto)
+        {
+            // Get the authenticated user's ID from claims
+            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            {
+                return Forbid();
+            }
+            var dto = await _testService.CreateWritingByLessonIdAsync(lessonId, createTestDto, userId);
+            return CreatedAtAction(nameof(GetByLessonId), new { lessonId = dto.LessonId }, dto);
+        }
+
+        /// <summary>
         /// Updates a test.
         /// </summary>
         /// <param name="testId">Test ID.</param>

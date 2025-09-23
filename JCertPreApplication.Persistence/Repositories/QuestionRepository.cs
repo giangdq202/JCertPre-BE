@@ -97,5 +97,12 @@ namespace JCertPreApplication.Persistence.Repositories
         {
             return await _dbSet.CountAsync(predicate);
         }
+
+        public async Task<List<Question>> GetByIdsAsync(IEnumerable<Guid> questionIds)
+        {
+            return await _context.Questions
+                .Include(q => q.SubContent).Where(q => questionIds.Contains(q.questionId))
+                .ToListAsync();
+        }
     }
 }

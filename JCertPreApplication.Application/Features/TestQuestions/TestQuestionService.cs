@@ -48,6 +48,22 @@ public class TestQuestionService : ITestQuestionService
                 if (test == null)
                     throw ApiException.NotFound("Test", testId);
 
+                // If test is WritingManual, only allow Writing questions
+                if (test.testType == TestType.WrittenManual)
+                {
+                    // Get all questionIds in this batch
+                    var questionIds = group.Select(x => x.questionId).ToList();
+                    // Query all questions in one go 
+                    var questions = await _questionRepository.GetByIdsAsync(questionIds);
+                   
+                    var invalidQuestions = questions.Where(q => q.SubContent.ContentName != ContentName.Writing).ToList();
+                    if (invalidQuestions.Any())
+                    {
+                        var invalidIds = string.Join(", ", invalidQuestions.Select(q => q.questionId));
+                        throw ApiException.BadRequest("INVALID_QUESTION_CONTENT", "Only Writing questions can be added to a Writing test");
+                    }
+                }
+
                 // Get all existing questionIds for this test
                 var existingQuestions = await _testQuestionRepo.GetAllAsync(tq => tq.testId == testId);
                 var existingQuestionIds = existingQuestions.Select(q => q.questionId).ToHashSet();

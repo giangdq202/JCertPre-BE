@@ -51,5 +51,10 @@ namespace JCertPreApplication.Application.Features.Tests
         /// Create an auto test (JLPTAuto or EntryAuto) and add questions automatically.
         /// </summary>
         Task<CreateAutoTestResult> CreateAutoTestAndAddQuestionsAsync(CreateAutoTestInput input, Guid userId);
+
+        /// <summary>
+        /// Create a writing test by lesson id and user id.
+        /// </summary>
+        Task<TestDto> CreateWritingByLessonIdAsync(Guid lessonId, CreateTestDto dto, Guid userId);
     }
 }

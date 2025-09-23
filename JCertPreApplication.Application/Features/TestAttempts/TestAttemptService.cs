@@ -4,6 +4,9 @@ using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Domain.Entities;
 using JCertPreApplication.Domain.Enums;
 using Microsoft.Extensions.Logging;
+using JCertPreApplication.Application.Utilities;
+using System.Linq.Expressions;
+
 namespace JCertPreApplication.Application.Features.TestAttempts;
 public class TestAttemptService : ITestAttemptService
 {
@@ -132,8 +135,11 @@ public class TestAttemptService : ITestAttemptService
             if (test == null)
                 throw ApiException.NotFound("Test", attempt.testId);
 
-            // Calculate and save score summary for this attempt
-            await CalculateAndSaveTestScoreSummaryAsync(attempt, test);
+            // Only calculate score summary if not a writing manual test
+            if (test.testType != TestType.WrittenManual)
+            {
+                await CalculateAndSaveTestScoreSummaryAsync(attempt, test);
+            }
 
             attempt.status = TestAttemptStatus.Completed;
             await _testAttemptRepository.UpdateAsync(attempt);
@@ -147,6 +153,7 @@ public class TestAttemptService : ITestAttemptService
             throw ApiException.InternalServerError("TEST_ATTEMPT_ERROR", $"An error occurred while submitting test attempt: {ex.Message}");
         }
     }
+
     public async Task<TestAttemptDto> SubmitTestAttemptAsync(SubmitTestAttemptDto dto)
     {
         try
@@ -163,8 +170,11 @@ public class TestAttemptService : ITestAttemptService
             if (test == null)
                 throw ApiException.NotFound("Test", attempt.testId);
 
-            // Calculate and save score summary for this attempt
-            await CalculateAndSaveTestScoreSummaryAsync(attempt, test);
+            // Only calculate score summary if not a writing manual test
+            if (test.testType != TestType.WrittenManual)
+            {
+                await CalculateAndSaveTestScoreSummaryAsync(attempt, test);
+            }
 
             attempt.status = TestAttemptStatus.Completed;
             await _testAttemptRepository.UpdateAsync(attempt);
@@ -372,6 +382,42 @@ public class TestAttemptService : ITestAttemptService
         catch (Exception ex)
         {
             throw ApiException.InternalServerError("GET_ATTEMPT_SCORE_SUMMARY_ERROR", $"An error occurred while retrieving attempt and score summary: {ex.Message}");
+        }
+    }
+
+    public async Task<Pagination<TestAttemptDto>> GetPagedAttemptsByTestIdAndIsPassAsync(
+        Guid testId,
+        bool? isPass,
+        int pageIndex = 1,
+        int pageSize = 10)
+    {
+        try
+        {
+            // Build predicate for filtering by testId and isPass
+            Expression<Func<TestAttempt, bool>> predicate = a =>
+                a.testId == testId &&
+                (!isPass.HasValue ? a.isPass == null : a.isPass == isPass.Value);
+
+            var paged = await _testAttemptRepository.GetPaginationAsync(
+                predicate,
+                null,
+                pageIndex <= 0 ? 1 : pageIndex,
+                pageSize <= 0 ? 10 : (pageSize > 100 ? 100 : pageSize),
+                orderBy: q => q.OrderByDescending(a => a.startTime)
+            );
+
+            return new Pagination<TestAttemptDto>
+            {
+                PageIndex = paged.PageIndex,
+                PageSize = paged.PageSize,
+                TotalItemsCount = paged.TotalItemsCount,
+                Items = paged.Items.Select(MapToDto).ToList()
+            };
+        }
+        catch (ApiException) { throw; }
+        catch (Exception ex)
+        {
+            throw ApiException.InternalServerError("GET_ATTEMPTS_ERROR", $"An error occurred while retrieving paged test attempts: {ex.Message}");
         }
     }
 

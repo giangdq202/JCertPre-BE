@@ -172,6 +172,53 @@ namespace JCertPreApplication.Application.Features.Tests
         }
 
         /// <summary>
+        /// Create a writing test by lesson id and user id. Each lesson can only have one test.
+        /// TestType will be WrittenManual.
+        /// </summary>
+        public async Task<TestDto> CreateWritingByLessonIdAsync(Guid lessonId, CreateTestDto dto, Guid userId)
+        {
+            try
+            {
+                var lesson = await _lessonRepository.GetByIdAsync(lessonId)
+                    ?? throw ApiException.NotFound("Lesson", lessonId);
+
+                var existingTest = await _testRepository.GetFirstOrDefaultAsync(t => t.lessonId == lessonId);
+                if (existingTest != null)
+                    throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
+
+                var test = new Test
+                {
+                    testId = Guid.NewGuid(),
+                    title = dto.Title,
+                    description = dto.Description,
+                    testType = TestType.WrittenManual, // Set to writing test type
+                    courseLevel = dto.CourseLevel,
+                    durationMinutes = dto.DurationMinutes,
+                    lessonId = lessonId,
+                    createdByUserId = userId,
+                    availableFrom = dto.AvailableFrom,
+                    availableTo = dto.AvailableTo,
+                    maxAttempts = dto.MaxAttempts,
+                    passing_percentage = dto.PassingPercentage,
+                    status = TestStatus.Close,
+                    TestTemplateTypeId = null
+                };
+
+                await _testRepository.InsertAsync(test);
+                await _testRepository.SaveChangesAsync();
+
+                var createdTest = await _testRepository.GetByIdAsync(test.testId);
+
+                return MapToTestDto(createdTest ?? test);
+            }
+            catch (ApiException) { throw; }
+            catch (Exception ex)
+            {
+                throw ApiException.InternalServerError("TEST_SERVICE_ERROR", $"An error occurred while creating the writing test: {ex.Message}");
+            }
+        }
+
+        /// <summary>
         /// Update a test by test id.
         /// </summary>
         public async Task<TestDto> UpdateAsync(Guid testId, UpdateTestDto dto)
