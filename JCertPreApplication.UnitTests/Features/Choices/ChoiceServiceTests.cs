@@ -21,11 +21,13 @@ public class ChoiceServiceTests
 {
     private readonly ChoiceService _choiceService;
     private readonly Mock<IChoiceRepository> _mockChoiceRepository;
+    private readonly Mock<IQuestionRepository> _mockQuestionRepository;
 
     public ChoiceServiceTests()
     {
         _mockChoiceRepository = new Mock<IChoiceRepository>();
-        _choiceService = new ChoiceService(_mockChoiceRepository.Object);
+        _mockQuestionRepository = new Mock<IQuestionRepository>();
+        _choiceService = new ChoiceService(_mockChoiceRepository.Object, _mockQuestionRepository.Object);
     }
 
     #region GetByQuestionIdAsync Tests

@@ -30,5 +30,12 @@ namespace JCertPreApplication.Application.Contracts
         /// <param name="predicate">The condition to be satisfied.</param>
         /// <returns>The number of questions that satisfy the condition.</returns>
         Task<int> CountAsync(Expression<Func<Question, bool>> predicate);
+
+        /// <summary>
+        /// Gets a list of questions by their IDs.
+        /// </summary>
+        /// <param name="questionIds">List of question IDs.</param>
+        /// <returns>List of Question entities.</returns>
+        Task<List<Question>> GetByIdsAsync(IEnumerable<Guid> questionIds);
     }
 }

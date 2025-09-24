@@ -14,7 +14,7 @@ namespace JCertPreApplication.UnitTests.Common.Builders
                 questionId = Guid.NewGuid(),
                 SubContentId = Guid.NewGuid(),
                 questionText = "Sample question text for testing purposes?",
-                questionType = "multiple-choice",
+                questionType = QuestionType.MultipleChoice,
                 explanation = "This is a test explanation",
                 difficulty = QuestionDifficulty.Easy,
                 isActive = true,

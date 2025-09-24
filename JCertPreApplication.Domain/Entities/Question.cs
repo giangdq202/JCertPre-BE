@@ -7,8 +7,8 @@ namespace JCertPreApplication.Domain.Entities
         public Guid questionId { get; set; }
         public Guid SubContentId { get; set; }
         public string questionText { get; set; } = null!;
-        public string questionType { get; set; } = null!;
-        public string explanation { get; set; } = null!;
+        public QuestionType questionType { get; set; }
+        public string? explanation { get; set; }
         public QuestionDifficulty difficulty { get; set; }
         public bool isActive { get; set; }
         public int points { get; set; }

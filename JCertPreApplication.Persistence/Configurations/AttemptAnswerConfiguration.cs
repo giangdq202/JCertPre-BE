@@ -12,8 +12,16 @@ namespace JCertPreApplication.Persistence.Configurations
             builder.HasKey(aa => aa.answerId);
 
             builder.Property(aa => aa.attemptId).IsRequired();
-            builder.Property(aa => aa.questionId).IsRequired();
-            builder.Property(aa => aa.choiceId).IsRequired();
+            builder.Property(aa => aa.questionId).IsRequired(false); // Now nullable
+            builder.Property(aa => aa.choiceId).IsRequired(false);   // Now nullable
+
+            builder.Property(aa => aa.WrittenAnswer)
+                   .HasMaxLength(2000)
+                   .IsRequired(false);
+
+            builder.Property(aa => aa.GraderComment)
+                   .HasMaxLength(1000)
+                   .IsRequired(false);
 
             builder.Property(aa => aa.isCorrect)
                    .IsRequired();

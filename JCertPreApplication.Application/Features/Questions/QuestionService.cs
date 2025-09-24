@@ -90,7 +90,7 @@ namespace JCertPreApplication.Application.Features.Questions
                     questionId = Guid.NewGuid(),
                     questionText = createDto.Content,
                     explanation = createDto.Explanation ?? string.Empty,
-                    questionType = "multiple-choice",
+                    questionType = QuestionType.MultipleChoice,
                     points = createDto.Points,
                     difficulty = createDto.Difficulty,
                     SubContentId = subContent.SubContentId,
@@ -337,7 +337,7 @@ namespace JCertPreApplication.Application.Features.Questions
                 {
                     Id = question.questionId,
                     Content = question.questionText,
-                    QuestionType = question.questionType,
+                    QuestionType = question.questionType.ToString(),
                     Choices = question.Choices?.Select(c => new ChoiceForTestDto
                     {
                         ChoiceId = c.choiceId,
@@ -511,7 +511,7 @@ namespace JCertPreApplication.Application.Features.Questions
                             questionId = Guid.NewGuid(),
                             questionText = q.Content,
                             explanation = q.Explanation ?? string.Empty,
-                            questionType = "multiple-choice",
+                            questionType = QuestionType.MultipleChoice,
                             points = q.Points,
                             difficulty = q.Difficulty,
                             SubContentId = subContent.SubContentId,

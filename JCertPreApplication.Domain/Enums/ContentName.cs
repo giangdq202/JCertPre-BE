@@ -14,6 +14,8 @@ namespace JCertPreApplication.Domain.Enums
         [Description("Đọc Hiểu")]
         Reading,
         [Description("Nghe Hiểu")]
-        Listening
+        Listening,
+        [Description("Viết")]
+        Writing
     }
 }
