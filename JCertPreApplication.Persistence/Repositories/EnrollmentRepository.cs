@@ -1,6 +1,7 @@
 using JCertPreApplication.Application.Contracts;
 using JCertPreApplication.Application.Utilities;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 using JCertPreApplication.Persistence.DatabaseContext;
 using Microsoft.EntityFrameworkCore;
 
@@ -73,6 +74,26 @@ namespace JCertPreApplication.Persistence.Repositories
             return await _context.Enrollments
                 .Where(e => e.enrollDate >= startDate && e.enrollDate < endDate)
                 .LongCountAsync();
+        }
+
+        public async Task<decimal> GetTotalRevenueByDateRangeAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Enrollments
+                .Where(p =>  p.enrollDate >= startDate &&
+                           p.enrollDate < endDate)
+                .SumAsync(p => p.price);
+        }
+
+        public async Task<IEnumerable<MonthlyRevenue>> GetRevenueByMonthAsync(DateTime startDate, DateTime endDate)
+        {
+            return await _context.Enrollments
+                .Where(p =>
+                           
+                           p.enrollDate >= startDate &&
+                           p.enrollDate < endDate)
+                .GroupBy(p => new { p.enrollDate.Year, p.enrollDate.Month })
+                .Select(g => new MonthlyRevenue(g.Key.Year, g.Key.Month, g.Sum(p => p.price)))
+                .ToListAsync();
         }
     }
 }

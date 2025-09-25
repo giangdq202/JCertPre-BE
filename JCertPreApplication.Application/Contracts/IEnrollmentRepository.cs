@@ -14,5 +14,7 @@ namespace JCertPreApplication.Application.Contracts
         Task<long> GetTotalEnrollmentsCountAsync();
         Task<IEnumerable<MonthlyCount>> GetEnrollmentCountsByMonthAsync(DateTime startDate, DateTime endDate);
         Task<long> CountByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<decimal> GetTotalRevenueByDateRangeAsync(DateTime startDate, DateTime endDate);
+        Task<IEnumerable<MonthlyRevenue>> GetRevenueByMonthAsync(DateTime startDate, DateTime endDate);
     }
 }
