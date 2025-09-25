@@ -30,21 +30,19 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
             try
             {
                 // Get all payments with type = Money (money deposit transactions)
-                var moneyPayments = await _paymentRepository.GetPaymentsByTypeAsync(PaymentType.Money);
+                
 
                 // Filter by successful payments only
-                var successfulPayments = moneyPayments
-                    .Where(p => p.status == PaymentStatus.Completed)
-                    .ToList();
+                var enrollments = _enrollmentRepository.GetAllAsync();
 
                 // Calculate total amount
-                var totalAmount = successfulPayments.Sum(p => p.amount);
+                var totalAmount = enrollments.Result.Sum(e => e.price);
 
                 return new TotalRevenueDto
                 {
                     TotalAmount = totalAmount,
                     Currency = "VND",
-                    TotalTransactions = successfulPayments.Count,
+                    TotalTransactions = totalAmount.Scale,
                     CalculatedAt = DateTime.UtcNow
                 };
             }
@@ -185,8 +183,7 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
                 var startOfNextMonth = DateTime.SpecifyKind(startOfMonth.AddMonths(1), DateTimeKind.Utc);
 
                 // Get revenue amount for current month
-                var totalAmount = await _paymentRepository.GetTotalRevenueByDateRangeAsync(startOfMonth, startOfNextMonth);
-
+                var totalAmount = await _enrollmentRepository.GetTotalRevenueByDateRangeAsync(startOfMonth, startOfNextMonth);
                 return new CurrentMonthRevenueDto
                 {
                     TotalAmount = totalAmount,
@@ -219,7 +216,7 @@ namespace JCertPreApplication.Application.Features.AdminDashboard
                 var endDate = DateTime.SpecifyKind(new DateTime(now.Year, now.Month, 1).AddMonths(1), DateTimeKind.Utc);
 
                 // Get revenue data by month from repository
-                var monthlyData = await _paymentRepository.GetRevenueByMonthAsync(startDate, endDate);
+                var monthlyData = await _enrollmentRepository.GetRevenueByMonthAsync(startDate, endDate);
 
                 // Create a dictionary to store results
                 var result = new Dictionary<string, decimal>();
