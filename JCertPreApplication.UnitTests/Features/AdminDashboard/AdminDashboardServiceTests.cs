@@ -54,7 +54,7 @@ public class AdminDashboardServiceTests
         result.Should().NotBeNull();
         result.TotalAmount.Should().Be(expectedTotalAmount);
         result.Currency.Should().Be("VND");
-        result.TotalTransactions.Should().Be((int)expectedTotalAmount); // Service uses totalAmount.Scale but let's use int cast
+        result.TotalTransactions.Should().Be((int)expectedTotalAmount.Scale); // Service uses totalAmount.Scale property
         result.CalculatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
 
         _mockEnrollmentRepository.Verify(x => x.GetAllAsync(null), Times.Once);
@@ -131,7 +131,7 @@ public class AdminDashboardServiceTests
     public async Task GetCurrentMonthRevenueAsync_WithNoCurrentMonthData_ShouldReturnZeroAmount()
     {
         // Arrange
-        _mockPaymentRepository.Setup(x => x.GetTotalRevenueByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _mockEnrollmentRepository.Setup(x => x.GetTotalRevenueByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(0m);
 
         // Act
@@ -143,11 +143,11 @@ public class AdminDashboardServiceTests
         result.Currency.Should().Be("VND");
     }
 
-    [Fact]
+        [Fact]
     public async Task GetCurrentMonthRevenueAsync_WhenRepositoryThrows_ShouldThrowInternalServerError()
     {
         // Arrange
-        _mockPaymentRepository.Setup(x => x.GetTotalRevenueByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _mockEnrollmentRepository.Setup(x => x.GetTotalRevenueByDateRangeAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ThrowsAsync(new Exception("Database error"));
 
         // Act & Assert
@@ -156,6 +156,7 @@ public class AdminDashboardServiceTests
 
         exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
         exception.ErrorCode.Should().Be("CURRENT_MONTH_REVENUE_ERROR");
+        exception.Message.Should().Contain("An error occurred while calculating current month revenue");
     }
 
     #endregion
@@ -171,7 +172,7 @@ public class AdminDashboardServiceTests
         var startDate = DateTimeHelper.GetStartDateFor12Months(_testReferenceDate);
         var endDate = DateTimeHelper.GetEndDateFor12Months(_testReferenceDate);
 
-        _mockPaymentRepository.Setup(x => x.GetRevenueByMonthAsync(startDate, endDate))
+        _mockEnrollmentRepository.Setup(x => x.GetRevenueByMonthAsync(startDate, endDate))
             .ReturnsAsync(monthlyRevenueData);
 
         // Act
@@ -185,7 +186,7 @@ public class AdminDashboardServiceTests
         result.Currency.Should().Be("VND");
         result.CalculatedAt.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
 
-        _mockPaymentRepository.Verify(x => x.GetRevenueByMonthAsync(
+        _mockEnrollmentRepository.Verify(x => x.GetRevenueByMonthAsync(
             It.Is<DateTime>(d => d == startDate),
             It.Is<DateTime>(d => d == endDate)), Times.Once);
     }
@@ -197,7 +198,7 @@ public class AdminDashboardServiceTests
         var partialRevenueData = AdminDashboardServiceFixture.CreateMonthlyRevenueData(_testReferenceDate, 6);
         var expectedData = AdminDashboardServiceFixture.CreateExpectedMonthlyDictionary<decimal>(_testReferenceDate, partialRevenueData);
 
-        _mockPaymentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _mockEnrollmentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(partialRevenueData);
 
         // Act
@@ -219,7 +220,7 @@ public class AdminDashboardServiceTests
     public async Task GetRevenueByMonthAsync_WhenRepositoryThrows_ShouldThrowInternalServerError()
     {
         // Arrange
-        _mockPaymentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _mockEnrollmentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ThrowsAsync(new Exception("Database error"));
 
         // Act & Assert
@@ -428,7 +429,7 @@ public class AdminDashboardServiceTests
         var startOfMonth = DateTimeHelper.GetStartOfMonth(boundaryDate);
         var startOfNextMonth = DateTimeHelper.GetStartOfNextMonth(boundaryDate);
 
-        _mockPaymentRepository.Setup(x => x.GetTotalRevenueByDateRangeAsync(startOfMonth, startOfNextMonth))
+        _mockEnrollmentRepository.Setup(x => x.GetTotalRevenueByDateRangeAsync(startOfMonth, startOfNextMonth))
             .ReturnsAsync(1000000m);
 
         // Act
@@ -438,7 +439,7 @@ public class AdminDashboardServiceTests
         result.Should().NotBeNull();
         result.Month.Should().Be("09/2025");
 
-        _mockPaymentRepository.Verify(x => x.GetTotalRevenueByDateRangeAsync(
+        _mockEnrollmentRepository.Verify(x => x.GetTotalRevenueByDateRangeAsync(
             It.Is<DateTime>(d => d.Day == 1 && d.Hour == 0 && d.Minute == 0 && d.Second == 0),
             It.Is<DateTime>(d => d.Day == 1 && d.Month == 10)), Times.Once);
     }
@@ -476,7 +477,7 @@ public class AdminDashboardServiceTests
             new MonthlyRevenue(2025, 9, 3000000m) // Current month Sep 2025
         };
 
-        _mockPaymentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _mockEnrollmentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(crossYearData);
 
         // Act
@@ -527,7 +528,7 @@ public class AdminDashboardServiceTests
             new MonthlyRevenue(2026, 1, 3000000m) // Future year
         };
 
-        _mockPaymentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+        _mockEnrollmentRepository.Setup(x => x.GetRevenueByMonthAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync(futureData);
 
         // Act
