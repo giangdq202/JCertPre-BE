@@ -562,9 +562,10 @@ public class SubContentServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Should().NotBeEmpty();
-        result.Should().HaveCount(14); // SubContentName has 14 values (Mondai1 to Mondai14)
+        result.Should().HaveCount(15); // SubContentName has 15 values (Mondai1 to Mondai15)
         result.Should().Contain(x => x.Name == "Mondai1" && x.Description == "Đọc chữ Hán");
         result.Should().Contain(x => x.Name == "Mondai14" && x.Description == "Phản hồi tức thời");
+        result.Should().Contain(x => x.Name == "Mondai15" && x.Description == "Viết đoạn văn ngắn");
     }
 
     [Fact]
@@ -590,12 +591,13 @@ public class SubContentServiceTests
         // Assert
         result.Should().NotBeNull();
         result.Should().NotBeEmpty();
-        result.Should().HaveCount(5); // ContentName has 5 values
+        result.Should().HaveCount(6); // ContentName has 6 values
         result.Should().Contain(x => x.Name == "Kanji" && x.Description == "Chữ Hán");
         result.Should().Contain(x => x.Name == "Vocabulary" && x.Description == "Từ Vựng");
         result.Should().Contain(x => x.Name == "Grammar" && x.Description == "Ngữ Pháp");
         result.Should().Contain(x => x.Name == "Reading" && x.Description == "Đọc Hiểu");
         result.Should().Contain(x => x.Name == "Listening" && x.Description == "Nghe Hiểu");
+        result.Should().Contain(x => x.Name == "Writing" && x.Description == "Viết");
     }
 
     #endregion
