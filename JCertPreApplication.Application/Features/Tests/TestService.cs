@@ -135,9 +135,9 @@ namespace JCertPreApplication.Application.Features.Tests
                 var lesson = await _lessonRepository.GetByIdAsync(lessonId)
                     ?? throw ApiException.NotFound("Lesson", lessonId);
 
-                var existingTest = await _testRepository.GetFirstOrDefaultAsync(t => t.lessonId == lessonId);
-                if (existingTest != null)
-                    throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
+                //var existingTest = await _testRepository.GetFirstOrDefaultAsync(t => t.lessonId == lessonId);
+                //if (existingTest != null)
+                //    throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
 
                 var test = new Test
                 {
@@ -182,9 +182,9 @@ namespace JCertPreApplication.Application.Features.Tests
                 var lesson = await _lessonRepository.GetByIdAsync(lessonId)
                     ?? throw ApiException.NotFound("Lesson", lessonId);
 
-                var existingTest = await _testRepository.GetFirstOrDefaultAsync(t => t.lessonId == lessonId);
-                if (existingTest != null)
-                    throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
+                //var existingTest = await _testRepository.GetFirstOrDefaultAsync(t => t.lessonId == lessonId);
+                //if (existingTest != null)
+                //    throw ApiException.BadRequest("TEST_ALREADY_EXISTS", "A test already exists for this lesson. Each lesson can only have one test.");
 
                 var test = new Test
                 {

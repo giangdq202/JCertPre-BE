@@ -44,7 +44,7 @@ namespace JCertPreApplication.API.Controllers
         /// Gets course by ID.
         /// </summary>
         [HttpGet("{id}")]
-        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER")]
+        [Authorize(Roles = "STUDENT,INSTRUCTOR,ACADEMIC_MANAGER,ADMIN")]
         public async Task<IActionResult> GetCourse(Guid id)
         {
             var course = await _courseService.GetCourseByIdAsync(id);
