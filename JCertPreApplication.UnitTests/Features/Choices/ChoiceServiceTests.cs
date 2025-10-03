@@ -4,6 +4,7 @@ using JCertPreApplication.Application.Dtos.Choice;
 using JCertPreApplication.Application.Exceptions;
 using JCertPreApplication.Application.Features.Choices;
 using JCertPreApplication.Domain.Entities;
+using JCertPreApplication.Domain.Enums;
 using JCertPreApplication.UnitTests.Common.Builders;
 using JCertPreApplication.UnitTests.Common.TestFixtures;
 using Moq;
@@ -115,6 +116,18 @@ public class ChoiceServiceTests
             .WithIsCorrect(createDto.IsCorrect)
             .Build();
 
+        // Setup valid question with non-Writing content
+        var question = new JCertPreApplication.Domain.Entities.Question 
+        { 
+            questionId = questionId,
+            SubContent = new JCertPreApplication.Domain.Entities.SubContent { ContentName = ContentName.Grammar }
+        };
+        
+        _mockQuestionRepository.Setup(x => x.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<JCertPreApplication.Domain.Entities.Question, bool>>>(),
+            It.IsAny<string>()))
+            .ReturnsAsync(question);
+
         _mockChoiceRepository.SetupSequence(x => x.GetAllAsync(It.IsAny<Expression<Func<Choice, bool>>>(), It.IsAny<string?>()))
             .ReturnsAsync(existingChoices) // First call - check existing choices
             .ReturnsAsync(existingChoices.Concat(new[] { createdChoice }).ToList()); // Second call - after insert
@@ -148,6 +161,18 @@ public class ChoiceServiceTests
         var createDto = ChoiceServiceFixture.ValidCreateDto("New choice", true);
         var existingChoices = ChoiceServiceFixture.CreateChoicesForQuestion(questionId, 4); // Already 4 choices
 
+        // Setup valid question with non-Writing content
+        var question = new JCertPreApplication.Domain.Entities.Question 
+        { 
+            questionId = questionId,
+            SubContent = new JCertPreApplication.Domain.Entities.SubContent { ContentName = ContentName.Grammar }
+        };
+        
+        _mockQuestionRepository.Setup(x => x.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<JCertPreApplication.Domain.Entities.Question, bool>>>(),
+            It.IsAny<string>()))
+            .ReturnsAsync(question);
+
         _mockChoiceRepository.Setup(x => x.GetAllAsync(It.IsAny<Expression<Func<Choice, bool>>>(), It.IsAny<string?>()))
             .ReturnsAsync(existingChoices);
 
@@ -170,6 +195,18 @@ public class ChoiceServiceTests
         var createDto = ChoiceServiceFixture.ValidCreateDto("New choice", true);
         var existingChoices = ChoiceServiceFixture.CreateChoicesForQuestion(questionId, 3);
         var createdChoice = ChoiceBuilder.Create().WithQuestionId(questionId).Build();
+        
+        // Setup valid question with non-Writing content
+        var question = new JCertPreApplication.Domain.Entities.Question 
+        { 
+            questionId = questionId,
+            SubContent = new JCertPreApplication.Domain.Entities.SubContent { ContentName = ContentName.Grammar }
+        };
+        
+        _mockQuestionRepository.Setup(x => x.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<JCertPreApplication.Domain.Entities.Question, bool>>>(),
+            It.IsAny<string>()))
+            .ReturnsAsync(question);
         
         // Simulate concurrency: after insert, total becomes > 4 choices
         var choicesAfterConcurrentInsert = ChoiceServiceFixture.CreateChoicesForQuestion(questionId, 5);
@@ -206,15 +243,17 @@ public class ChoiceServiceTests
         var questionId = Guid.NewGuid();
         var createDto = ChoiceServiceFixture.ValidCreateDto();
 
-        _mockChoiceRepository.Setup(x => x.GetAllAsync(It.IsAny<Expression<Func<Choice, bool>>>(), It.IsAny<string?>()))
-            .ThrowsAsync(new Exception("Database error"));
+        // Setup question repository to return null (question not found)
+        _mockQuestionRepository.Setup(x => x.GetFirstOrDefaultAsync(
+            It.IsAny<Expression<Func<JCertPreApplication.Domain.Entities.Question, bool>>>(),
+            It.IsAny<string>()))
+            .ReturnsAsync((JCertPreApplication.Domain.Entities.Question?)null);
 
         // Act & Assert
         var exception = await Assert.ThrowsAsync<ApiException>(() => _choiceService.CreateAsync(questionId, createDto));
 
-        exception.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
-        exception.ErrorCode.Should().Be("CHOICE_CREATE_ERROR");
-        exception.Message.Should().Contain("An error occurred while creating choice");
+        exception.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        exception.Message.Should().Contain("Question").And.Contain("not found");
     }
 
     #endregion
