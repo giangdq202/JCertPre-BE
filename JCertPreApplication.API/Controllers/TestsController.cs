@@ -100,11 +100,11 @@ namespace JCertPreApplication.API.Controllers
         public async Task<IActionResult> CreateWritingByLessonId(Guid userId, Guid lessonId, [FromBody] CreateTestDto createTestDto)
         {
             // Get the authenticated user's ID from claims
-            var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-            if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
-            {
-                return Forbid();
-            }
+            //var claimUserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            //if (claimUserId == null || !Guid.TryParse(claimUserId, out var authenticatedUserId) || authenticatedUserId != userId)
+            //{
+            //    return Forbid();
+            //}
             var dto = await _testService.CreateWritingByLessonIdAsync(lessonId, createTestDto, userId);
             return CreatedAtAction(nameof(GetByLessonId), new { lessonId = dto.LessonId }, dto);
         }

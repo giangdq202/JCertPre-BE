@@ -134,7 +134,7 @@ namespace JCertPreApplication.API.Controllers
     /// Get paged test attempts by test id and isPass filter.
     /// </summary>
     [HttpGet("by-test/{testId}/paged")]
-    [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER")]
+    [Authorize(Roles = "INSTRUCTOR,ACADEMIC_MANAGER,STUDENT")]
     public async Task<IActionResult> GetPagedAttemptsByTestIdAndIsPass(
         Guid testId,
         [FromQuery] bool? isPass,
